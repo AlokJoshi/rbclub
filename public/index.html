@@ -28,12 +28,12 @@
 							</ul> -->
 						</header>
 						<div class="content">
-							<h2>List of players</h2>
+							<h2 id="listofplayers">List of players</h2>
 							<h2>Display:</h2> 
-							<input type="checkbox" checked id="DOB_Month" onclick="toggleColumn('#playertable', 5);"><label for="DOB_Month">DOB(Month)</label>
-							<input type="checkbox" checked id="Email" onclick="toggleColumn('#playertable', 3);"><label for="Email">Email</label>
-							<input type="checkbox" checked id="Ice_phone" onclick="toggleColumn('#playertable', 6);"><label for="Ice_phone">ICE_Phone</label>
-							<input type="checkbox" checked id="ICE_Relation" onclick="toggleColumn('#playertable', 7);"><label for="ICE_Relation">ICE_Relation</label>
+							<input type="checkbox" id="DOB_Month" onclick="toggleColumn('#playertable', 5);"><label for="DOB_Month">DOB(Month)</label>
+							<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 3);"><label for="Email">Email</label>
+							<input type="checkbox" id="Ice_phone" onclick="toggleColumn('#playertable', 6);"><label for="Ice_phone">ICE_Phone</label>
+							<input type="checkbox" id="ICE_Relation" onclick="toggleColumn('#playertable', 7);"><label for="ICE_Relation">ICE_Relation</label>
 							<!-- <span class="image fill" data-position="center"><img src="images/pic01.jpg" alt="" /></span> -->
 							<table id="playertable">
 								<thead>
@@ -116,8 +116,8 @@
 										<label for="ug">Unit Game</label>
 										<input type="checkbox" id="ug"><label for="ug">Plays</label>
 									</div>	
-									<button type="submit" onclick="SubmitChanges()" class="button half primary">Submit Changes</button>		
-									<button type="submit" onclick="AddPlayer()" class="button half primary">Add Player</button>		
+									<button type="button" onclick="SubmitChanges()" class="button half primary">Submit Changes</button>		
+									<button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button>		
 							<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
 						</div>
 						<footer>

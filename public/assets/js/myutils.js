@@ -30,9 +30,43 @@ async function SubmitChanges() {
   }
   return res.json(); // updated resource (if returned)  
 }
-function AddPlayer() {
+async function AddPlayer() {
   // Placeholder function to add a player
   console.log('Adding a new player...');
+  const data = {
+    first: document.getElementById('firstName').value,
+    last: document.getElementById('lastName').value,    
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    dob_month: document.getElementById('dobMonth').value,
+    acblNumber: document.getElementById('acblnumber').value,
+    ice_phone: document.getElementById('ice_phone').value,
+    ice_relation: document.getElementById('ice_relation').value,
+    m1: document.getElementById('m1').checked,
+    t1: document.getElementById('t1').checked,
+    f1: document.getElementById('f1').checked,
+    ug: document.getElementById('ug').checked
+  };      
+  // Placeholder function to submit changes
+  console.log('Adding player...');
+  const res = await fetch(`/api/playerdata`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Add player failed: ${res.status} ${err}`);
+  }
+
+  createPlayerTable(); // refresh the table display
+
+  const el = document.getElementById('listofplayers');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.setAttribute('tabindex','-1');
+  el.focus();
+
+  return res.json(); // updated resource (if returned) 
 } 
 
 async function PopulateFormForEdit(playerId) {
@@ -58,6 +92,13 @@ async function PopulateFormForEdit(playerId) {
     document.getElementById('t1').checked = result[0].t1 || false;
     document.getElementById('f1').checked = result[0].f1 || false;
     document.getElementById('ug').checked = result[0].ug || false;
+
+    // Focus on the first name field for convenience
+    const el = document.getElementById('addoreditplayer');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.setAttribute('tabindex','-1');
+    el.focus();
+
   } catch (err) {
     console.error(`Error populating form for player:${playerId}`, err);
   }   
@@ -104,11 +145,11 @@ async function createPlayerTable() {
       //add a button for editing
       const tdEdit = document.createElement('td');
       const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'button small';
       button.textContent = 'Edit';
       button.addEventListener('click', () => {
-        alert(`Edit player with ID: ${row.id}`);
         PopulateFormForEdit(row.id);
-        alert('Now transfer focus to the form for editing.');
       });
       tdEdit.appendChild(button);
       tr.appendChild(tdEdit);
@@ -116,11 +157,11 @@ async function createPlayerTable() {
       //add a button for deleting
       const tdDel = document.createElement('td');
       const buttonDel = document.createElement('button');
+      buttonDel.type = 'button';
+      buttonDel.className = 'button small';
       buttonDel.textContent = 'Delete';
       buttonDel.addEventListener('click', () => {
-        alert(`Delete player with ID: ${row.id}`);
         DeletePlayer(row.id);
-        alert('Now populate the table again.');
       });
       tdDel.appendChild(buttonDel);
       tr.appendChild(tdDel);
