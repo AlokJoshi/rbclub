@@ -1,11 +1,11 @@
 const pg_1 = require("pg");
 // Configuration for your local PostgreSQL instance
 const pool = new pg_1.Pool({
-    user: 'postgres', // Replace with your PG username
-    host: '136.115.40.106', // Google cloud SQL IP address
-    database: 'postgres', // Replace with your database name
-    password: 'G80#ssPK', // Replace with your PG password
-    port: 5432, //PG port specified in cloud SQL
+    user: process.env.PG_USER, // Replace with your PG username
+    host: process.env.PG_HOST, // Google cloud SQL IP address
+    database: process.env.PG_DATABASE, // Replace with your database name
+  password: 'G80#ssPK', // Replace with your PG password
+    port: Number(process.env.PG_PORT) || 5432, //PG port specified in cloud SQL
     //myipaddress is 99.151.24.46   // Default PG port
 });
 // Function to fetch data from a table

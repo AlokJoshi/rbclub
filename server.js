@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;  
@@ -9,7 +10,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const { Pool } = require('pg');
-//const { greet,createPlayerTable } = require('./utils.js');
 
 
 app.get('/', (req, res) => {
@@ -19,11 +19,11 @@ app.get('/', (req, res) => {
 app.get('/api/playerdata', async (req, res) => {
     try {
         const pool = new Pool({
-            user: 'postgres',
-            host: '136.115.40.106',
-            database: 'postgres',
-            password: 'G80#ssPK',
-            port: 5432
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432
         });
         const client = await pool.connect();
         const result = await client.query('SELECT id,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player;');
@@ -38,11 +38,11 @@ app.get('/api/playerdata/:id', async (req, res) => {
     const playerId = req.params.id;
     try {
         const pool = new Pool({
-            user: 'postgres',
-            host: '136.115.40.106',
-            database: 'postgres',
-            password: 'G80#ssPK',
-            port: 5432
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432
         });
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM player where id = $1;', [playerId]);
@@ -60,11 +60,11 @@ app.post('/api/playerdata', async (req, res) => {
     console.log('Adding new player (playerdata):', data);
     try {
         const pool = new Pool({
-            user: 'postgres',
-            host: '136.115.40.106',
-            database: 'postgres',
-            password: 'G80#ssPK',
-            port: 5432
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432
         });
         const client = await pool.connect();
         const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;', [
@@ -94,11 +94,11 @@ app.post('/api/playerdata', async (req, res) => {
 //     console.log('Adding new player:', data);
 //     try {
 //         const pool = new Pool({
-//             user: 'postgres',
-//             host: '136.115.40.106',
-//             database: 'postgres',
-//             password: 'G80#ssPK',
-//             port: 5432
+//             user: process.env.PG_USER,
+//             host: process.env.PG_HOST,
+//             database: process.env.PG_DATABASE,
+//             password: process.env.PG_PASSWORD,
+//             port: Number(process.env.PG_PORT) || 5432
 //         });
 //         const client = await pool.connect();
 //         const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;', [
@@ -129,11 +129,11 @@ app.put('/api/playerdata/:id', async (req, res) => {
     console.log('Updating player:', playerId, data);
     try {
         const pool = new Pool({
-            user: 'postgres',
-            host: '136.115.40.106',
-            database: 'postgres',
-            password: 'G80#ssPK',
-            port: 5432
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432
         });
         const client = await pool.connect();
         const result = await client.query('UPDATE player SET first=$1, last=$2, email=$3, phone=$4, dob_month=$5, acblNumber=$6, ice_phone=$7, ice_relation=$8, m1=$9, t1=$10, f1=$11, ug=$12 WHERE id = $13 RETURNING *;', [
@@ -162,11 +162,11 @@ app.delete('/api/playerdata/:id', async (req, res) => {
     const playerId = req.params.id;
     try {
         const pool = new Pool({
-            user: 'postgres',
-            host: '136.115.40.106',
-            database: 'postgres',
-            password: 'G80#ssPK',
-            port: 5432
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432
         });
         const client = await pool.connect();
         const result = await client.query('DELETE FROM player WHERE id = $1 RETURNING *;', [playerId]);
