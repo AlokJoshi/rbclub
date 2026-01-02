@@ -2808,6 +2808,8 @@ form .button {
 	table {
 		margin: 0 0 2rem 0;
 		width: 100%;
+		max-height: 80vh;
+		scroll-behavior: auto;
 	}
 
 		table tbody tr {

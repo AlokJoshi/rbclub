@@ -52,3 +52,4 @@ uploads/
 # Keep an example env file in the repo
 !.env.example
 
+test-pg.js
