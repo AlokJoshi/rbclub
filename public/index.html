@@ -96,6 +96,14 @@
 										<label for="iceRelation">ICE Relation</label>
 										<input type="text" name="iceRelation" id="ice_relation" placeholder="ICE Relation" />	
 									</div>			
+									<div class="field half">
+										<label for="playerImageInput">Player Photo</label>
+										<input type="file" id="playerImageInput" accept="image/*">
+										<input type="hidden" id="playerImageData" name="playerImageData" value="">
+										<div class="imagePreview">
+											<img id="playerImagePreview" src="" alt="Player photo preview" style="max-width:120px; max-height:120px; display:none; border:1px solid #ccc; padding:4px;">
+										</div>
+									</div>
 									<div class="field quarter">
 										<label for="m1">Monday</label>
 										<input type="checkbox" id="m1"><label for="m1">Plays</label>

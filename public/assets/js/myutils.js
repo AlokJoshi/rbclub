@@ -39,26 +39,28 @@ async function showAttendance(day) {
 
 async function SubmitChanges() {
   const playerId = document.getElementById('playerId').value;
-  const data = {
-    first: document.getElementById('firstName').value,
-    last: document.getElementById('lastName').value,
-    email: document.getElementById('email').value,
-    phone: document.getElementById('phone').value,
-    dob_month: document.getElementById('dobMonth').value,
-    acblNumber: document.getElementById('acblnumber').value,
-    ice_phone: document.getElementById('ice_phone').value,
-    ice_relation: document.getElementById('ice_relation').value,
-    m1: document.getElementById('m1').checked,
-    t1: document.getElementById('t1').checked,
-    f1: document.getElementById('f1').checked,
-    ug: document.getElementById('ug').checked
-  };
-  // Placeholder function to submit changes
-  console.log('Submitting changes...');
+  // Build FormData for multipart upload (includes file if selected)
+  const form = new FormData();
+  form.append('first', document.getElementById('firstName').value);
+  form.append('last', document.getElementById('lastName').value);
+  form.append('email', document.getElementById('email').value);
+  form.append('phone', document.getElementById('phone').value);
+  form.append('dob_month', document.getElementById('dobMonth').value);
+  form.append('acblNumber', document.getElementById('acblnumber').value);
+  form.append('ice_phone', document.getElementById('ice_phone').value);
+  form.append('ice_relation', document.getElementById('ice_relation').value);
+  if (document.getElementById('m1').checked) form.append('m1', 'on');
+  if (document.getElementById('t1').checked) form.append('t1', 'on');
+  if (document.getElementById('f1').checked) form.append('f1', 'on');
+  if (document.getElementById('ug').checked) form.append('ug', 'on');
+  const fileInput = document.getElementById('playerImageInput');
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    form.append('playerImage', fileInput.files[0]);
+  }
+  console.log('Submitting changes (multipart)...');
   const res = await fetch(`/api/playerdata/${playerId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: form
   });
   if (!res.ok) {
     const err = await res.text();
@@ -77,26 +79,28 @@ async function SubmitChanges() {
 async function AddPlayer() {
   // Placeholder function to add a player
   console.log('Adding a new player...');
-  const data = {
-    first: document.getElementById('firstName').value,
-    last: document.getElementById('lastName').value,
-    email: document.getElementById('email').value,
-    phone: document.getElementById('phone').value,
-    dob_month: document.getElementById('dobMonth').value== ''?0:document.getElementById('dobMonth').value,
-    acblNumber: document.getElementById('acblnumber').value,
-    ice_phone: document.getElementById('ice_phone').value,
-    ice_relation: document.getElementById('ice_relation').value,
-    m1: document.getElementById('m1').checked,
-    t1: document.getElementById('t1').checked,
-    f1: document.getElementById('f1').checked,
-    ug: document.getElementById('ug').checked
-  };
-  // Placeholder function to submit changes
-  console.log('Adding player...');
+  // Build FormData for multipart upload (includes file if selected)
+  const form = new FormData();
+  form.append('first', document.getElementById('firstName').value);
+  form.append('last', document.getElementById('lastName').value);
+  form.append('email', document.getElementById('email').value);
+  form.append('phone', document.getElementById('phone').value);
+  form.append('dob_month', document.getElementById('dobMonth').value== ''?0:document.getElementById('dobMonth').value);
+  form.append('acblNumber', document.getElementById('acblnumber').value);
+  form.append('ice_phone', document.getElementById('ice_phone').value);
+  form.append('ice_relation', document.getElementById('ice_relation').value);
+  if (document.getElementById('m1').checked) form.append('m1', 'on');
+  if (document.getElementById('t1').checked) form.append('t1', 'on');
+  if (document.getElementById('f1').checked) form.append('f1', 'on');
+  if (document.getElementById('ug').checked) form.append('ug', 'on');
+  const fileInput2 = document.getElementById('playerImageInput');
+  if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
+    form.append('playerImage', fileInput2.files[0]);
+  }
+  console.log('Adding player (multipart)...');
   const res = await fetch(`/api/playerdata`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: form
   });
   if (!res.ok) {
     const err = await res.text();
@@ -140,6 +144,18 @@ async function PopulateFormForEdit(playerId) {
     document.getElementById('t1').checked = result[0].t1 || false;
     document.getElementById('f1').checked = result[0].f1 || false;
     document.getElementById('ug').checked = result[0].ug || false;
+
+    // populate image preview if available (supports either image_data or image_path)
+    const preview = document.getElementById('playerImagePreview');
+    const hidden = document.getElementById('playerImageData');
+    const src = result[0].image_data || result[0].image_path || '';
+    if (src) {
+      if (preview) { preview.src = src; preview.style.display = 'inline-block'; }
+      if (hidden) hidden.value = src;
+    } else {
+      if (preview) { preview.src = ''; preview.style.display = 'none'; }
+      if (hidden) hidden.value = '';
+    }
 
     // Focus on the first name field for convenience
     const el = document.getElementById('addoreditplayer');
@@ -246,6 +262,38 @@ async function createPlayerTable() {
 }
 
 document.addEventListener('DOMContentLoaded', createPlayerTable);
+
+// Image input handling: read selected image as DataURL and store in hidden input for submission
+function setupImageInput() {
+  const fileInput = document.getElementById('playerImageInput');
+  const preview = document.getElementById('playerImagePreview');
+  const hidden = document.getElementById('playerImageData');
+  if (!fileInput) return;
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) {
+      if (preview) { preview.src = ''; preview.style.display = 'none'; }
+      if (hidden) hidden.value = '';
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      fileInput.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const dataUrl = ev.target.result;
+      if (preview) { preview.src = dataUrl; preview.style.display = 'inline-block'; }
+      if (hidden) hidden.value = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupImageInput();
+});
 
 /**
  * Toggle visibility of a column by zero-based index for a given table selector.

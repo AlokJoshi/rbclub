@@ -4,13 +4,42 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;  
 
+const { S3Client,ListBucketsCommand } = require('@aws-sdk/client-s3');
+
+const s3 = new S3Client({
+  endpoint: "https://sfo3.digitaloceanspaces.com", // Replace with your space's region
+  forcePathStyle: false, // Set to true if required by some third-party libraries
+  region: "us-east-1", // AWS SDK requires a valid region string, but it's not used by DO
+  credentials: {
+    accessKeyId: process.env.SPACES_ACCESS_KEY,
+    secretAccessKey: process.env.SPACES_SECRET_KEY
+  }
+});
+
+;(async () => {
+    try {
+        const buckets = await s3.send(new ListBucketsCommand({}));
+        console.log("Buckets:", buckets.Buckets);
+    } catch (err) {
+        console.error('Error listing S3 buckets:', err);
+    }
+})();
+
 // console.log('PG host/user/db:', process.env.PG_HOST, process.env.PG_USER, process.env.PG_DATABASE);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Parse JSON and URL-encoded request bodies so req.body is populated
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// increase limits to allow larger multipart/form-data handling if necessary
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// multer for multipart/form-data (file uploads)
+const multer = require('multer');
+const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
 const { Pool } = require('pg');
 
@@ -87,13 +116,14 @@ app.get('/api/attendance/:day', async (req, res) => {
 }); 
 
 // POST route for creating a new player (accepts JSON or urlencoded)
-app.post('/api/playerdata', async (req, res) => {
+// Accept multipart/form-data with optional file field 'playerImage'
+app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
     const data = req.body;
     const alreadyExists = await playerExists(data.first, data.last);
     if (alreadyExists) {
         return res.status(400).json({ error: 'Player with the same first and last name already exists' });
     }
-    console.log('Adding new player (playerdata):', data);
+    console.log('Adding new player (playerdata):', { body: data, file: req.file && req.file.filename });
     try {
         const pool = new Pool({
             user: process.env.PG_USER,
@@ -118,6 +148,18 @@ app.post('/api/playerdata', async (req, res) => {
             (data.f1===true||data.f1==='true'||data.f1==='on'),
             (data.ug===true||data.ug==='true'||data.ug==='on')
         ]);
+
+        // If a file was uploaded, try to update the row with an image_path.
+        if (req.file) {
+            const imagePath = `/uploads/${req.file.filename}`;
+            try {
+                await client.query('UPDATE player SET image_path = $1 WHERE id = $2;', [imagePath, result.rows[0].id]);
+                result.rows[0].image_path = imagePath;
+            } catch (e) {
+                console.warn('Could not persist image_path to DB (column may not exist):', e.message);
+            }
+        }
+
         client.release();
         res.json(result.rows[0]);
     } catch (err) {
@@ -126,10 +168,11 @@ app.post('/api/playerdata', async (req, res) => {
     }
 });
 
-app.put('/api/playerdata/:id', async (req, res) => {
+// Accept multipart/form-data with optional file field 'playerImage' for updates
+app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) => {
     const playerId = req.params.id;
     const data = req.body;
-    console.log('Updating player:', playerId, data);
+    console.log('Updating player:', playerId, { body: data, file: req.file && req.file.filename });
     try {
         const pool = new Pool({
             user: process.env.PG_USER,
@@ -155,6 +198,18 @@ app.put('/api/playerdata/:id', async (req, res) => {
             (data.ug===true||data.ug==='true'||data.ug==='on'),
             playerId
         ]);
+
+        // If a file was uploaded, try to update the row with an image_path.
+        if (req.file) {
+            const imagePath = `/uploads/${req.file.filename}`;
+            try {
+                await client.query('UPDATE player SET image_path = $1 WHERE id = $2;', [imagePath, playerId]);
+                result.rows[0].image_path = imagePath;
+            } catch (e) {
+                console.warn('Could not persist image_path to DB (column may not exist):', e.message);
+            }
+        }
+
         client.release();
         res.json(result.rows[0]);
     } catch (err) {
