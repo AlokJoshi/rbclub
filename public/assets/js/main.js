@@ -212,7 +212,7 @@ window.onload = function() {
     import('./myutils.js').then(module => {
       console.log('myutils module loaded.');
 			console.log(greet('browser'));
-			createPlayerTable()
+			// createPlayerTable()
 			//here we make an api call to get the player data and populate the table
     }); 
 };

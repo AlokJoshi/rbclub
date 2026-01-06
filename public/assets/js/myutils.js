@@ -187,16 +187,18 @@ async function DeletePlayer(playerId) {
 async function createPlayerTable() {
   try {
     const playerid_index = 0; // zero-based index of ID column
-    const dob_month_index = 5; // zero-based index of DOB_Month column
-    const email_index = 3; // zero-based index of email column
-    const ice_phone_index = 6; // zero-based index of ice_phone column
-    const ice_relation_index = 7; // zero-based index of ice_relation column
+    const image_index = 1; // zero-based index of image column
+    const dob_month_index = 6; // zero-based index of DOB_Month column
+    const email_index = 4; // zero-based index of email column
+    const ice_phone_index = 7; // zero-based index of ice_phone column
+    const ice_relation_index = 8; // zero-based index of ice_relation column
 
     const show_playerid = false
     const show_dob_month = document.getElementById('DOB_Month').checked;
     const show_email = document.getElementById('Email').checked;
     const show_ice_phone = document.getElementById('Ice_phone').checked;
     const show_ice_relation = document.getElementById('ICE_Relation').checked;
+
     var col_index = 0;
     const res = await fetch('/api/playerdata');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -212,6 +214,19 @@ async function createPlayerTable() {
         const td = document.createElement('td');
         if (playerid_index === col_index && !show_playerid) {
           td.classList.add('col-hidden');
+        }
+        if (image_index === col_index) {
+          const img = document.createElement('img');
+          if (val===null || val==='') {
+            img.src = 'https://placehold.co/60x40/png';
+            img.alt = 'No Image';
+          } else {
+            img.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${val}`;
+            img.alt = 'Player Image';
+            img.width = 60;
+            img.height = 40;
+          }
+          td.appendChild(img);
         }
         if (dob_month_index === col_index && !show_dob_month) {
           td.classList.add('col-hidden');

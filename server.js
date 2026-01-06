@@ -2,29 +2,10 @@ const express = require('express');
 require('dotenv').config({ quiet: true });
 const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3000;  
+const PORT = process.env.PORT || 3000;
+const {test,upload} = require('./helper');
 
-const { S3Client,ListBucketsCommand } = require('@aws-sdk/client-s3');
-
-const s3 = new S3Client({
-  endpoint: "https://sfo3.digitaloceanspaces.com", // Replace with your space's region
-  forcePathStyle: false, // Set to true if required by some third-party libraries
-  region: "us-east-1", // AWS SDK requires a valid region string, but it's not used by DO
-  credentials: {
-    accessKeyId: process.env.SPACES_ACCESS_KEY,
-    secretAccessKey: process.env.SPACES_SECRET_KEY
-  }
-});
-
-;(async () => {
-    try {
-        const buckets = await s3.send(new ListBucketsCommand({}));
-        console.log("Buckets:", buckets.Buckets);
-    } catch (err) {
-        console.error('Error listing S3 buckets:', err);
-    }
-})();
-
+test();
 // console.log('PG host/user/db:', process.env.PG_HOST, process.env.PG_USER, process.env.PG_DATABASE);
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -38,15 +19,22 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // multer for multipart/form-data (file uploads)
-const multer = require('multer');
-const upload = multer({ dest: path.join(__dirname, 'uploads') });
+// const multerS3 = require('multer-s3');
+// const multer = require('multer');
+// const AWS = require('aws-sdk');
+// const multer = require('multer');
+// const multerS3 = require('multer-s3');
+
+
+// Initialize multer with the storage engine
+//const upload = multer({ storage });
 
 const { Pool } = require('pg');
 
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-}); 
+});
 
 app.get('/api/playerdata', async (req, res) => {
     try {
@@ -59,14 +47,14 @@ app.get('/api/playerdata', async (req, res) => {
             ssl: { rejectUnauthorized: false } // try if cloud requires SSL
         });
         const client = await pool.connect();
-        const result = await client.query('SELECT id,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player;');
+        const result = await client.query('SELECT id,image_path,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player;');
         client.release();
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching player data:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
-}); 
+});
 app.get('/api/playerdata/:id', async (req, res) => {
     const playerId = req.params.id;
     try {
@@ -86,16 +74,11 @@ app.get('/api/playerdata/:id', async (req, res) => {
         console.error('Error fetching player data:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
-}); 
+});
 
 app.get('/api/attendance/:day', async (req, res) => {
     const day = req.params.day;
-    const q = {
-        'm1':'SELECT first, last, phone, email FROM player where m1 order by first;',
-        't1':'SELECT first, last, phone, email FROM player where t1 order by first;',
-        'f1':'SELECT first, last, phone, email FROM player where f1 order by first;',    
-        'ug':'SELECT first, last, phone, email FROM player where ug order by first;'
-    };
+    const query =`SELECT first, last, phone, email FROM player where ${day} order by first;`
     try {
         const pool = new Pool({
             user: process.env.PG_USER,
@@ -106,14 +89,14 @@ app.get('/api/attendance/:day', async (req, res) => {
             ssl: { rejectUnauthorized: false } // try if cloud requires SSL
         });
         const client = await pool.connect();
-        const result = await client.query(q[day]);
+        const result = await client.query(query);
         client.release();
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching attendance data:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
-}); 
+});
 
 // POST route for creating a new player (accepts JSON or urlencoded)
 // Accept multipart/form-data with optional file field 'playerImage'
@@ -143,15 +126,16 @@ app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
             data.acblNumber,
             data.ice_phone,
             data.ice_relation,
-            (data.m1===true||data.m1==='true'||data.m1==='on'),
-            (data.t1===true||data.t1==='true'||data.t1==='on'),
-            (data.f1===true||data.f1==='true'||data.f1==='on'),
-            (data.ug===true||data.ug==='true'||data.ug==='on')
+            (data.m1 === true || data.m1 === 'true' || data.m1 === 'on'),
+            (data.t1 === true || data.t1 === 'true' || data.t1 === 'on'),
+            (data.f1 === true || data.f1 === 'true' || data.f1 === 'on'),
+            (data.ug === true || data.ug === 'true' || data.ug === 'on')
         ]);
 
         // If a file was uploaded, try to update the row with an image_path.
         if (req.file) {
-            const imagePath = `/uploads/${req.file.filename}`;
+            console.log('New file uploaded:', req.newFileName);
+            const imagePath = req.newFileName;
             try {
                 await client.query('UPDATE player SET image_path = $1 WHERE id = $2;', [imagePath, result.rows[0].id]);
                 result.rows[0].image_path = imagePath;
@@ -192,10 +176,10 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
             data.acblNumber,
             data.ice_phone,
             data.ice_relation,
-            (data.m1===true||data.m1==='true'||data.m1==='on'),
-            (data.t1===true||data.t1==='true'||data.t1==='on'),
-            (data.f1===true||data.f1==='true'||data.f1==='on'),
-            (data.ug===true||data.ug==='true'||data.ug==='on'),
+            (data.m1 === true || data.m1 === 'true' || data.m1 === 'on'),
+            (data.t1 === true || data.t1 === 'true' || data.t1 === 'on'),
+            (data.f1 === true || data.f1 === 'true' || data.f1 === 'on'),
+            (data.ug === true || data.ug === 'true' || data.ug === 'on'),
             playerId
         ]);
 
@@ -216,7 +200,7 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
         console.error('Error updating player:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
-});     
+});
 app.delete('/api/playerdata/:id', async (req, res) => {
     const playerId = req.params.id;
     try {
@@ -239,14 +223,14 @@ app.delete('/api/playerdata/:id', async (req, res) => {
         console.error('Error deleting player:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
-}); 
+});
 
 async function playerExists(first, last) {
     try {
-        const pool = new Pool({     
+        const pool = new Pool({
             user: process.env.PG_USER,
             host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,  
+            database: process.env.PG_DATABASE,
             password: process.env.PG_PASSWORD,
             port: Number(process.env.PG_PORT) || 5432,
             ssl: { rejectUnauthorized: false } // try if cloud requires SSL
