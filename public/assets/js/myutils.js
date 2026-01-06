@@ -206,7 +206,9 @@ async function createPlayerTable() {
     const tbody = document.getElementById('mainTableBody');
     if (!tbody) return console.warn('Table body #mainTableBody not found');
     tbody.innerHTML = '';
+    var row_index = 0;
     rows.forEach(row => {
+      row_index++;
       const tr = document.createElement('tr');
       // append cells in the order the server returned them
       col_index = 0;
@@ -214,19 +216,6 @@ async function createPlayerTable() {
         const td = document.createElement('td');
         if (playerid_index === col_index && !show_playerid) {
           td.classList.add('col-hidden');
-        }
-        if (image_index === col_index) {
-          const img = document.createElement('img');
-          if (val===null || val==='') {
-            img.src = 'https://placehold.co/60x40/png';
-            img.alt = 'No Image';
-          } else {
-            img.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${val}`;
-            img.alt = 'Player Image';
-            img.width = 60;
-            img.height = 40;
-          }
-          td.appendChild(img);
         }
         if (dob_month_index === col_index && !show_dob_month) {
           td.classList.add('col-hidden');
@@ -240,7 +229,21 @@ async function createPlayerTable() {
         if (ice_relation_index === col_index && !show_ice_relation) {
           td.classList.add('col-hidden');
         }
-        td.textContent = val == null ? '' : val;
+        if (image_index === col_index) {
+          const img = document.createElement('img');
+          if (val===null || val==='') {
+            img.src = `https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=${row_index}`;
+            img.alt = 'No Image';
+          } else {
+            img.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${val}`;
+            img.alt = 'Player Image';
+            img.width = 40;
+            img.height = 40;
+          }
+          td.appendChild(img);
+        }else { 
+          td.textContent = val == null ? '' : val;
+        }
         tr.appendChild(td);
         col_index++;
       });
