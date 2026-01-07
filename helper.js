@@ -26,8 +26,9 @@ const storage = multerS3({
     const ext=idx>0?file.originalname.substring(idx):'';
     const data=req.body;
     const folder = "playerimages/";
-    const filename=data.first.toLowerCase()+data.last.toLowerCase()+ext;
-    req.newFileName=folder+filename;
+    const uniqueSuffix = (new Date()).valueOf().toString();
+    const filename = data.first.toLowerCase()+data.last.toLowerCase()+'-'+uniqueSuffix+ext;
+    req.newFileName = folder+filename;
     cb(null,folder + filename);
     // cb(null, Date.now().toString() + '-' + file.originalname);
   },
@@ -38,29 +39,6 @@ const storage = multerS3({
 });
 
 const upload = multer({ storage })
-
-// ; (async () => {
-//     try {
-//         const buckets = await s3.send(new ListBucketsCommand({}));
-//         for (const bucket of buckets.Buckets) {
-//             if (bucket.Name === process.env.SPACES_BUCKET) {
-//                 console.log(`Found bucket: ${bucket.Name} (created on ${bucket.CreationDate})`);
-//                 const folders = await s3.send(new ListObjectsV2Command({ Bucket: bucket.Name, Prefix: '', Delimiter: '/' }));
-//                 const foldersList = folders.CommonPrefixes;
-//                 if (foldersList.length === 0) {
-//                     console.log("No folders found in bucket.");
-//                 } else {
-//                     foldersList.forEach(folder => {
-//                         console.log("Folder:", folder.Prefix);
-//                     });
-//                 }
-//             }
-//             console.log("Buckets:", buckets.Buckets);
-//         }
-//     } catch (err) {
-//         console.error('Error listing S3 buckets:', err);
-//     }
-// })();
 
 module.exports = {
     test,

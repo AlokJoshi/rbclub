@@ -54,17 +54,28 @@
 						</div> 
 					</section>
 
-				<!-- Section -->
+					<!-- Section -->
 					<section id="addoreditplayer">
 						<header>
 							<h2>Add or Edit Players</h2>
 						</header>
 						<div class="content">
 							
-							<!-- <h3>Add or Edit Players form shown here</h3> -->
+							<h3>Add or Edit Players</h3>
 							<form id="addEditPlayerForm">
 								<input type="hidden" id="playerId" name="playerId" value="">
 								<div class="fields">
+									<div class="field half">
+										<img src="" width="160" height="160" id="playerImageDisplay" 
+										alt="Player Image" style="border:1px; border-radius:80px; solid #ccc; padding:4px;">
+									</div>
+									<div class="field half">
+										<input type="file" id="playerImageInput" accept="image/*">
+										<input type="hidden" id="playerImageData" name="playerImageData" value="">
+										<div class="imagePreview">
+											<img id="playerImagePreview" src="" alt="Player photo preview" style="max-width:120px; max-height:120px; border:1px solid #ccc; padding:4px;">
+										</div>
+									</div>
 									<div class="field half">
 										<label for="firstName">First Name</label>
 										<input type="text" name="firstName" id="firstName" placeholder="First Name" required />
@@ -97,14 +108,6 @@
 										<label for="iceRelation">ICE Relation</label>
 										<input type="text" name="iceRelation" id="ice_relation" placeholder="ICE Relation" />	
 									</div>			
-									<div class="field half">
-										<label for="playerImageInput">Player Photo</label>
-										<input type="file" id="playerImageInput" accept="image/*">
-										<input type="hidden" id="playerImageData" name="playerImageData" value="">
-										<div class="imagePreview">
-											<img id="playerImagePreview" src="" alt="Player photo preview" style="max-width:120px; max-height:120px; display:none; border:1px solid #ccc; padding:4px;">
-										</div>
-									</div>
 									<div class="field quarter">
 										<label for="m1">Monday</label>
 										<input type="checkbox" id="m1"><label for="m1">Plays</label>

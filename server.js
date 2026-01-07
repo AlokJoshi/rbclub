@@ -157,6 +157,7 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
     const playerId = req.params.id;
     const data = req.body;
     console.log('Updating player:', playerId, { body: data, file: req.file && req.file.filename });
+    const filename = req.newFileName
     try {
         const pool = new Pool({
             user: process.env.PG_USER,
@@ -167,12 +168,12 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
             ssl: { rejectUnauthorized: false } // try if cloud requires SSL
         });
         const client = await pool.connect();
-        const result = await client.query('UPDATE player SET first=$1, last=$2, email=$3, phone=$4, dob_month=$5, acblNumber=$6, ice_phone=$7, ice_relation=$8, m1=$9, t1=$10, f1=$11, ug=$12 WHERE id = $13 RETURNING *;', [
+        const result = await client.query('UPDATE player SET first=$1, last=$2, email=$3, phone=$4, dob_month=$5, acblNumber=$6, ice_phone=$7, ice_relation=$8, m1=$9, t1=$10, f1=$11, ug=$12, image_path=$13 WHERE id = $14 RETURNING *;', [
             data.first,
             data.last,
             data.email,
             data.phone,
-            data.dob_month,
+            data.dob_month==''||data.dob_month===null?0:data.dob_month,
             data.acblNumber,
             data.ice_phone,
             data.ice_relation,
@@ -180,12 +181,13 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
             (data.t1 === true || data.t1 === 'true' || data.t1 === 'on'),
             (data.f1 === true || data.f1 === 'true' || data.f1 === 'on'),
             (data.ug === true || data.ug === 'true' || data.ug === 'on'),
+            filename,
             playerId
         ]);
 
         // If a file was uploaded, try to update the row with an image_path.
         if (req.file) {
-            const imagePath = `/uploads/${req.file.filename}`;
+            const imagePath = req.newFileName;
             try {
                 await client.query('UPDATE player SET image_path = $1 WHERE id = $2;', [imagePath, playerId]);
                 result.rows[0].image_path = imagePath;

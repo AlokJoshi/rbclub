@@ -131,6 +131,8 @@ async function PopulateFormForEdit(playerId) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result[0]);
+    document.getElementById('playerImageDisplay').src = result[0].image_path===null ||result[0].image_path===''?'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1':`https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
+    // document.getElementById('playerImagePreview').src = result[0].image_path===null ||result[0].image_path===''?'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1':`https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
     document.getElementById('playerId').value = result[0].id || '';
     document.getElementById('firstName').value = result[0].first || '';
     document.getElementById('lastName').value = result[0].last || '';
@@ -240,6 +242,7 @@ async function createPlayerTable() {
             img.width = 40;
             img.height = 40;
           }
+          img.borderRadius = '20px';
           td.appendChild(img);
         }else { 
           td.textContent = val == null ? '' : val;

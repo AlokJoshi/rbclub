@@ -167,7 +167,7 @@ input, select, textarea {
 		/* changed from 1.0rem to 0.9 rem */
 		font-size: 0.9rem;
 		font-weight: 300;
-		letter-spacing: 0.0375em;
+		letter-spacing: 0.0075em;
 		line-height: 2;
 	}
 
@@ -2066,6 +2066,10 @@ form .button {
 				form > .fields > .field > :last-child {
 					margin-bottom: 0;
 				}
+				
+				form > .fields > .field.full {
+					width: calc(100% - 1rem);
+				}
 
 				form > .fields > .field.half {
 					width: calc(50% - 1rem);
@@ -2823,7 +2827,7 @@ form .button {
 			}
 
 		table td {
-			padding: 0.75rem 0.75rem;
+			padding: 0.25rem 0.25rem;
 		}
 
 		table th {
