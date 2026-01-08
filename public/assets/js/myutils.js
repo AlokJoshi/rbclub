@@ -37,6 +37,31 @@ async function showAttendance(day) {
   }
 }
 
+function ClearForm() {
+  document.getElementById('playerImageDisplay').src = '';
+  document.getElementById('playerImagePreview').src = '';
+  document.getElementById('playerId').value = '';
+  document.getElementById('firstName').value = '';    
+  document.getElementById('lastName').value = '';
+  document.getElementById('email').value = '';    
+  document.getElementById('phone').value = '';
+  document.getElementById('dobMonth').value = ''; 
+  document.getElementById('acblnumber').value = '';    
+  document.getElementById('ice_phone').value = '';    
+  document.getElementById('ice_relation').value = '';
+  document.getElementById('m1').checked = false;    
+  document.getElementById('t1').checked = false;    
+  document.getElementById('f1').checked = false;    
+  document.getElementById('ug').checked = false;    
+  document.getElementById('playerImageInput').value = '';
+  document.getElementById('playerImageData').value = '';  
+}
+
+function DisableSubmitButton(disable) {
+  const btn = document.getElementById('submitPlayerChangesButton');
+  if (btn) btn.disabled = disable;
+} 
+
 async function SubmitChanges() {
   const playerId = document.getElementById('playerId').value;
   // Build FormData for multipart upload (includes file if selected)
@@ -74,6 +99,9 @@ async function SubmitChanges() {
   el.setAttribute('tabindex', '-1');
   el.focus();
 
+  ClearForm();
+  DisableSubmitButton(true);
+  
   return res.json(); // updated resource (if returned)  
 }
 async function AddPlayer() {
@@ -178,11 +206,11 @@ async function DeletePlayer(playerId) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result.message);
+    alert(result.message);
     // Refresh the table after deletion
     await createPlayerTable();
   } catch (err) {
-    console.error('Error deleting player:', err);
+    alert('Error deleting player:', err);
   }
 }
 
@@ -242,7 +270,7 @@ async function createPlayerTable() {
             img.width = 40;
             img.height = 40;
           }
-          img.borderRadius = '20px';
+          img.borderRadius = 20;
           td.appendChild(img);
         }else { 
           td.textContent = val == null ? '' : val;
@@ -253,26 +281,33 @@ async function createPlayerTable() {
 
       //add a button for editing
       const tdEdit = document.createElement('td');
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'button small';
-      button.textContent = 'Edit';
-      button.addEventListener('click', () => {
+      const iEdit = document.createElement('i');
+      iEdit.className = 'fas fa-edit';
+      // const button = document.createElement('button');
+      // button.type = 'button';
+      // button.className = 'button small';
+      // button.textContent = 'Edit';
+      // button.addEventListener('click', () => {
+      //   PopulateFormForEdit(row.id);
+      // });
+      iEdit.addEventListener('click', () => {
         PopulateFormForEdit(row.id);
       });
-      tdEdit.appendChild(button);
+      // tdEdit.appendChild(button);
+      tdEdit.appendChild(iEdit);
       tr.appendChild(tdEdit);
 
       //add a button for deleting
       const tdDel = document.createElement('td');
-      const buttonDel = document.createElement('button');
-      buttonDel.type = 'button';
-      buttonDel.className = 'button small';
-      buttonDel.textContent = 'Delete';
-      buttonDel.addEventListener('click', () => {
-        DeletePlayer(row.id);
-      });
-      tdDel.appendChild(buttonDel);
+      // const buttonDel = document.createElement('button');
+      const iDelete = document.createElement('i');
+      iDelete.className = 'fas fa-trash';
+      iDelete.addEventListener('click', async () => {
+        if (window.prompt(`Type DELETE to confirm deletion of player :${row.first} ${row.last}`, '') === 'DELETE') {
+          await DeletePlayer(row.id);
+        }
+      }); 
+      tdDel.appendChild(iDelete);
       tr.appendChild(tdDel);
 
       tbody.appendChild(tr);
