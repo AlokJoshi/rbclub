@@ -1,6 +1,24 @@
 function greet(name) {
   return `Hello, ${name}!`;
 }
+async function login(){
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log(result);
+  } catch (err) {
+    console.error('API error:', err);
+  }
+}
 
 async function showAttendance(day) {
   try {
@@ -345,6 +363,7 @@ function setupImageInput() {
     };
     reader.readAsDataURL(file);
   });
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -363,6 +382,7 @@ function toggleColumn(tableSelector, colIndex) {
     if (cell) cell.classList.toggle('col-hidden');
   });
 }
+
 
 // Expose for use in console or other scripts
 window.toggleColumn = toggleColumn;

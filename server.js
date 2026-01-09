@@ -4,6 +4,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const {test,upload} = require('./helper');
+const {userExists,addUser,passwordMatches,changePassword,registeredUsers} = require('./credentials')
 
 test();
 // console.log('PG host/user/db:', process.env.PG_HOST, process.env.PG_USER, process.env.PG_DATABASE);
@@ -18,22 +19,66 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// multer for multipart/form-data (file uploads)
-// const multerS3 = require('multer-s3');
-// const multer = require('multer');
-// const AWS = require('aws-sdk');
-// const multer = require('multer');
-// const multerS3 = require('multer-s3');
-
-
-// Initialize multer with the storage engine
-//const upload = multer({ storage });
-
 const { Pool } = require('pg');
 
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    const userExistsFlag = await userExists(username);  
+    if (!userExistsFlag) {
+        return res.json({ valid: false, message: 'User does not exist' });
+    }   
+    const passwordValid = await passwordMatches(username, password);
+    if (!passwordValid) {
+        return res.json({ valid: false, message: 'Incorrect password' });
+    }
+    res.json({ valid: true, message: 'User validated successfully' });
+});
+
+app.post('/changepassword', async (req, res) => {
+    const { username, oldPassword, newPassword } = req.body;
+    const userExistsFlag = await userExists(username);
+    if (!userExistsFlag) {
+        return res.status(400).json({ success: false, message: 'User does not exist' });
+    }
+    const oldPasswordValid = await passwordMatches(username, oldPassword);
+    if (!oldPasswordValid) {
+        return res.status(400).json({ success: false, message: 'Old password is incorrect' });
+    }
+    const success = await changePassword(username, newPassword);
+    if (success) {
+        res.json({ success: true, message: 'Password changed successfully' });
+    } else {
+        res.status(500).json({ success: false, message: 'Failed to change password' });
+    }
+}); 
+
+
+
+app.get('/api/registeredusers', async (req, res) => {
+    const users = await registeredUsers();
+    res.json({ users });    
+});
+
+//add user route should be available only to superuser or admin in real application
+//this is because anyone can hit this endpoint and create users whereas
+//in this application, list of users are pre-defined (members of the bridge club)
+app.post('/adduser', async (req, res) => {
+    const { username, password } = req.body;
+    const userExistsFlag = await userExists(username);  
+    if (userExistsFlag) {
+        return res.status(400).json({ success: false, message: 'User already exists' });
+    }
+    const success = await addUser(username, password);
+    if (success) {
+        res.json({ success: true, message: 'User added successfully' });
+    } else {
+        res.status(500).json({ success: false, message: 'Failed to add user' });
+    }
 });
 
 app.get('/api/playerdata', async (req, res) => {

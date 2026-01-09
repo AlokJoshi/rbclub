@@ -1,167 +1,225 @@
 <!DOCTYPE HTML>
 
 <html>
-	<head>
-		<title>Riverside Bridge Club (Unit 537)</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<meta name="description" content="" />
-		<meta name="keywords" content="" />
-		<link rel="stylesheet" href="/assets/css/main.css" />
-	</head>
-	<body class="is-preload">
 
-		<!-- Wrapper -->
-			<div id="wrapper">
+<head>
+	<title>Riverside Bridge Club (Unit 537)</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<link rel="stylesheet" href="/assets/css/main.css" />
+</head>
 
-				<!-- Intro -->
-					<section class="intro">
-						<header>
-							<h1>Riverside Bridge Club (Unit 537)</h1>
-							<!-- <p>A free responsive site template designed by <a href="https://twitter.com/ajlkn">@ajlkn</a> / <a href="https://html5up.net">HTML5 UP</a></p> -->
-							<!-- <ul class="actions">
+<body class="is-preload">
+
+
+	<!-- Wrapper -->
+	<div id="wrapper">
+
+		<!-- Login form -->
+		<section class="credentials intro">
+			<div class="content">
+
+				<header>
+					<h1>Riverside Bridge Club</h1>
+					<h3>Enter your login credentials</h3>
+				</header>
+
+				<form action="">
+					<div class="fields">
+
+						<div class="field half">
+							<label for="username">
+								Username:
+							</label>
+							<input type="text" id="username" name="username" placeholder="Enter your Username" required>
+						</div>
+
+						<div class="field half">
+							<label for="password">
+								Password:
+							</label>
+							<input type="password" id="password" name="password" placeholder="Enter your Password" required>
+						</div>
+
+						<div class="field full wrap">
+							<button class="button full primary" type="button" onclick="login()">
+								Submit
+							</button>
+						</div>
+					</div>
+				</form>
+
+				<footer>
+					<h3>Not registered?</h3>
+					<p style="text-decoration: none;">
+							This site is only for members of the Riverside Bridge Club. If you are a member and do not have
+							login credentials, please contact one of the club officers.
+					</p>
+				</footer>
+			</div>
+		</section>
+
+		<!-- Intro -->
+		<section class="intro">
+			<header>
+				<h1>Riverside Bridge Club (Unit 537)</h1>
+				<!-- <p>A free responsive site template designed by <a href="https://twitter.com/ajlkn">@ajlkn</a> / <a href="https://html5up.net">HTML5 UP</a></p> -->
+				<!-- <ul class="actions">
 								<li><a href="#first" class="arrow scrolly"><span class="label">Next</span></a></li>
 							</ul> -->
-						</header>
-						<div class="content">
-							<h2 id="listofplayers">List of players</h2>
-							<h2>Display:</h2> 
-							<input type="checkbox" id="DOB_Month" onclick="toggleColumn('#playertable', 5);"><label for="DOB_Month">DOB(Month)</label>
-							<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 3);"><label for="Email">Email</label>
-							<input type="checkbox" id="Ice_phone" onclick="toggleColumn('#playertable', 6);"><label for="Ice_phone">ICE_Phone</label>
-							<input type="checkbox" id="ICE_Relation" onclick="toggleColumn('#playertable', 7);"><label for="ICE_Relation">ICE_Relation</label>
-							<!-- <span class="image fill" data-position="center"><img src="images/pic01.jpg" alt="" /></span> -->
-							<table id="playertable">
-								<thead>
-									<tr>
-										<th class="col-hidden">ID</th>
-										<th>Picture</th>
-										<th>First</th>
-										<th>Last</th>
-										<th class="col-hidden">Email</th>
-										<th>Phone</th>
-										<th class="col-hidden">DOB_Month</th>
-										<th class="col-hidden">ICE_Phone</th>
-										<th class="col-hidden">ICE_Relation</th>
-										<th>Edit?</th>
-										<th>Delete?</th>
-									</tr>
-								</thead>
-								<tbody id="mainTableBody">
-									
-								</tbody>
-							</table>	
-						</div> 
-					</section>
+			</header>
+			<div class="content">
+				<h2 id="listofplayers">List of players</h2>
+				<h2>Display:</h2>
+				<input type="checkbox" id="DOB_Month" onclick="toggleColumn('#playertable', 5);"><label
+					for="DOB_Month">DOB(Month)</label>
+				<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 3);"><label for="Email">Email</label>
+				<input type="checkbox" id="Ice_phone" onclick="toggleColumn('#playertable', 6);"><label
+					for="Ice_phone">ICE_Phone</label>
+				<input type="checkbox" id="ICE_Relation" onclick="toggleColumn('#playertable', 7);"><label
+					for="ICE_Relation">ICE_Relation</label>
+				<!-- <span class="image fill" data-position="center"><img src="images/pic01.jpg" alt="" /></span> -->
+				<table id="playertable">
+					<thead>
+						<tr>
+							<th class="col-hidden">ID</th>
+							<th>Picture</th>
+							<th>First</th>
+							<th>Last</th>
+							<th class="col-hidden">Email</th>
+							<th>Phone</th>
+							<th class="col-hidden">DOB_Month</th>
+							<th class="col-hidden">ICE_Phone</th>
+							<th class="col-hidden">ICE_Relation</th>
+							<th>Edit?</th>
+							<th>Delete?</th>
+						</tr>
+					</thead>
+					<tbody id="mainTableBody">
 
-					<!-- Section -->
-					<section id="addoreditplayer">
-						<header>
-							<h2>Add or Edit Players</h2>
-						</header>
-						<div class="content">
-							
-							<h3>Add or Edit Players</h3>
-							<form id="addEditPlayerForm">
-								<input type="hidden" id="playerId" name="playerId" value="">
-								<div class="fields">
-									<div class="field half">
-										<img src="" width="160" height="160" id="playerImageDisplay" 
-										alt="Player Image" style="border:1px; border-radius:80px; solid #ccc; padding:4px;">
-									</div>
-									<div class="field half">
-										<input type="file" id="playerImageInput" accept="image/*">
-										<input type="hidden" id="playerImageData" name="playerImageData" value="">
-										<div class="imagePreview">
-											<img id="playerImagePreview" src="" alt="Player photo preview" style="max-width:120px; max-height:120px; border:1px solid #ccc; padding:4px;">
-										</div>
-									</div>
-									<div class="field half">
-										<label for="firstName">First Name</label>
-										<input type="text" name="firstName" id="firstName" placeholder="First Name" required />
-									</div>
-									<div class="field half">
-										<label for="lastName">Last Name</label>
-										<input type="text" name="lastName" id="lastName" placeholder="Last Name" required />	
-									</div>
-									<div class="field half">
-										<label for="email">Email</label>
-										<input type="email" name="email" id="email" placeholder="Email" required />
-									</div>
-									<div class="field half">
-										<label for="phone">Phone</label>
-										<input type="text" name="phone" id="phone" placeholder="Phone" required />	
-									</div>
-									<div class="field quarter">
-										<label for="dobMonth">DOB (Month)</label>
-										<input type="text" name="dobMonth" id="dobMonth" placeholder="DOB (Month)" />	
-									</div>
-									<div class="field quarter">
-										<label for="acblnumber">ACBL#</label>
-										<input type="text" name="acblnumber" id="acblnumber" placeholder="ACBL#" />	
-									</div>
-									<div class="field quarter">
-										<label for="icePhone">ICE Phone</label>
-										<input type="text" name="icePhone" id="ice_phone" placeholder="ICE Phone" />
-									</div>
-									<div class="field quarter">
-										<label for="iceRelation">ICE Relation</label>
-										<input type="text" name="iceRelation" id="ice_relation" placeholder="ICE Relation" />	
-									</div>			
-									<div class="field quarter">
-										<label for="m1">Monday</label>
-										<input type="checkbox" id="m1"><label for="m1">Plays</label>
-									</div>			
-									<div class="field quarter">
-										<label  for="t1">Tuesday</label>
-										<input type="checkbox" id="t1"><label for="t1">Plays</label>
-									</div>			
-									<div class="field quarter">
-										<label for="f1">Friday</label>
-										<input type="checkbox" id="f1"><label for="f1">Plays</label>
-									</div>			
-									<div class="field quarter">
-										<label for="ug">Unit Game</label>
-										<input type="checkbox" id="ug"><label for="ug">Plays</label>
-									</div>	
-									<button id="submitPlayerChangesButton" disabled="true" type="button" onclick="SubmitChanges()" class="button half primary">Submit Changes</button>		
-									<button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button>		
-							<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Section -->
+		<section id="addoreditplayer">
+			<header>
+				<h2>Add or Edit Players</h2>
+			</header>
+			<div class="content">
+
+				<h3>Add or Edit Players</h3>
+				<form id="addEditPlayerForm">
+					<input type="hidden" id="playerId" name="playerId" value="">
+					<div class="fields">
+						<div class="field half">
+							<img src="" width="160" height="160" id="playerImageDisplay" alt="Player Image"
+								style="border:1px; border-radius:80px; solid #ccc; padding:4px;">
 						</div>
-						<footer>
-							<!-- <h3>Footer to the add or edit Players section</h3> -->
-						</footer>
-					</section>
-
-				<!-- Section -->
-					<section>
-						<header>
-							<h2>Expected Attendance</h2>
-						</header>
-						<div class="content">
-							<p><strong>Select Expected Attendanc For:</strong></p>
-							<input type="radio" id="m1_day" name="attendance" onclick="showAttendance('m1');"><label for="m1_day">Monday</label>
-							<input type="radio" id="t1_day" name="attendance" onclick="showAttendance('t1');"><label for="t1_day">Tuesday</label>
-							<input type="radio" id="f1_day" name="attendance" onclick="showAttendance('f1');"><label for="f1_day">Friday</label>
-							<input type="radio" id="ug_day" name="attendance" onclick="showAttendance('ug');"><label for="ug_day">Unit Game</label>							
-							<table id="attendanceTable">
-								<thead>
-									<tr>
-										<th>First</th>
-										<th>Last</th>
-										<th>Phone</th>
-										<th>Email</th>
-									</tr>
-								</thead>
-								<tbody id="attendanceTableBody">
-								<tr><td colspan="4">Select one of the days to view attendance</td></tr>	
-								</tbody>
+						<div class="field half">
+							<input type="file" id="playerImageInput" accept="image/*">
+							<input type="hidden" id="playerImageData" name="playerImageData" value="">
+							<div class="imagePreview">
+								<img id="playerImagePreview" src="" alt="Player photo preview"
+									style="max-width:120px; max-height:120px; border:1px solid #ccc; padding:4px;">
+							</div>
 						</div>
-					</section>
+						<div class="field half">
+							<label for="firstName">First Name</label>
+							<input type="text" name="firstName" id="firstName" placeholder="First Name" required />
+						</div>
+						<div class="field half">
+							<label for="lastName">Last Name</label>
+							<input type="text" name="lastName" id="lastName" placeholder="Last Name" required />
+						</div>
+						<div class="field half">
+							<label for="email">Email</label>
+							<input type="email" name="email" id="email" placeholder="Email" required />
+						</div>
+						<div class="field half">
+							<label for="phone">Phone</label>
+							<input type="text" name="phone" id="phone" placeholder="Phone" required />
+						</div>
+						<div class="field quarter">
+							<label for="dobMonth">DOB (Month)</label>
+							<input type="text" name="dobMonth" id="dobMonth" placeholder="DOB (Month)" />
+						</div>
+						<div class="field quarter">
+							<label for="acblnumber">ACBL#</label>
+							<input type="text" name="acblnumber" id="acblnumber" placeholder="ACBL#" />
+						</div>
+						<div class="field quarter">
+							<label for="icePhone">ICE Phone</label>
+							<input type="text" name="icePhone" id="ice_phone" placeholder="ICE Phone" />
+						</div>
+						<div class="field quarter">
+							<label for="iceRelation">ICE Relation</label>
+							<input type="text" name="iceRelation" id="ice_relation" placeholder="ICE Relation" />
+						</div>
+						<div class="field quarter">
+							<label for="m1">Monday</label>
+							<input type="checkbox" id="m1"><label for="m1">Plays</label>
+						</div>
+						<div class="field quarter">
+							<label for="t1">Tuesday</label>
+							<input type="checkbox" id="t1"><label for="t1">Plays</label>
+						</div>
+						<div class="field quarter">
+							<label for="f1">Friday</label>
+							<input type="checkbox" id="f1"><label for="f1">Plays</label>
+						</div>
+						<div class="field quarter">
+							<label for="ug">Unit Game</label>
+							<input type="checkbox" id="ug"><label for="ug">Plays</label>
+						</div>
+						<button id="submitPlayerChangesButton" disabled="true" type="button" onclick="SubmitChanges()"
+							class="button half primary">Submit Changes</button>
+						<button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button>
+						<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
+					</div>
+					<footer>
+						<!-- <h3>Footer to the add or edit Players section</h3> -->
+					</footer>
+		</section>
 
-				
-				<!-- Section -->
-					<!-- <section>
+		<!-- Section -->
+		<section>
+			<header>
+				<h2>Expected Attendance</h2>
+			</header>
+			<div class="content">
+				<p><strong>Select Expected Attendanc For:</strong></p>
+				<input type="radio" id="m1_day" name="attendance" onclick="showAttendance('m1');"><label
+					for="m1_day">Monday</label>
+				<input type="radio" id="t1_day" name="attendance" onclick="showAttendance('t1');"><label
+					for="t1_day">Tuesday</label>
+				<input type="radio" id="f1_day" name="attendance" onclick="showAttendance('f1');"><label
+					for="f1_day">Friday</label>
+				<input type="radio" id="ug_day" name="attendance" onclick="showAttendance('ug');"><label for="ug_day">Unit
+					Game</label>
+				<table id="attendanceTable">
+					<thead>
+						<tr>
+							<th>First</th>
+							<th>Last</th>
+							<th>Phone</th>
+							<th>Email</th>
+						</tr>
+					</thead>
+					<tbody id="attendanceTableBody">
+						<tr>
+							<td colspan="4">Select one of the days to view attendance</td>
+						</tr>
+					</tbody>
+			</div>
+		</section>
+
+
+		<!-- Section -->
+		<!-- <section>
 						<header>
 							<h2>Get in touch</h2>
 						</header>
@@ -213,19 +271,21 @@
 						</footer>
 					</section>
  -->
-				<!-- Copyright -->
-					<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.</div>
+		<!-- Copyright -->
+		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
+		</div>
 
-			</div>
+	</div>
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.scrolly.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/myutils.js"></script>
-			<script src="assets/js/main.js"></script>
+	<!-- Scripts -->
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/js/jquery.scrolly.min.js"></script>
+	<script src="assets/js/browser.min.js"></script>
+	<script src="assets/js/breakpoints.min.js"></script>
+	<script src="assets/js/util.js"></script>
+	<script src="assets/js/myutils.js"></script>
+	<script src="assets/js/main.js"></script>
 
-	</body>
+</body>
+
 </html>

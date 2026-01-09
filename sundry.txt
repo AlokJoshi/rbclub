@@ -211,3 +211,69 @@ module.exports = {
   setFolderToFunnyImages,
   setFolderToPuzzleImages
 }
+
+
+const AWS = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+
+// Configure AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+// Create the multer-s3 storage engine
+const storage = multerS3({
+  s3: s3,
+  bucket: 'your-bucket-name',
+  key: function (req, file, cb) {
+    cb(null, Date.now().toString() + '-' + file.originalname);
+  },
+  // Optional: Set ACL for public-read
+  acl: 'public-read',
+  // Optional: Set content type
+  contentType: multerS3.AUTO_CONTENT_TYPE
+});
+
+// Initialize multer with the storage engine
+const upload = multer({ storage: storage });
+
+
+
+https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/playerimages/alokjoshi.jpg
+
+when i point to the cdn endpoint provided by digitalocean for an image as the source of the image element, the image is not displayed. Why is that?
+
+There are several common reasons why an image might not display when using a DigitalOcean CDN endpoint in an <img> element. These issues typically stem from permissions, file properties, or caching. 
+Common Causes and Solutions
+Incorrect File Permissions/Access Control: By default, files in a DigitalOcean Space (object storage bucket) may not be publicly readable.
+Solution: In the DigitalOcean Control Panel, navigate to your Space's Settings and ensure the specific image or the entire bucket is set to be publicly readable. You can also use tools like s3cmd to manage access control lists (ACLs) and set the x-amz-acl: public-read header for the file(s).
+Incorrect Content-Type Header: The browser needs the correct MIME type (e.g., image/jpeg, image/png) to render the file as an image. If the Content-Type header is incorrect or set to a generic type (like application/octet-stream), the browser might try to download the file instead of displaying it.
+Solution: Check the metadata for the image in the DigitalOcean Control Panel and ensure the Content-Type header is set correctly. Most upload tools set this automatically, but if you're using a custom solution, you may need to specify this header during the upload process.
+Broken or Incorrect URL: A simple typo in the src attribute of your <img> tag, or in the image's filename on the server, will prevent it from loading.
+Solution: Copy the exact URL from your HTML and paste it directly into a new browser tab. If it doesn't load or prompts a download, the URL or permissions are likely the issue. Also, remember filenames are case-sensitive.
+CDN Caching Issues: If you uploaded a new image but the CDN is still serving an old, cached version (or no version at all if it was a cache "miss" and the origin was temporarily unavailable), the image won't appear.
+Solution: Go to your Space's Settings tab in the DigitalOcean Control Panel and use the Purge Cache option to force the CDN to fetch the fresh version from the origin server.
+HTTPS/Mixed Content Errors: If your website is served over HTTPS but the image URL uses HTTP, the browser's security policy will block the image from loading (a "mixed content" error).
+Solution: Ensure your CDN endpoint uses HTTPS in the <img> src attribute. DigitalOcean's default CDN endpoints include SSL certificates. 
+Troubleshooting Steps
+Inspect Element: Use your browser's developer tools (right-click the broken image and select "Inspect") and check the Console and Network tabs for specific errors, which often indicate the exact problem (e.g., 404 Not Found, 403 Forbidden, Mixed Content Error).
+Verify Direct Access: Open the image's full CDN URL in a new, private browser window to isolate the issue from your website's code and browser cache.
+Check CDN Status: Temporarily disable the CDN in the DigitalOcean Control Panel to see if the image loads directly from the origin URL. If it does, the issue is within the CDN configuration. 
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
+);
+
+INSERT INTO users (username, password)
+VALUES ('johndoe', crypt('johnspassword', gen_salt('bf')));
+
+SELECT (password = crypt('password-to-test', password)) AS password_match
+FROM users
+WHERE username = 'johndoe';
+
+
