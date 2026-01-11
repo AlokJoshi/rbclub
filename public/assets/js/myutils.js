@@ -1,11 +1,74 @@
+// const express = require("express");
+
 function greet(name) {
   return `Hello, ${name}!`;
 }
-async function login(){
+
+//Global variables
+let AdminLoggedIn = false;
+let UserLoggedIn = false;
+let UserLoggedInID = 0;
+
+function delay(durationInMilliseconds) {
+  return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
+}
+
+async function showCustomAlert(message) {
+  const alertBox = document.getElementById('customAlert');
+  const alertMessage = alertBox.querySelector('p');
+  alertMessage.textContent = message;
+  alertBox.style.display = 'flex';
+  await delay(3000); // Display for 3 seconds
+  // Fade out effect
+  alertBox.style.transition = 'opacity 0.5s';
+  alertBox.style.display = 'none';
+}
+
+async function createNonPlayerForm() {
+  try {
+    const res = await fetch('/mixofplayersandnonplayers', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log(result);  
+    const select = document.getElementById('nonplayersselect');
+    if (!select) return console.warn('Select element #nonplayersselect not found');
+    select.innerHTML = '';  
+    result.forEach(player => {
+      const option = document.createElement('option');
+      option.value = player.first;
+      option.textContent = `${player.first}`;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error('Error creating non-player form:', err);
+  }
+}
+async function isAdmin(userId) {
+  try {
+    const res = await fetch('/isadmin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    return result.isAdmin;
+  } catch (err) {
+    console.error('Error checking admin status:', err);
+    return false;
+  }
+}
+
+
+async function login() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
   try {
-    const res = await fetch('/api/login', {
+    const res = await fetch('/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -15,8 +78,42 @@ async function login(){
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result);
+    UserLoggedIn = true;
+    UserLoggedInID = result.userId;
+    AdminLoggedIn = result.isAdmin;
+    console.log(`Is Admin: ${AdminLoggedIn}`);
+    showCustomAlert('Successfully logged in ' + username + (AdminLoggedIn ? ' (Admin)' : ''));
   } catch (err) {
     console.error('API error:', err);
+    showCustomAlert('Login failed: ' + err.message);
+  }
+  modal.style.display = "none";
+}
+
+async function changePassword() {
+  const username = document.getElementById('changepasswordusername').value;
+  const currentpassword = document.getElementById('currentpassword').value;
+  const newpassword1 = document.getElementById('newpassword1').value;   
+  const newpassword2 = document.getElementById('newpassword2').value;   
+  if (newpassword1 !== newpassword2) {
+    showCustomAlert('New passwords do not match');
+    return;
+  }
+  try {
+    const res = await fetch('/changepassword', {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, currentpassword, newpassword1 })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log(result);
+    showCustomAlert('Password changed successfully');
+  } catch (err) {
+    console.error('API error:', err);
+    showCustomAlert('Password change failed: ' + err.message);
   }
 }
 
@@ -59,26 +156,26 @@ function ClearForm() {
   document.getElementById('playerImageDisplay').src = '';
   document.getElementById('playerImagePreview').src = '';
   document.getElementById('playerId').value = '';
-  document.getElementById('firstName').value = '';    
+  document.getElementById('firstName').value = '';
   document.getElementById('lastName').value = '';
-  document.getElementById('email').value = '';    
+  document.getElementById('email').value = '';
   document.getElementById('phone').value = '';
-  document.getElementById('dobMonth').value = ''; 
-  document.getElementById('acblnumber').value = '';    
-  document.getElementById('ice_phone').value = '';    
+  document.getElementById('dobMonth').value = '';
+  document.getElementById('acblnumber').value = '';
+  document.getElementById('ice_phone').value = '';
   document.getElementById('ice_relation').value = '';
-  document.getElementById('m1').checked = false;    
-  document.getElementById('t1').checked = false;    
-  document.getElementById('f1').checked = false;    
-  document.getElementById('ug').checked = false;    
+  document.getElementById('m1').checked = false;
+  document.getElementById('t1').checked = false;
+  document.getElementById('f1').checked = false;
+  document.getElementById('ug').checked = false;
   document.getElementById('playerImageInput').value = '';
-  document.getElementById('playerImageData').value = '';  
+  document.getElementById('playerImageData').value = '';
 }
 
 function DisableSubmitButton(disable) {
   const btn = document.getElementById('submitPlayerChangesButton');
   if (btn) btn.disabled = disable;
-} 
+}
 
 async function SubmitChanges() {
   const playerId = document.getElementById('playerId').value;
@@ -119,7 +216,7 @@ async function SubmitChanges() {
 
   ClearForm();
   DisableSubmitButton(true);
-  
+
   return res.json(); // updated resource (if returned)  
 }
 async function AddPlayer() {
@@ -131,7 +228,7 @@ async function AddPlayer() {
   form.append('last', document.getElementById('lastName').value);
   form.append('email', document.getElementById('email').value);
   form.append('phone', document.getElementById('phone').value);
-  form.append('dob_month', document.getElementById('dobMonth').value== ''?0:document.getElementById('dobMonth').value);
+  form.append('dob_month', document.getElementById('dobMonth').value == '' ? 0 : document.getElementById('dobMonth').value);
   form.append('acblNumber', document.getElementById('acblnumber').value);
   form.append('ice_phone', document.getElementById('ice_phone').value);
   form.append('ice_relation', document.getElementById('ice_relation').value);
@@ -151,7 +248,7 @@ async function AddPlayer() {
   if (!res.ok) {
     const err = await res.text();
     if (res.status === 400) {
-      alert('Player with the same first and last name already exists');
+      showCustomAlert('Player with the same first and last name already exists');
       return;
     }
     throw new Error(`Add player failed: ${res.status} ${err}`);
@@ -177,7 +274,7 @@ async function PopulateFormForEdit(playerId) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result[0]);
-    document.getElementById('playerImageDisplay').src = result[0].image_path===null ||result[0].image_path===''?'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1':`https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
+    document.getElementById('playerImageDisplay').src = result[0].image_path === null || result[0].image_path === '' ? 'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
     // document.getElementById('playerImagePreview').src = result[0].image_path===null ||result[0].image_path===''?'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1':`https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
     document.getElementById('playerId').value = result[0].id || '';
     document.getElementById('firstName').value = result[0].first || '';
@@ -224,11 +321,11 @@ async function DeletePlayer(playerId) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    alert(result.message);
+    showCustomAlert(result.message);
     // Refresh the table after deletion
     await createPlayerTable();
   } catch (err) {
-    alert('Error deleting player:', err);
+    showCustomAlert('Error deleting player:', err);
   }
 }
 
@@ -279,7 +376,7 @@ async function createPlayerTable() {
         }
         if (image_index === col_index) {
           const img = document.createElement('img');
-          if (val===null || val==='') {
+          if (val === null || val === '') {
             img.src = `https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=${row_index}`;
             img.alt = 'No Image';
           } else {
@@ -290,7 +387,7 @@ async function createPlayerTable() {
           }
           img.borderRadius = 20;
           td.appendChild(img);
-        }else { 
+        } else {
           td.textContent = val == null ? '' : val;
         }
         tr.appendChild(td);
@@ -309,7 +406,11 @@ async function createPlayerTable() {
       //   PopulateFormForEdit(row.id);
       // });
       iEdit.addEventListener('click', () => {
-        PopulateFormForEdit(row.id);
+        if (UserLoggedInID === row.id || AdminLoggedIn) {
+          PopulateFormForEdit(row.id);
+        } else {
+          showCustomAlert('You must be logged in as Admin or as yourself to edit a player record.');
+        }
       });
       // tdEdit.appendChild(button);
       tdEdit.appendChild(iEdit);
@@ -321,10 +422,15 @@ async function createPlayerTable() {
       const iDelete = document.createElement('i');
       iDelete.className = 'fas fa-trash';
       iDelete.addEventListener('click', async () => {
-        if (window.prompt(`Type DELETE to confirm deletion of player :${row.first} ${row.last}`, '') === 'DELETE') {
-          await DeletePlayer(row.id);
+        if (AdminLoggedIn) {
+          if (window.prompt(`Type DELETE to confirm deletion of player :${row.first} ${row.last}`, '') === 'DELETE') {
+            await DeletePlayer(row.id);
+          }
+          else {
+            showCustomAlert('You must be loggen in as Admin to delete a player record.');
+          }
         }
-      }); 
+      });
       tdDel.appendChild(iDelete);
       tr.appendChild(tdDel);
 
@@ -351,12 +457,12 @@ function setupImageInput() {
       return;
     }
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      showCustomAlert('Please select an image file');
       fileInput.value = '';
       return;
     }
     const reader = new FileReader();
-    reader.onload = function(ev) {
+    reader.onload = function (ev) {
       const dataUrl = ev.target.result;
       if (preview) { preview.src = dataUrl; preview.style.display = 'inline-block'; }
       if (hidden) hidden.value = dataUrl;
@@ -386,3 +492,45 @@ function toggleColumn(tableSelector, colIndex) {
 
 // Expose for use in console or other scripts
 window.toggleColumn = toggleColumn;
+
+// added for modal forms
+// Get the modal
+var loginModal = document.getElementById("login-modal");
+var changePasswordModal = document.getElementById("changePassword-modal");
+var selectNonPlayersModal = document.getElementById("selectnonplayersmodal");
+
+// Get the button that opens the modal
+// var btn = document.getElementById("open-modal-btn");
+
+// Get the <span> element that closes the modal
+const span1 = document.getElementsByClassName("close")[0];
+const span2  = document.getElementsByClassName("close")[1];
+
+// When the user clicks the button, open the modal
+// btn.onclick = function() {
+//   modal.style.display = "block";
+// }
+
+// When the user clicks on <span> (x), close the modal
+span1.onclick = function () {
+  loginModal.style.display = "none";
+}
+span2.onclick = function () {
+  changePasswordModal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function (event) {
+  if (event.target == loginModal) {
+    loginModal.style.display = "none";
+  }
+}
+
+changePasswordModal.style.display = "flex";
+
+//set this to block to see the login modal
+loginModal.style.display = "none";
+
+
+createNonPlayerForm();
+selectnonplayersmodal.style.display = "flex";

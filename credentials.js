@@ -1,7 +1,13 @@
 require('dotenv').config({ quiet: true });
 const { Pool } = require('pg');
+const admin_ids = process.env.ADMIN_IDS ? JSON.parse(process.env.ADMIN_IDS) : [];
+
+function isAdmin(userId) {
+    return admin_ids.includes(userId.toString());
+}
+
 async function userExists(username) {
-try {
+    try {
         const pool = new Pool({
             user: process.env.PG_USER,
             host: process.env.PG_HOST,
@@ -11,18 +17,18 @@ try {
             ssl: { rejectUnauthorized: false } // try if cloud requires SSL
         });
         const client = await pool.connect();
-        const result = await client.query('SELECT username FROM player WHERE username = $1;', [username]);
+        const result = await client.query('SELECT id, username FROM player WHERE username = $1;', [username]);
         client.release();
-        return result.rows.length > 0;
+        return result
     } catch (err) {
         console.error('Error fetching username:', err);
         return false;
     }
-  }
+}
 async function addUser(username, password) {
-  try {
+    try {
         const pool = new Pool({
-            user: process.env.PG_USER,  
+            user: process.env.PG_USER,
             host: process.env.PG_HOST,
             database: process.env.PG_DATABASE,
             password: process.env.PG_PASSWORD,
@@ -40,11 +46,11 @@ async function addUser(username, password) {
 }
 
 async function passwordMatches(username, password) {
-  try {
-        const pool = new Pool({ 
+    try {
+        const pool = new Pool({
             user: process.env.PG_USER,
             host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,    
+            database: process.env.PG_DATABASE,
             password: process.env.PG_PASSWORD,
             port: Number(process.env.PG_PORT) || 5432,
             ssl: { rejectUnauthorized: false } // try if cloud requires SSL
@@ -59,8 +65,8 @@ async function passwordMatches(username, password) {
     }
 }
 async function changePassword(username, newPassword) {
-  try {
-        const pool = new Pool({ 
+    try {
+        const pool = new Pool({
             user: process.env.PG_USER,
             host: process.env.PG_HOST,
             database: process.env.PG_DATABASE,
@@ -76,11 +82,11 @@ async function changePassword(username, newPassword) {
         console.error('Error changing password:', err);
         return false;
     }
-} 
+}
 const registeredUsers = async () => {
-  try {
-        const pool = new Pool({ 
-            user: process.env.PG_USER,  
+    try {
+        const pool = new Pool({
+            user: process.env.PG_USER,
             host: process.env.PG_HOST,
             database: process.env.PG_DATABASE,
             password: process.env.PG_PASSWORD,
@@ -90,17 +96,84 @@ const registeredUsers = async () => {
         const client = await pool.connect();
         const result = await client.query('SELECT first, last, username FROM player where username is not null;');
         client.release();
-        return result.rows  
+        return result.rows
     } catch (err) {
         console.error('Error fetching registered users:', err);
         return [];
     }
-  } 
+}
+
+async function getTwoNonPlayer() {
+    try {
+        const pool = new Pool({ 
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432,
+            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        });
+        const client = await pool.connect();
+        const result = await client.query(`SELECT first FROM nonplayer ORDER BY RANDOM() LIMIT 2;`);
+        client.release();
+        return result.rows;
+    } catch (err) {
+        console.error('Error fetching non-player users:', err);
+        return [];
+    }   
+}
+
+function shuffle(array) {
+  let currentIndex = array.length, randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex != 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+async function get18Players() {
+    try {
+        const pool = new Pool({ 
+            user: process.env.PG_USER,  
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,      
+            port: Number(process.env.PG_PORT) || 5432,
+            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        });
+        const client = await pool.connect();
+        const result = await client.query(`SELECT first FROM player ORDER BY RANDOM() LIMIT 18;`);
+        client.release();
+        return result.rows;
+    } catch (err) {
+        console.error('Error fetching 18 players:', err);
+        return [];
+    }   
+}
+
+async function getMixOfPlayersAndNonPlayers() {
+    const players = await get18Players();
+    const nonPlayers = await getTwoNonPlayer();
+    const mix =  shuffle(players.concat(nonPlayers));
+    return mix;
+}
 
 module.exports = {
-  userExists,
-  addUser,
-  passwordMatches,
-  changePassword,
-  registeredUsers
+    userExists,
+    addUser,
+    passwordMatches,
+    changePassword,
+    registeredUsers,
+    isAdmin,
+    getMixOfPlayersAndNonPlayers
 }

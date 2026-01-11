@@ -3,11 +3,9 @@ require('dotenv').config({ quiet: true });
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const {test,upload} = require('./helper');
-const {userExists,addUser,passwordMatches,changePassword,registeredUsers} = require('./credentials')
-
-test();
-// console.log('PG host/user/db:', process.env.PG_HOST, process.env.PG_USER, process.env.PG_DATABASE);
+const {upload} = require('./helper');
+const {userExists,addUser,passwordMatches,changePassword,
+    registeredUsers,isAdmin,getMixOfPlayersAndNonPlayers} = require('./credentials')
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -26,17 +24,24 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/mixofplayersandnonplayers', async (req, res) => {
+    const result = await getMixOfPlayersAndNonPlayers();
+    res.send(result);
+});
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    const userExistsFlag = await userExists(username);  
-    if (!userExistsFlag) {
+    //returns an object with id and username if user exists else false
+    const user = await userExists(username);  
+    if (!user) {
         return res.json({ valid: false, message: 'User does not exist' });
-    }   
+    } 
+    const userId = user.rows[0].id;
     const passwordValid = await passwordMatches(username, password);
     if (!passwordValid) {
-        return res.json({ valid: false, message: 'Incorrect password' });
+        return res.json({  valid: false, message: 'Incorrect password' });
     }
-    res.json({ valid: true, message: 'User validated successfully' });
+    res.json({ userId, isAdmin: isAdmin(userId), valid: true, message: 'User validated successfully' });
 });
 
 app.post('/changepassword', async (req, res) => {
@@ -62,6 +67,12 @@ app.post('/changepassword', async (req, res) => {
 app.get('/api/registeredusers', async (req, res) => {
     const users = await registeredUsers();
     res.json({ users });    
+});
+
+app.post('/isadmin', async (req, res) => {
+    const { userId } = req.body;
+    const isAdminFlag = isAdmin(userId);
+    res.json({ isAdmin: isAdminFlag });
 });
 
 //add user route should be available only to superuser or admin in real application

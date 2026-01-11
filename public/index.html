@@ -17,50 +17,6 @@
 	<!-- Wrapper -->
 	<div id="wrapper">
 
-		<!-- Login form -->
-		<section class="credentials intro">
-			<div class="content">
-
-				<header>
-					<h1>Riverside Bridge Club</h1>
-					<h3>Enter your login credentials</h3>
-				</header>
-
-				<form action="">
-					<div class="fields">
-
-						<div class="field half">
-							<label for="username">
-								Username:
-							</label>
-							<input type="text" id="username" name="username" placeholder="Enter your Username" required>
-						</div>
-
-						<div class="field half">
-							<label for="password">
-								Password:
-							</label>
-							<input type="password" id="password" name="password" placeholder="Enter your Password" required>
-						</div>
-
-						<div class="field full wrap">
-							<button class="button full primary" type="button" onclick="login()">
-								Submit
-							</button>
-						</div>
-					</div>
-				</form>
-
-				<footer>
-					<h3>Not registered?</h3>
-					<p style="text-decoration: none;">
-							This site is only for members of the Riverside Bridge Club. If you are a member and do not have
-							login credentials, please contact one of the club officers.
-					</p>
-				</footer>
-			</div>
-		</section>
-
 		<!-- Intro -->
 		<section class="intro">
 			<header>
@@ -214,67 +170,137 @@
 							<td colspan="4">Select one of the days to view attendance</td>
 						</tr>
 					</tbody>
+				</table>
 			</div>
 		</section>
 
 
-		<!-- Section -->
-		<!-- <section>
-						<header>
-							<h2>Get in touch</h2>
-						</header>
-						<div class="content">
-							<p><strong>Auctor commodo</strong> interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis.</p>
-							<form>
-								<div class="fields">
-									<div class="field half">
-										<input type="text" name="name" id="name" placeholder="Name" />
-									</div>
-									<div class="field half">
-										<input type="email" name="email" id="email" placeholder="Email" />
-									</div>
-									<div class="field">
-										<textarea name="message" id="message" placeholder="Message" rows="7"></textarea>
-									</div>
-								</div>
-								<ul class="actions">
-									<li><input type="submit" value="Send Message" class="button primary" /></li>
-								</ul>
-							</form>
-						</div>
-						<footer>
-							<ul class="items">
-								<li>
-									<h3>Email</h3>
-									<a href="#">information@untitled.ext</a>
-								</li>
-								<li>
-									<h3>Phone</h3>
-									<a href="#">(000) 000-0000</a>
-								</li>
-								<li>
-									<h3>Address</h3>
-									<span>1234 Somewhere Road, Nashville, TN 00000</span>
-								</li>
-								<li>
-									<h3>Elsewhere</h3>
-									<ul class="icons">
-										<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
-										<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
-										<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-										<li><a href="#" class="icon brands fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
-										<li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
-										<li><a href="#" class="icon brands fa-codepen"><span class="label">Codepen</span></a></li>
-									</ul>
-								</li>
-							</ul>
-						</footer>
-					</section>
- -->
 		<!-- Copyright -->
 		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
 		</div>
 
+	</div>
+
+	<!-- <button id="open-modal-btn">Open Login Form</button> -->
+
+	<!-- The Modal -->
+	<div id="login-modal" class="modal">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<h2>Login</h2>
+			<form action="">
+				<div class="fields">
+
+					<div class="field half">
+						<label for="username">
+							Username:
+						</label>
+						<input type="text" id="username" name="username" placeholder="Enter your Username" required>
+					</div>
+
+					<div class="field half">
+						<label for="password">
+							Password:
+						</label>
+						<input type="password" id="password" name="password" placeholder="Enter your Password" required>
+					</div>
+
+					<div class="field full wrap">
+						<button class="button primary" type="button" style="margin-top: 30px;" onclick="login()">
+							Submit
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<p>Note: If you do not log in you will not be able to make changes to your data.</p>
+	</div>
+
+	<!-- The Modal -->
+	<div id="changePassword-modal" class="modal">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<h2>Change Password</h2>
+			<form action="">
+				<div class="fields">
+
+					<div class="field half">
+						<label for="changepasswordusername">
+							Username:
+						</label>
+						<input type="text" id="changepasswordusername" name="changepasswordusername"
+							placeholder="Enter your Username" required>
+					</div>
+					<div class="field half">
+						<label for="currentpassword">
+							Current Password:
+						</label>
+						<input type="password" id="currentpassword" name="currentpassword" placeholder="Enter your CurrentPassword"
+							required>
+					</div>
+					<div class="field half">
+						<label for="newpassword1">
+							New Password:
+						</label>
+						<input type="password" id="newpassword1" name="newpassword1" placeholder="Enter your New Password" required>
+					</div>
+					<div class="field half">
+						<label for="newpassword2">
+							New Password:
+						</label>
+						<input type="password" id="newpassword2" name="newpassword2" placeholder="Enter your New Password again"
+							required>
+					</div>
+
+					<div class="field full wrap">
+						<button class="button primary" type="button" style="margin-top: 30px;" onclick="changePassword()">
+							Change Password
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		<p id="changeasswordError" style="color: red;"></p>
+	</div>
+
+	<!-- The Modal -->
+	<div id="selectnonplayersmodal" class="modal">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<h2>Select Non-Players</h2>
+			<form action="">
+				<div class="fields">
+
+					<div class="field full">
+						<label for="nonplayersselect">Choose two players who are not member of our club(hold Ctrl/Shift):</label>
+						<select name="nonplayersselect" id="nonplayersselect" style="height:250px;" multiple>
+
+						</select>
+					</div>
+					<div class="field full wrap">
+						<button class="button primary" type="button" style="margin-top: 30px;" onclick="selectNonPlayers()">
+							Select Non-Players
+						</button>
+					</div>
+				</div>
+			</form>
+		</div> <!--modal content -->
+	</div> <!--selectnonplayersmodal -->
+	<p id="selectnonplayersError" style="color: red;"></p>
+	</div>
+
+	<!-- The custom alert box container -->
+	<div id="customAlert" class="alert-container">
+		<div class="alert-content">
+			<h2>Riverside Bridge Club</h2>
+			<p></p>
+		</div>
 	</div>
 
 	<!-- Scripts -->
