@@ -168,6 +168,45 @@ async function getMixOfPlayersAndNonPlayers() {
     return mix;
 }
 
+async function getBridgeTerms() {
+    try {
+        const pool = new Pool({
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432,
+            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        });
+        const client = await pool.connect();
+        const result = await client.query('SELECT term FROM bridgeterm;');
+        client.release();
+        return result.rows;
+    } catch (err) {
+        console.error('Error fetching bridge terms:', err);
+        return [];
+    }       
+}
+async function isValidBridgeTerm(term){
+    try {
+        const pool = new Pool({
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432,
+            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        });
+        const client = await pool.connect();
+        const result = await client.query('SELECT valid FROM bridgeterm where term =$1;',[term]);
+        client.release();
+        return result.rows[0].valid
+    } catch (err) {
+        console.error('Error checking bridge term validity:', err);
+        return false;
+    }          
+}
+
 module.exports = {
     userExists,
     addUser,
@@ -175,5 +214,7 @@ module.exports = {
     changePassword,
     registeredUsers,
     isAdmin,
-    getMixOfPlayersAndNonPlayers
+    getMixOfPlayersAndNonPlayers,
+    getBridgeTerms,
+    isValidBridgeTerm
 }

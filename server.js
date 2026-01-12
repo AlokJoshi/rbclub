@@ -5,7 +5,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const {upload} = require('./helper');
 const {userExists,addUser,passwordMatches,changePassword,
-    registeredUsers,isAdmin,getMixOfPlayersAndNonPlayers} = require('./credentials')
+    registeredUsers,isAdmin,getMixOfPlayersAndNonPlayers,
+    getBridgeTerms,isValidBridgeTerm} = require('./credentials')
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -26,6 +27,17 @@ app.get('/', (req, res) => {
 
 app.get('/mixofplayersandnonplayers', async (req, res) => {
     const result = await getMixOfPlayersAndNonPlayers();
+    res.send(result);
+});
+
+app.get('/api/isvalidbridgeterm',async (req,res) => {
+    const term = req.body.term
+    const valid = await isValidBridgeTerm(term)
+    res.send({isValid:valid}) 
+})
+
+app.get('/bridgeterms', async (req, res) => {
+    const result = await getBridgeTerms();
     res.send(result);
 });
 

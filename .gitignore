@@ -53,3 +53,5 @@ uploads/
 !.env.example
 
 test-pg.js
+
+testrest.http

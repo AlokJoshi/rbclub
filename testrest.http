@@ -69,3 +69,31 @@ Content-Type: application/json
 GET http://localhost:3000/mixofplayersandnonplayers
 Accept: application/json
 
+###
+GET http://localhost:3000/bridgeterms
+Accept: application/json
+###
+
+get http://localhost:3000/api/isvalidbridgeterm
+Content-Type: application/json
+
+{
+  "term": "double"
+}
+###
+get http://localhost:3000/api/isvalidbridgeterm
+Content-Type: application/json
+
+{
+  "term": "1430"
+}
+###
+get http://localhost:3000/api/isvalidbridgeterm
+Content-Type: application/json
+
+{
+  "term": 1430
+}
+
+
+
