@@ -6,7 +6,8 @@ const PORT = process.env.PORT || 3000;
 const {upload} = require('./helper');
 const {userExists,addUser,passwordMatches,changePassword,
     registeredUsers,isAdmin,getMixOfPlayersAndNonPlayers,
-    getBridgeTerms,isValidBridgeTerm} = require('./credentials')
+    getBridgeTerms,isValidBridgeTerm,isNonPlayer,
+    isPlayer} = require('./credentials')
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -35,6 +36,23 @@ app.get('/api/isvalidbridgeterm',async (req,res) => {
     const valid = await isValidBridgeTerm(term)
     res.send({isValid:valid}) 
 })
+
+app.put('/checknonplayers',async (req,res) => {
+    const nonplayers = req.body.nonplayers
+    const firstIsNonPlayer =  await isNonPlayer(nonplayers[0])
+    const secondIsNonPlayer =  await isNonPlayer(nonplayers[1])
+        
+    console.log(firstIsNonPlayer && secondIsNonPlayer)
+    res.send(firstIsNonPlayer && secondIsNonPlayer)
+})
+
+app.put('/checkfullname',async (req,res) => {
+    const fullname = req.body.fullname
+    const isFromClub =  await isPlayer(fullname)
+        
+    res.send(isFromClub)
+})
+
 
 app.get('/bridgeterms', async (req, res) => {
     const result = await getBridgeTerms();

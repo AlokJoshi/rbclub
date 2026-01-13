@@ -161,6 +161,53 @@ async function get18Players() {
     }   
 }
 
+async function isNonPlayer(first) {
+    try {
+        const pool = new Pool({
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432,
+            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        });
+        const client = await pool.connect();
+        const result = await client.query('SELECT first FROM nonplayer where first = $1;',[first]);
+        client.release();
+        return result.rows.length>0?true:false;
+    } catch (err) {
+        console.error('Error fetching isNonPlayer:', err);
+        return false;
+    }       
+    
+}
+
+async function isPlayer(fullname) {
+    try {
+        const pool = new Pool({
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432,
+            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        });
+        const client = await pool.connect();
+        const result = await client.query('SELECT first,last FROM player');
+        client.release();
+        let exists = false
+        result.rows.forEach(row=>{
+            if((row.first.toLowerCase().trim() + ' ' + row.last.toLowerCase().trim()) == fullname){
+                exists=true
+            }
+        })
+        return exists;
+    } catch (err) {
+        console.error('Error checking isPlayer:', err);
+        return false;
+    }       
+    
+}
 async function getMixOfPlayersAndNonPlayers() {
     const players = await get18Players();
     const nonPlayers = await getTwoNonPlayer();
@@ -216,5 +263,7 @@ module.exports = {
     isAdmin,
     getMixOfPlayersAndNonPlayers,
     getBridgeTerms,
-    isValidBridgeTerm
+    isValidBridgeTerm,
+    isNonPlayer,
+    isPlayer
 }

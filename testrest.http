@@ -94,6 +94,61 @@ Content-Type: application/json
 {
   "term": 1430
 }
+###
+
+get http://localhost:3000/api/isvalidbridgeterm
+Content-Type: application/json
+
+{
+  "term": "14 Card Trump fit"
+}
+###
+
+put http://localhost:3000/checknonplayers
+Content-Type: application/json
+
+{
+  "nonplayers": ["Amy","Leo"]
+}
+###
+put http://localhost:3000/checknonplayers
+Content-Type: application/json
+
+{
+  "nonplayers": ["Alok","Leo"]
+}
+
+###
+put http://localhost:3000/checknonplayers
+Content-Type: application/json
+
+{
+  "nonplayers": ["Amy","Trent"]
+}
+###
+
+put http://localhost:3000/checknonplayers
+Content-Type: application/json
+
+{
+  "nonplayers": ["Sadhna","Alok"]
+}
+###
+
+put http://localhost:3000/checkfullname
+Content-Type: application/json
+
+{
+  "fullname": "sadhna joshi"
+}
+###
+
+put http://localhost:3000/checkfullname
+Content-Type: application/json
+
+{
+  "fullname": "adhna joshi"
+}
 
 
 

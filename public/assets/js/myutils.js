@@ -45,6 +45,49 @@ async function createNonPlayerForm() {
     console.error('Error creating non-player form:', err);
   }
 }
+
+async function nonplayerselectChanged() {
+  //check if the number of selection is other than 2
+  const selectElement = document.getElementById('nonplayersselect');
+  
+  const message = selectElement.selectedOptions.length==2?"":"Please select 2 and only 2 from the above list."
+  
+  const errorEl = document.getElementById("selectnonplayersError")
+  
+  errorEl.innerText=message
+  
+  console.log(message)
+  
+}
+
+async function selectNonPlayers() {
+  const selectElement = document.getElementById('nonplayersselect');
+  try{
+
+    const res = await fetch('/checknonplayers',{
+      method: 'PUT',
+      headers: {
+        'Content-Type':'application/json'
+      } ,
+      body: JSON.stringify({"nonplayers":[selectElement.selectedOptions[0].value,
+                                      selectElement.selectedOptions[1].value]})
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const result = await res.json()
+    if (result==true){
+      showCustomAlert(`Correct! ${selectElement.selectedOptions[0].value} and 
+        ${selectElement.selectedOptions[1].value} do not play at our club.`)
+      return true
+    }else{
+      showCustomAlert(`Sorry! that answer is wrong.`)
+      return false
+    }
+  }catch (err){
+    console.error('Error checking non-players:', err);
+    return false
+  }
+}
+
 async function isAdmin(userId) {
   try {
     const res = await fetch('/isadmin', {
@@ -87,7 +130,8 @@ async function login() {
     console.error('API error:', err);
     showCustomAlert('Login failed: ' + err.message);
   }
-  modal.style.display = "none";
+  const loginModal = document.getElementById('login-modal')
+  loginModal.style.display = "none";
 }
 
 async function changePassword() {
@@ -398,13 +442,7 @@ async function createPlayerTable() {
       const tdEdit = document.createElement('td');
       const iEdit = document.createElement('i');
       iEdit.className = 'fas fa-edit';
-      // const button = document.createElement('button');
-      // button.type = 'button';
-      // button.className = 'button small';
-      // button.textContent = 'Edit';
-      // button.addEventListener('click', () => {
-      //   PopulateFormForEdit(row.id);
-      // });
+      
       iEdit.addEventListener('click', () => {
         if (UserLoggedInID === row.id || AdminLoggedIn) {
           PopulateFormForEdit(row.id);
@@ -412,13 +450,11 @@ async function createPlayerTable() {
           showCustomAlert('You must be logged in as Admin or as yourself to edit a player record.');
         }
       });
-      // tdEdit.appendChild(button);
       tdEdit.appendChild(iEdit);
       tr.appendChild(tdEdit);
 
       //add a button for deleting
       const tdDel = document.createElement('td');
-      // const buttonDel = document.createElement('button');
       const iDelete = document.createElement('i');
       iDelete.className = 'fas fa-trash';
       iDelete.addEventListener('click', async () => {
@@ -489,6 +525,58 @@ function toggleColumn(tableSelector, colIndex) {
   });
 }
 
+//function to check if the user should be admitted to the site
+async function shouldAdmitToSite(){
+  //show a modal message explaining the two options:
+  //1. Login with the provided login details
+  //2. Gain admittance after proving that
+  //   a. Your name matches with club user list
+  //   b. You can spot 2 non-members in a list of members and members
+  //   c. You can spot a non-bridge term in a list of bridge terms
+  const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
+  shouldAdmitToSiteModal.style.display = 'block'
+}
+async function IwantToLogin(){
+  const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
+  shouldAdmitToSiteModal.style.display = 'none'
+  var loginModal = document.getElementById("login-modal"); 
+  loginModal.style.display = "block"; 
+}
+
+async function IwantToAnswerQuestions(){
+  const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
+  shouldAdmitToSiteModal.style.display = 'none'
+  var IwantToAnswerQuestions = document.getElementById("iwanttoanswerquestionsmodal"); 
+  IwantToAnswerQuestions.style.display = "block"; 
+}
+
+async function IwantToAnswerQuestionsNameCheck(){
+  const iwantoanswerquestionsname = document.getElementById('iwantoanswerquestionsname')
+  const name = iwantoanswerquestionsname.value
+  const fullname = name.replace(/\s+/g, ' ').trim().toLowerCase()
+  try{
+
+    const res = await fetch('/checkfullname',{
+      method: 'PUT',
+      headers: {
+        'Content-Type':'application/json'
+      } ,
+      body: JSON.stringify(fullname)
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const result = await res.json()
+    if (result==true){
+      showCustomAlert(`Correct! You seem to be a member of the club`)
+      return true
+    }else{
+      showCustomAlert(`Sorry! you are not from our club`)
+      return false
+    }
+  }catch (err){
+    console.error('Error checking full name:', err);
+    return false
+  }
+}
 
 // Expose for use in console or other scripts
 window.toggleColumn = toggleColumn;
@@ -526,11 +614,13 @@ window.onclick = function (event) {
   }
 }
 
-changePasswordModal.style.display = "flex";
+// changePasswordModal.style.display = "flex";
 
 //set this to block to see the login modal
 loginModal.style.display = "none";
 
 
 createNonPlayerForm();
-selectnonplayersmodal.style.display = "flex";
+// selectnonplayersmodal.style.display = "flex";
+
+shouldAdmitToSite()

@@ -2177,7 +2177,7 @@ form>.fields>.field> :last-child {
 }
 
 form>.fields>.field.full {
-	width: calc(100% - 1rem);
+	width: calc(100% - 2rem);
 }
 
 form>.fields>.field.half {
