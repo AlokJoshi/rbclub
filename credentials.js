@@ -234,7 +234,7 @@ async function getBridgeTerms() {
         return [];
     }       
 }
-async function isValidBridgeTerm(term){
+async function isInvalidBridgeTerm(term){
     try {
         const pool = new Pool({
             user: process.env.PG_USER,
@@ -247,7 +247,7 @@ async function isValidBridgeTerm(term){
         const client = await pool.connect();
         const result = await client.query('SELECT valid FROM bridgeterm where term =$1;',[term]);
         client.release();
-        return result.rows[0].valid
+        return !(result.rows.length>0 && result.rows[0].valid)
     } catch (err) {
         console.error('Error checking bridge term validity:', err);
         return false;
@@ -263,7 +263,7 @@ module.exports = {
     isAdmin,
     getMixOfPlayersAndNonPlayers,
     getBridgeTerms,
-    isValidBridgeTerm,
+    isInvalidBridgeTerm,
     isNonPlayer,
     isPlayer
 }

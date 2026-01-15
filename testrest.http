@@ -74,34 +74,22 @@ GET http://localhost:3000/bridgeterms
 Accept: application/json
 ###
 
-get http://localhost:3000/api/isvalidbridgeterm
-Content-Type: application/json
+get http://localhost:3000/isinvalidbridgeterm/double
 
-{
-  "term": "double"
-}
 ###
-get http://localhost:3000/api/isvalidbridgeterm
-Content-Type: application/json
+get http://localhost:3000/isinvalidbridgeterm/1430
 
-{
-  "term": "1430"
-}
 ###
-get http://localhost:3000/api/isvalidbridgeterm
-Content-Type: application/json
+get http://localhost:3000/isinvalidbridgeterm/'1430'
 
-{
-  "term": 1430
-}
 ###
 
-get http://localhost:3000/api/isvalidbridgeterm
-Content-Type: application/json
+get http://localhost:3000/isinvalidbridgeterm/14 Card Trump fit
 
-{
-  "term": "14 Card Trump fit"
-}
+###
+
+get http://localhost:3000/isinvalidbridgeterm/opening bid
+
 ###
 
 put http://localhost:3000/checknonplayers
@@ -149,6 +137,7 @@ Content-Type: application/json
 {
   "fullname": "adhna joshi"
 }
+###
 
 
 

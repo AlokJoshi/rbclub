@@ -31,10 +31,10 @@ async function createNonPlayerForm() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result);  
+    console.log(result);
     const select = document.getElementById('nonplayersselect');
     if (!select) return console.warn('Select element #nonplayersselect not found');
-    select.innerHTML = '';  
+    select.innerHTML = '';
     result.forEach(player => {
       const option = document.createElement('option');
       option.value = player.first;
@@ -49,40 +49,42 @@ async function createNonPlayerForm() {
 async function nonplayerselectChanged() {
   //check if the number of selection is other than 2
   const selectElement = document.getElementById('nonplayersselect');
-  
-  const message = selectElement.selectedOptions.length==2?"":"Please select 2 and only 2 from the above list."
-  
+
+  const message = selectElement.selectedOptions.length == 2 ? "" : "Please select 2 and only 2 from the above list."
+
   const errorEl = document.getElementById("selectnonplayersError")
-  
-  errorEl.innerText=message
-  
+
+  errorEl.innerText = message
+
   console.log(message)
-  
+
 }
 
 async function selectNonPlayers() {
   const selectElement = document.getElementById('nonplayersselect');
-  try{
+  try {
 
-    const res = await fetch('/checknonplayers',{
+    const res = await fetch('/checknonplayers', {
       method: 'PUT',
       headers: {
-        'Content-Type':'application/json'
-      } ,
-      body: JSON.stringify({"nonplayers":[selectElement.selectedOptions[0].value,
-                                      selectElement.selectedOptions[1].value]})
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "nonplayers": [selectElement.selectedOptions[0].value,
+        selectElement.selectedOptions[1].value]
+      })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const result = await res.json()
-    if (result==true){
+    if (result == true) {
       showCustomAlert(`Correct! ${selectElement.selectedOptions[0].value} and 
         ${selectElement.selectedOptions[1].value} do not play at our club.`)
       return true
-    }else{
+    } else {
       showCustomAlert(`Sorry! that answer is wrong.`)
       return false
     }
-  }catch (err){
+  } catch (err) {
     console.error('Error checking non-players:', err);
     return false
   }
@@ -137,15 +139,15 @@ async function login() {
 async function changePassword() {
   const username = document.getElementById('changepasswordusername').value;
   const currentpassword = document.getElementById('currentpassword').value;
-  const newpassword1 = document.getElementById('newpassword1').value;   
-  const newpassword2 = document.getElementById('newpassword2').value;   
+  const newpassword1 = document.getElementById('newpassword1').value;
+  const newpassword2 = document.getElementById('newpassword2').value;
   if (newpassword1 !== newpassword2) {
     showCustomAlert('New passwords do not match');
     return;
   }
   try {
     const res = await fetch('/changepassword', {
-      method: 'POST', 
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -442,7 +444,7 @@ async function createPlayerTable() {
       const tdEdit = document.createElement('td');
       const iEdit = document.createElement('i');
       iEdit.className = 'fas fa-edit';
-      
+
       iEdit.addEventListener('click', () => {
         if (UserLoggedInID === row.id || AdminLoggedIn) {
           PopulateFormForEdit(row.id);
@@ -526,7 +528,7 @@ function toggleColumn(tableSelector, colIndex) {
 }
 
 //function to check if the user should be admitted to the site
-async function shouldAdmitToSite(){
+async function shouldAdmitToSite() {
   //show a modal message explaining the two options:
   //1. Login with the provided login details
   //2. Gain admittance after proving that
@@ -536,44 +538,127 @@ async function shouldAdmitToSite(){
   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
   shouldAdmitToSiteModal.style.display = 'block'
 }
-async function IwantToLogin(){
+async function IwantToLogin() {
   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
   shouldAdmitToSiteModal.style.display = 'none'
-  var loginModal = document.getElementById("login-modal"); 
-  loginModal.style.display = "block"; 
+  var loginModal = document.getElementById("login-modal");
+  loginModal.style.display = "block";
 }
 
-async function IwantToAnswerQuestions(){
+async function IwantToAnswerQuestions() {
   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
   shouldAdmitToSiteModal.style.display = 'none'
-  var IwantToAnswerQuestions = document.getElementById("iwanttoanswerquestionsmodal"); 
-  IwantToAnswerQuestions.style.display = "block"; 
+  var IwantToAnswerQuestions = document.getElementById("iwanttoanswerquestionsmodal");
+  IwantToAnswerQuestions.style.display = "block";
 }
 
-async function IwantToAnswerQuestionsNameCheck(){
+async function IwantToAnswerQuestionsTermCheck() {
+  const questionsModal = document.getElementById('iwanttoanswerquestionsmodal')
+  questionsModal.style.display = 'none'
+  const termCheckModal = document.getElementById('termcheckmodal')
+
+  //populate the terms
+  const res = await fetch('/bridgeterms',{
+    method:'GET'
+  })
+  if(!res.ok) throw new Error(`HTTP ${res.status}`)
+  const result = await res.json()
+  console.log(result);
+  const select = document.getElementById('bridgeterm')
+  termCheckModal.style.display = "block";
+  result.forEach((row) => {
+      const option = document.createElement('option');
+      option.value = row.term;
+      option.textContent = `${row.term}`;
+      select.appendChild(option);
+  })
+}
+
+async function IwantToAnswerQuestionsNonMembersCheck() {
+  const questionsModal = document.getElementById('iwanttoanswerquestionsmodal')
+  questionsModal.style.display = 'none'
+  const termCheckModal = document.getElementById('termcheckmodal')
+
+  //populate the terms
+  const res = await fetch('/bridgeterms',{
+    method:'GET'
+  })
+  if(!res.ok) throw new Error(`HTTP ${res.status}`)
+  const result = await res.json()
+  console.log(result);
+  const select = document.getElementById('bridgeterm')
+  termCheckModal.style.display = "block";
+  result.forEach((row) => {
+      const option = document.createElement('option');
+      option.value = row.term;
+      option.textContent = `${row.term}`;
+      select.appendChild(option);
+  })
+}
+
+async function checkBridgeTerm() {
+  try{
+
+    const select = document.getElementById('bridgeterm')
+    const termcheckresult = document.getElementById('termcheckresult')
+    //now hide this modal
+    if (select.selectedOptions.length !== 1) {
+      showCustomAlert('Please select one invalid Bridge term and then click on this button')
+    } else {
+      const invalidbridgeTerm = select.selectedOptions[0].value
+      const res = await fetch(`/isinvalidbridgeterm/${invalidbridgeTerm}`,{
+        method:'GET'
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const result = await res.json()
+      const termcheckmodalmodal = document.getElementById('termcheckmodal')
+      termcheckmodalmodal.style.display='none'
+      const iwanttoanswerquestionsmodal = document.getElementById('iwanttoanswerquestionsmodal')
+      iwanttoanswerquestionsmodal.style.display='block'
+      if (result == true) {
+        showCustomAlert(`Correct! You seem to be know Bridge terms`)
+        termcheckresult.innerText = "You correctly identified invalid Bridge term."
+        return true
+      } else {
+        showCustomAlert(`Sorry! you failed to identify the invalid Bridge term.`)
+        termcheckresult.innerText = `Sorry ${invalidbridgeTerm} is a valid Bridge term.`
+        return false
+      }
+    }
+  }catch(err){
+    console.log(`Error while checking bridge term: ${err}`)
+    showCustomAlert('Error checking bridge term:', err)
+    return false
+  }
+}
+async function IwantToAnswerQuestionsNameCheck() {
   const iwantoanswerquestionsname = document.getElementById('iwantoanswerquestionsname')
   const name = iwantoanswerquestionsname.value
   const fullname = name.replace(/\s+/g, ' ').trim().toLowerCase()
-  try{
+  const namecheckresult = document.getElementById('namecheckresult')
+  try {
 
-    const res = await fetch('/checkfullname',{
+    const res = await fetch('/checkfullname', {
       method: 'PUT',
       headers: {
-        'Content-Type':'application/json'
-      } ,
-      body: JSON.stringify(fullname)
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({fullname})
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const result = await res.json()
-    if (result==true){
+    if (result == true) {
       showCustomAlert(`Correct! You seem to be a member of the club`)
+      namecheckresult.innerText = "Correct! You seem to be a member of the club"
       return true
-    }else{
+    } else {
       showCustomAlert(`Sorry! you are not from our club`)
+      namecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
       return false
     }
-  }catch (err){
+  } catch (err) {
     console.error('Error checking full name:', err);
+    showCustomAlert('Error checking full name:', err)
     return false
   }
 }
@@ -592,7 +677,7 @@ var selectNonPlayersModal = document.getElementById("selectnonplayersmodal");
 
 // Get the <span> element that closes the modal
 const span1 = document.getElementsByClassName("close")[0];
-const span2  = document.getElementsByClassName("close")[1];
+const span2 = document.getElementsByClassName("close")[1];
 
 // When the user clicks the button, open the modal
 // btn.onclick = function() {

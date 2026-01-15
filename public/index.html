@@ -293,6 +293,31 @@
 			</form>
 		</div> <!--modal content -->
 	</div> <!--selectnonplayersmodal -->
+	
+	<!-- The Modal -->
+	<div id="termcheckmodal" class="modal wrap">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<h2>Bridge Term Check</h2>
+			<form action="">
+				<div class="fields">
+
+					<div class="field full">Select One term that does not make sense in game of Bridge:</label>
+						<select name="bridgeterm" id="bridgeterm" style="height:200px;" multiple>
+						</select>
+						<p id="termcheckError" style="color: red; padding-top:0px"></p>
+					</div>
+					<div class="field full wrap">
+						<button class="button primary" type="button" style="margin-top: 30px;" onclick="checkBridgeTerm()">
+							Submit (Invalid Bridge Term)
+						</button>
+					</div>
+				</div>
+			</form>
+		</div> <!--modal content -->
+	</div> <!--selectnonplayersmodal -->
 
 	<!-- The Modal -->
 	<div id="shouldadmittositemodal" class="modal wrap">
@@ -323,16 +348,27 @@
 	</div> <!--shouldadmittositemodal -->
 	
 	<!-- The Modal -->
-	<div id="iwanttoanswerquestions" class="modal wrap">
+	<div id="iwanttoanswerquestionsmodal" class="modal wrap">
 
 		<!-- Modal content -->
 		<div class="modal-content">
 			<span class="close">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
+
 			<p>What is your name e.g. John Smith</p>
 			<input type="text" name="iwantoanswerquestionsname" id="iwantoanswerquestionsname">
 			<button type="button" onclick="IwantToAnswerQuestionsNameCheck()">Check</button>
-			
+			<h2 id="namecheckresult"></h2>
+
+			<p>You will now have to select a term which is not generally used in Bridge</p>
+			<button type="button" onclick="IwantToAnswerQuestionsTermCheck()">Check</button>
+			<h2 id="termcheckresult"></h2>
+
+			<p>Hopefully you know who plays at your club and who is not a member. You will
+				have to pick 2 persons who do not play at the club.
+			</p>
+			<button type="button" onclick="IwantToAnswerQuestionsNonMembersCheck()">Check</button>
+			<h2 id="termcheckresult"></h2>
 		</div> <!--modal content -->
 	</div> <!--iwanttoanswerquestions -->
 
