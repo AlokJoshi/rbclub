@@ -1,5 +1,13 @@
 require('dotenv').config({ quiet: true });
 const { Pool } = require('pg');
+const globalPool= new Pool({
+            user: process.env.PG_USER,
+            host: process.env.PG_HOST,
+            database: process.env.PG_DATABASE,
+            password: process.env.PG_PASSWORD,
+            port: Number(process.env.PG_PORT) || 5432,
+            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        });
 const admin_ids = process.env.ADMIN_IDS ? JSON.parse(process.env.ADMIN_IDS) : [];
 
 function isAdmin(userId) {
@@ -8,14 +16,15 @@ function isAdmin(userId) {
 
 async function userExists(username) {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query('SELECT id, username FROM player WHERE username = $1;', [username]);
         client.release();
@@ -27,14 +36,15 @@ async function userExists(username) {
 }
 async function addUser(username, password) {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query(`INSERT INTO player (username, password) VALUES ($1, crypt($2, gen_salt('bf')));`, [username, password]);
         client.release();
@@ -47,14 +57,15 @@ async function addUser(username, password) {
 
 async function passwordMatches(username, password) {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query(`SELECT (password = crypt($2, password)) AS password_match FROM player WHERE username = $1;`, [username, password]);
         client.release();
@@ -66,14 +77,15 @@ async function passwordMatches(username, password) {
 }
 async function changePassword(username, newPassword) {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query(`UPDATE player SET password = crypt($2, gen_salt('bf')) WHERE username = $1;`, [username, newPassword]);
         client.release();
@@ -85,14 +97,15 @@ async function changePassword(username, newPassword) {
 }
 const registeredUsers = async () => {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query('SELECT first, last, username FROM player where username is not null;');
         client.release();
@@ -105,14 +118,15 @@ const registeredUsers = async () => {
 
 async function getTwoNonPlayer() {
     try {
-        const pool = new Pool({ 
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({ 
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query(`SELECT first FROM nonplayer ORDER BY RANDOM() LIMIT 2;`);
         client.release();
@@ -143,14 +157,15 @@ function shuffle(array) {
 
 async function get18Players() {
     try {
-        const pool = new Pool({ 
-            user: process.env.PG_USER,  
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,      
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({ 
+        //     user: process.env.PG_USER,  
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,      
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query(`SELECT first FROM player ORDER BY RANDOM() LIMIT 18;`);
         client.release();
@@ -163,14 +178,15 @@ async function get18Players() {
 
 async function isNonPlayer(first) {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query('SELECT first FROM nonplayer where first = $1;',[first]);
         client.release();
@@ -184,14 +200,15 @@ async function isNonPlayer(first) {
 
 async function isPlayer(fullname) {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query('SELECT first,last FROM player');
         client.release();
@@ -208,23 +225,24 @@ async function isPlayer(fullname) {
     }       
     
 }
-async function getMixOfPlayersAndNonPlayers() {
+async function getMixOfMembersAndNonMembers() {
     const players = await get18Players();
-    const nonPlayers = await getTwoNonPlayer();
-    const mix =  shuffle(players.concat(nonPlayers));
+    const nonmembers = await getTwoNonPlayer();
+    const mix =  shuffle(players.concat(nonmembers));
     return mix;
 }
 
 async function getBridgeTerms() {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query('SELECT term FROM bridgeterm;');
         client.release();
@@ -236,14 +254,15 @@ async function getBridgeTerms() {
 }
 async function isInvalidBridgeTerm(term){
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool
         const client = await pool.connect();
         const result = await client.query('SELECT valid FROM bridgeterm where term =$1;',[term]);
         client.release();
@@ -261,9 +280,10 @@ module.exports = {
     changePassword,
     registeredUsers,
     isAdmin,
-    getMixOfPlayersAndNonPlayers,
+    getMixOfMembersAndNonMembers,
     getBridgeTerms,
     isInvalidBridgeTerm,
     isNonPlayer,
-    isPlayer
+    isPlayer,
+    globalPool
 }

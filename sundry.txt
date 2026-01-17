@@ -276,4 +276,20 @@ SELECT (password = crypt('password-to-test', password)) AS password_match
 FROM users
 WHERE username = 'johndoe';
 
+Ran the following query to set up default password for all players
+update player set password = crypt(concat(first,id), gen_salt('bf'));
+
+This does not return any row????
+SELECT username,password, crypt('Alok1', gen_salt('bf')) AS password2 FROM player WHERE username = 'Alok1';
+
+Ran this query in pgAdmin4 but got non-matching password and password2!!
+SELECT first,id,concat(first,id),password, crypt(concat(first,id), gen_salt('bf')) AS password2 FROM player;
+
+Ran the following query again
+
+Finally found the correct way of checking for a match:
+Note that the crypt function when checking has to be passed the existing password:
+SELECT first,last,password,crypt(concat(first,id), password),(password = crypt(concat(first,id), password)) AS is_valid
+FROM player;
+
 

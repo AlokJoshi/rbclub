@@ -9,6 +9,13 @@ let AdminLoggedIn = false;
 let UserLoggedIn = false;
 let UserLoggedInID = 0;
 
+// async function checkIfUserShouldBeAllowedTemporayLogin(){
+//   const q1 = await DoNameCheck()
+//   const q2 = await PopulateTerms()
+//   const q3 = await PopulateNonMembers()
+//   if(q1 && q2 && q3) showCustomAlert("You passed all checks")
+// }
+
 function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
 }
@@ -24,35 +31,13 @@ async function showCustomAlert(message) {
   alertBox.style.display = 'none';
 }
 
-async function createNonPlayerForm() {
-  try {
-    const res = await fetch('/mixofplayersandnonplayers', {
-      method: 'GET'
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    console.log(result);
-    const select = document.getElementById('nonplayersselect');
-    if (!select) return console.warn('Select element #nonplayersselect not found');
-    select.innerHTML = '';
-    result.forEach(player => {
-      const option = document.createElement('option');
-      option.value = player.first;
-      option.textContent = `${player.first}`;
-      select.appendChild(option);
-    });
-  } catch (err) {
-    console.error('Error creating non-player form:', err);
-  }
-}
-
-async function nonplayerselectChanged() {
+async function nonmemberschanged() {
   //check if the number of selection is other than 2
-  const selectElement = document.getElementById('nonplayersselect');
+  const selectElement = document.getElementById('nonmembersselect');
 
   const message = selectElement.selectedOptions.length == 2 ? "" : "Please select 2 and only 2 from the above list."
 
-  const errorEl = document.getElementById("selectnonplayersError")
+  const errorEl = document.getElementById("nonmemberserror")
 
   errorEl.innerText = message
 
@@ -60,34 +45,56 @@ async function nonplayerselectChanged() {
 
 }
 
-async function selectNonPlayers() {
-  const selectElement = document.getElementById('nonplayersselect');
+async function DoNonMembersCheck() {
+  const selectElement = document.getElementById('nonmembersselect');
+  const nonmemberscheckresult = document.getElementById('nonmemberscheckresult')
   try {
 
-    const res = await fetch('/checknonplayers', {
+    const res = await fetch('/checknonmembers', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        "nonplayers": [selectElement.selectedOptions[0].value,
+        "nonmembers": [selectElement.selectedOptions[0].value,
         selectElement.selectedOptions[1].value]
       })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const result = await res.json()
-    if (result == true) {
+
+    // const nonmemberscheckmodal = document.getElementById('nonmemberscheckmodal')
+    // nonmemberscheckmodal.style.display = 'none'
+    // const namecheckmodal = document.getElementById('namecheckmodal')
+    // namecheckmodal.style.display = 'block'
+    
+    //result object has botharenonmember and temporarylogin properties
+    const botharenonmember=result.botharenonmembers
+    const temporarylogin=result.temporarylogin
+    if (botharenonmember) {
       showCustomAlert(`Correct! ${selectElement.selectedOptions[0].value} and 
         ${selectElement.selectedOptions[1].value} do not play at our club.`)
-      return true
+      nonmemberscheckresult.innerText = "You correctly identified the non-members"
+      // return true
     } else {
       showCustomAlert(`Sorry! that answer is wrong.`)
-      return false
+      nonmemberscheckresult.innerText = "Sorry you failed to identify the non-members."
+      // return false
+    }
+    if(temporarylogin){
+      showCustomAlert ('Congratulations. You have passed all checks.')
+      //close the form
+      const form = document.getElementById("namecheckmodal")
+      form.display.style = 'none'
+    }else{
+      showCustomAlert ('Sorry. You have failed the checks.')
+      window.location.href = "localhost:3000"  
     }
   } catch (err) {
-    console.error('Error checking non-players:', err);
+    console.error('Error checking non-members:', err);
     return false
   }
+
 }
 
 async function isAdmin(userId) {
@@ -533,8 +540,8 @@ async function shouldAdmitToSite() {
   //1. Login with the provided login details
   //2. Gain admittance after proving that
   //   a. Your name matches with club user list
-  //   b. You can spot 2 non-members in a list of members and members
-  //   c. You can spot a non-bridge term in a list of bridge terms
+  //   b. You can spot a non-bridge term in a list of bridge terms
+  //   c. You can spot 2 non-members in a list of members and members
   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
   shouldAdmitToSiteModal.style.display = 'block'
 }
@@ -548,56 +555,63 @@ async function IwantToLogin() {
 async function IwantToAnswerQuestions() {
   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
   shouldAdmitToSiteModal.style.display = 'none'
-  var IwantToAnswerQuestions = document.getElementById("iwanttoanswerquestionsmodal");
+  var IwantToAnswerQuestions = document.getElementById("namecheckmodal");
   IwantToAnswerQuestions.style.display = "block";
 }
 
-async function IwantToAnswerQuestionsTermCheck() {
-  const questionsModal = document.getElementById('iwanttoanswerquestionsmodal')
-  questionsModal.style.display = 'none'
-  const termCheckModal = document.getElementById('termcheckmodal')
+async function PopulateTerms() {
+  // const questionsModal = document.getElementById('namecheckmodal')
+  // questionsModal.style.display = 'none'
+  // const termCheckModal = document.getElementById('termcheckmodal')
 
   //populate the terms
-  const res = await fetch('/bridgeterms',{
-    method:'GET'
+  const res = await fetch('/bridgeterms', {
+    method: 'GET'
   })
-  if(!res.ok) throw new Error(`HTTP ${res.status}`)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const result = await res.json()
   console.log(result);
   const select = document.getElementById('bridgeterm')
-  termCheckModal.style.display = "block";
+  // termCheckModal.style.display = "block";
   result.forEach((row) => {
-      const option = document.createElement('option');
-      option.value = row.term;
-      option.textContent = `${row.term}`;
-      select.appendChild(option);
+    const option = document.createElement('option');
+    option.value = row.term;
+    option.textContent = `${row.term}`;
+    select.appendChild(option);
   })
 }
 
-async function IwantToAnswerQuestionsNonMembersCheck() {
-  const questionsModal = document.getElementById('iwanttoanswerquestionsmodal')
-  questionsModal.style.display = 'none'
-  const termCheckModal = document.getElementById('termcheckmodal')
-
-  //populate the terms
-  const res = await fetch('/bridgeterms',{
-    method:'GET'
-  })
-  if(!res.ok) throw new Error(`HTTP ${res.status}`)
-  const result = await res.json()
-  console.log(result);
-  const select = document.getElementById('bridgeterm')
-  termCheckModal.style.display = "block";
-  result.forEach((row) => {
+async function PopulateNonMembers() {
+  // const questionsModal = document.getElementById('namecheckmodal')
+  // questionsModal.style.display = 'none'
+  // const nonmemberscheckmodal = document.getElementById('nonmemberscheckmodal')
+  // nonmemberscheckmodal.style.display = 'block'
+  try {
+    const res = await fetch('/mixofmembersandnonmembers', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log(result);
+    const select = document.getElementById('nonmembersselect');
+    if (!select) return console.warn('Select element #nonmembersselect not found');
+    select.innerHTML = '';
+    result.forEach(player => {
       const option = document.createElement('option');
-      option.value = row.term;
-      option.textContent = `${row.term}`;
+      option.value = player.first;
+      option.textContent = `${player.first}`;
       select.appendChild(option);
-  })
+    });
+  } catch (err) {
+    console.error('Error creating non-member form:', err);
+  }
 }
 
-async function checkBridgeTerm() {
-  try{
+async function DoTermCheck() {
+  document.getElementById('termcheck').style.display='none'
+  await PopulateNonMembers()
+  document.getElementById('nonmemberscheck').style.display='block'  
+  try {
 
     const select = document.getElementById('bridgeterm')
     const termcheckresult = document.getElementById('termcheckresult')
@@ -606,17 +620,17 @@ async function checkBridgeTerm() {
       showCustomAlert('Please select one invalid Bridge term and then click on this button')
     } else {
       const invalidbridgeTerm = select.selectedOptions[0].value
-      const res = await fetch(`/isinvalidbridgeterm/${invalidbridgeTerm}`,{
-        method:'GET'
+      const res = await fetch(`/isinvalidbridgeterm/${invalidbridgeTerm}`, {
+        method: 'GET'
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const result = await res.json()
-      const termcheckmodalmodal = document.getElementById('termcheckmodal')
-      termcheckmodalmodal.style.display='none'
-      const iwanttoanswerquestionsmodal = document.getElementById('iwanttoanswerquestionsmodal')
-      iwanttoanswerquestionsmodal.style.display='block'
+      const result = await res.json()
+      // const termcheckmodalmodal = document.getElementById('termcheckmodal')
+      // termcheckmodalmodal.style.display = 'none'
+      // const namecheckmodal = document.getElementById('namecheckmodal')
+      // namecheckmodal.style.display = 'block'
       if (result == true) {
-        showCustomAlert(`Correct! You seem to be know Bridge terms`)
+        showCustomAlert(`Correct! You seem to know Bridge terms`)
         termcheckresult.innerText = "You correctly identified invalid Bridge term."
         return true
       } else {
@@ -625,17 +639,21 @@ async function checkBridgeTerm() {
         return false
       }
     }
-  }catch(err){
+  } catch (err) {
     console.log(`Error while checking bridge term: ${err}`)
     showCustomAlert('Error checking bridge term:', err)
     return false
   }
 }
-async function IwantToAnswerQuestionsNameCheck() {
-  const iwantoanswerquestionsname = document.getElementById('iwantoanswerquestionsname')
-  const name = iwantoanswerquestionsname.value
+async function DoNameCheck() {
+  const myname = document.getElementById('myname')
+  const name = myname.value
   const fullname = name.replace(/\s+/g, ' ').trim().toLowerCase()
   const namecheckresult = document.getElementById('namecheckresult')
+  //hide namecheck, show termcheck
+  document.getElementById('namecheck').style.display='none'
+  await PopulateTerms()
+  document.getElementById('termcheck').style.display='block'
   try {
 
     const res = await fetch('/checkfullname', {
@@ -643,13 +661,13 @@ async function IwantToAnswerQuestionsNameCheck() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({fullname})
+      body: JSON.stringify({ fullname })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const result = await res.json()
     if (result == true) {
-      showCustomAlert(`Correct! You seem to be a member of the club`)
-      namecheckresult.innerText = "Correct! You seem to be a member of the club"
+      showCustomAlert(`Correct! You seem to a member of the club`)
+      namecheckresult.innerText = "Correct! You seem to be a member of the club."
       return true
     } else {
       showCustomAlert(`Sorry! you are not from our club`)
@@ -670,7 +688,7 @@ window.toggleColumn = toggleColumn;
 // Get the modal
 var loginModal = document.getElementById("login-modal");
 var changePasswordModal = document.getElementById("changePassword-modal");
-var selectNonPlayersModal = document.getElementById("selectnonplayersmodal");
+var nonmemberscheckmodal = document.getElementById("nonmemberscheckmodal");
 
 // Get the button that opens the modal
 // var btn = document.getElementById("open-modal-btn");
@@ -705,7 +723,9 @@ window.onclick = function (event) {
 loginModal.style.display = "none";
 
 
-createNonPlayerForm();
-// selectnonplayersmodal.style.display = "flex";
+// createNonPlayerForm();
+// nonmemberscheckmodal.style.display = "flex";
 
 shouldAdmitToSite()
+
+// checkIfUserShouldBeAllowedTemporayLogin()

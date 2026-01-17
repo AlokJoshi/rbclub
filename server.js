@@ -1,15 +1,36 @@
-const express = require('express');
 require('dotenv').config({ quiet: true });
+const express = require('express');
+const pg = require('pg');
+const pgPool = new pg.Pool({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+    port: Number(process.env.PG_PORT) || 5432,
+    ssl: { rejectUnauthorized: false } // try if cloud requires SSL    
+})
 const path = require('path');
 const app = express();
+const session = require('express-session')
 const PORT = process.env.PORT || 3000;
-const {upload} = require('./helper');
-const {userExists,addUser,passwordMatches,changePassword,
-    registeredUsers,isAdmin,getMixOfPlayersAndNonPlayers,
-    getBridgeTerms,isInvalidBridgeTerm,isNonPlayer,
-    isPlayer} = require('./credentials')
+const { upload } = require('./helper');
+const { userExists, addUser, passwordMatches, changePassword,
+    registeredUsers, isAdmin, getMixOfMembersAndNonMembers,
+    getBridgeTerms, isInvalidBridgeTerm, isNonPlayer,
+    isPlayer, globalPool } = require('./credentials')
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+    store: new (require('connect-pg-simple')(session))({
+        //connect-pg-simple options go here
+        // pool: pgPool
+        pool: globalPool
+    }),
+    secret: process.env.COOKIE_SECRET,
+    resave: false,
+    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }  //30 days
+    // Insert express-session options here
+}))
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -26,30 +47,34 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/mixofplayersandnonplayers', async (req, res) => {
-    const result = await getMixOfPlayersAndNonPlayers();
+app.get('/mixofmembersandnonmembers', async (req, res) => {
+    const result = await getMixOfMembersAndNonMembers();
     res.send(result);
 });
 
-app.get('/isinvalidbridgeterm/:term',async (req,res) => {
+app.get('/isinvalidbridgeterm/:term', async (req, res) => {
     const term = req.params.term
     const isinvalid = await isInvalidBridgeTerm(term)
-    res.send(isinvalid) 
+    req.session.termcheck = isinvalid
+    res.send(isinvalid)
 })
 
-app.put('/checknonplayers',async (req,res) => {
-    const nonplayers = req.body.nonplayers
-    const firstIsNonPlayer =  await isNonPlayer(nonplayers[0])
-    const secondIsNonPlayer =  await isNonPlayer(nonplayers[1])
-        
-    console.log(firstIsNonPlayer && secondIsNonPlayer)
-    res.send(firstIsNonPlayer && secondIsNonPlayer)
+app.put('/checknonmembers', async (req, res) => {
+    const nonmembers = req.body.nonmembers
+    const firstIsNonPlayer = await isNonPlayer(nonmembers[0])
+    const secondIsNonPlayer = await isNonPlayer(nonmembers[1])
+    const botharenonmembers = firstIsNonPlayer && secondIsNonPlayer
+    req.session.nonmemberscheck=botharenonmembers
+    const temporarylogin = req.session.nonmemberscheck &&
+    req.session.termcheck && req.session.existscheck
+    req.session.temporarylogin = temporarylogin
+    res.json({botharenonmembers,temporarylogin})
 })
 
-app.put('/checkfullname',async (req,res) => {
+app.put('/checkfullname', async (req, res) => {
     const fullname = req.body.fullname
-    const isFromClub =  await isPlayer(fullname)
-        
+    const isFromClub = await isPlayer(fullname)
+
     res.send(isFromClub)
 })
 
@@ -62,16 +87,20 @@ app.get('/bridgeterms', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     //returns an object with id and username if user exists else false
-    const user = await userExists(username);  
+    const user = await userExists(username);
     if (!user) {
         return res.json({ valid: false, message: 'User does not exist' });
-    } 
+    }
     const userId = user.rows[0].id;
     const passwordValid = await passwordMatches(username, password);
     if (!passwordValid) {
-        return res.json({  valid: false, message: 'Incorrect password' });
+        return res.json({ valid: false, message: 'Incorrect password' });
     }
-    res.json({ userId, isAdmin: isAdmin(userId), valid: true, message: 'User validated successfully' });
+    const isAdmin = isAdmin(userId)
+    req.session.username = username
+    req.session.userid = userId
+    req.session.isAdmin = isAdmin
+    res.json({ userId, isAdmin, valid: true, message: 'User validated successfully' });
 });
 
 app.post('/changepassword', async (req, res) => {
@@ -90,13 +119,13 @@ app.post('/changepassword', async (req, res) => {
     } else {
         res.status(500).json({ success: false, message: 'Failed to change password' });
     }
-}); 
+});
 
 
 
 app.get('/api/registeredusers', async (req, res) => {
     const users = await registeredUsers();
-    res.json({ users });    
+    res.json({ users });
 });
 
 app.post('/isadmin', async (req, res) => {
@@ -110,7 +139,7 @@ app.post('/isadmin', async (req, res) => {
 //in this application, list of users are pre-defined (members of the bridge club)
 app.post('/adduser', async (req, res) => {
     const { username, password } = req.body;
-    const userExistsFlag = await userExists(username);  
+    const userExistsFlag = await userExists(username);
     if (userExistsFlag) {
         return res.status(400).json({ success: false, message: 'User already exists' });
     }
@@ -124,14 +153,15 @@ app.post('/adduser', async (req, res) => {
 
 app.get('/api/playerdata', async (req, res) => {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool;
         const client = await pool.connect();
         const result = await client.query('SELECT id,image_path,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player;');
         client.release();
@@ -144,14 +174,15 @@ app.get('/api/playerdata', async (req, res) => {
 app.get('/api/playerdata/:id', async (req, res) => {
     const playerId = req.params.id;
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool;
         const client = await pool.connect();
         const result = await client.query('SELECT * FROM player where id = $1;', [playerId]);
         client.release();
@@ -164,16 +195,17 @@ app.get('/api/playerdata/:id', async (req, res) => {
 
 app.get('/api/attendance/:day', async (req, res) => {
     const day = req.params.day;
-    const query =`SELECT first, last, phone, email FROM player where ${day} order by first;`
+    const query = `SELECT first, last, phone, email FROM player where ${day} order by first;`
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool;
         const client = await pool.connect();
         const result = await client.query(query);
         client.release();
@@ -194,14 +226,15 @@ app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
     }
     console.log('Adding new player (playerdata):', { body: data, file: req.file && req.file.filename });
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool;
         const client = await pool.connect();
         const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;', [
             data.first,
@@ -245,21 +278,22 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
     console.log('Updating player:', playerId, { body: data, file: req.file && req.file.filename });
     const filename = req.newFileName
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool;
         const client = await pool.connect();
         const result = await client.query('UPDATE player SET first=$1, last=$2, email=$3, phone=$4, dob_month=$5, acblNumber=$6, ice_phone=$7, ice_relation=$8, m1=$9, t1=$10, f1=$11, ug=$12, image_path=$13 WHERE id = $14 RETURNING *;', [
             data.first,
             data.last,
             data.email,
             data.phone,
-            data.dob_month==''||data.dob_month===null?0:data.dob_month,
+            data.dob_month == '' || data.dob_month === null ? 0 : data.dob_month,
             data.acblNumber,
             data.ice_phone,
             data.ice_relation,
@@ -292,14 +326,15 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
 app.delete('/api/playerdata/:id', async (req, res) => {
     const playerId = req.params.id;
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool;
         const client = await pool.connect();
         const result = await client.query('DELETE FROM player WHERE id = $1 RETURNING *;', [playerId]);
         client.release();
@@ -315,18 +350,21 @@ app.delete('/api/playerdata/:id', async (req, res) => {
 
 async function playerExists(first, last) {
     try {
-        const pool = new Pool({
-            user: process.env.PG_USER,
-            host: process.env.PG_HOST,
-            database: process.env.PG_DATABASE,
-            password: process.env.PG_PASSWORD,
-            port: Number(process.env.PG_PORT) || 5432,
-            ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        });
+        // const pool = new Pool({
+        //     user: process.env.PG_USER,
+        //     host: process.env.PG_HOST,
+        //     database: process.env.PG_DATABASE,
+        //     password: process.env.PG_PASSWORD,
+        //     port: Number(process.env.PG_PORT) || 5432,
+        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
+        // });
+        const pool = globalPool;
         const client = await pool.connect();
         const result = await client.query('SELECT EXISTS(SELECT 1 FROM player WHERE first = $1 AND last = $2)', [first, last]);
         client.release();
-        return result.rows[0].exists;
+        const exists = result.rows[0].exists;
+        req.session.existscheck = exists
+        return exists;
     } catch (err) {
         console.error('Error checking if player exists:', err);
         return false;
