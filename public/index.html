@@ -29,12 +29,12 @@
 			<div class="content">
 				<h2 id="listofplayers">List of players</h2>
 				<h2>Display:</h2>
-				<input type="checkbox" id="DOB_Month" onclick="toggleColumn('#playertable', 5);"><label
+				<input type="checkbox" id="DOB_Month" onclick="toggleColumn('#playertable', 6);"><label
 					for="DOB_Month">DOB(Month)</label>
-				<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 3);"><label for="Email">Email</label>
-				<input type="checkbox" id="Ice_phone" onclick="toggleColumn('#playertable', 6);"><label
+				<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 4);"><label for="Email">Email</label>
+				<input type="checkbox" id="Ice_phone" onclick="toggleColumn('#playertable', 7);"><label
 					for="Ice_phone">ICE_Phone</label>
-				<input type="checkbox" id="ICE_Relation" onclick="toggleColumn('#playertable', 7);"><label
+				<input type="checkbox" id="ICE_Relation" onclick="toggleColumn('#playertable', 8);"><label
 					for="ICE_Relation">ICE_Relation</label>
 				<!-- <span class="image fill" data-position="center"><img src="images/pic01.jpg" alt="" /></span> -->
 				<table id="playertable">
@@ -268,101 +268,60 @@
 	</div>
 
 	<!-- The Modal -->
-	<div id="nonmemberscheckmodal" class="modal wrap">
-
-		<!-- Modal content -->
-		<div class="modal-content">
-			<span class="close">&times;</span>
-			<h2>Select Non-Members</h2>
-			<form action="">
-				<div class="fields">
-
-					<div class="field full">
-						<label for="nonmembersselect">Choose two players who are not members of our club(hold Ctrl/Shift):</label>
-						<select name="nonmembersselect" id="nonmembersselectx" style="height:200px;" onchange="nonmemberschanged()"
-							multiple>
-						</select>
-						<p id="nonmemberserrorx" style="color: red; padding-top:0px"></p>
-					</div>
-					<div class="field full wrap">
-						<button class="button primary" type="button" style="margin-top: 30px;" onclick="DoNonMembersCheck()">
-							Select Non-Members
-						</button>
-					</div>
-				</div>
-			</form>
-		</div> <!--modal content -->
-	</div> <!--nonmemberscheckmodal -->
-
-	<!-- The Modal -->
-	<div id="termcheckmodal" class="modal wrap">
-
-		<!-- Modal content -->
-		<div class="modal-content">
-			<span class="close">&times;</span>
-			<h2>Bridge Term Check</h2>
-			<form action="">
-				<div class="fields">
-
-					<div class="field full">Select One term that does not make sense in game of Bridge:</label>
-						<select name="bridgeterm" id="bridgetermx" style="height:200px;" multiple>
-						</select>
-						<p id="termcheckErrorx" style="color: red; padding-top:0px"></p>
-					</div>
-					<div class="field full wrap">
-						<button class="button primary" type="button" style="margin-top: 30px;" onclick="DoTermCheck()">
-							Submit (Invalid Bridge Term)
-						</button>
-					</div>
-				</div>
-			</form>
-		</div> <!--modal content -->
-	</div> <!--termcheckmodal -->
-
-	<!-- The Modal -->
 	<div id="shouldadmittositemodal" class="modal wrap">
 
 		<!-- Modal content -->
 		<div class="modal-content">
 			<span class="close">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
-			<p>Please note that this web-site is for current members of the club.</p>
-			<p>All club members have been sent their login credentials: username and
-				password. The most straightforward method to get access to the site is to
-				click on the Login button below.
+			<p>Please note that this web-site is for current members of the club.All club members have been sent their login credentials: username and
+				password. The most straightforward method to get full access to the site is to
+				click on the Login button below. For this you will need the username and
+				password that was sent to you. Please note that the password that was sent to you
+				was a temporary password and if you use that password you will not be able to make
+				any changes.
 			</p>
 			<button type="button" onclick="IwantToLogin()">Login</button>
 			<p>If you did not receive your credentials or if you have forgotten them
 				you can gain access to the site by proving that you are a member of the club.
 				You do this by</p>
-			a. Providing your name (which will be checked against club records)
-			<br>
-			b. By making a simple check on your bridge knowledge
-			<br>
-			c. By checking if you can identify 2 non-members from a list
-			<br>
-			<p>If you get all these right you will get a limited access to the site</p>
+			<p>Providing your name and phone number which will both be checked against the club records.</p>
+			<p>If you get these right you will get a limited access to the site</p>
 			<button type="button" onclick="IwantToAnswerQuestions()">I want to answer questions</button>
 
 		</div> <!--modal content -->
 	</div> <!--shouldadmittositemodal -->
 
 	<!-- The Modal -->
-	<div id="namecheckmodal" class="modal wrap">
-
+	<div id="nameandphonecheck" class="modal wrap">
 		<!-- Modal content -->
 		<div class="modal-content">
 			<span class="close">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
-			<h3 id="namecheckresult"></h3>
-			<h3 id="termcheckresult"></h3>
-			<h3 id="nonmemberscheckresult"></h3>
-			<div id="namecheck" style="display:block">
-				<p>We will check if you are part of our club. What is your name? e.g. John Smith</p>
-				<input type="text" name="myname" id="myname">
-				<button type="button" onclick="DoNameCheck()">Check</button>
+			<h3 id="nameandphonecheckresult"></h3>
+			<!-- <h3 id="termcheckresult"></h3>
+			<h3 id="nonmemberscheckresult"></h3> -->
+			<div class="fields" id="nameandphonechecksection" style="display:block">
+
+				<div class="field full">
+					<label for="myname">
+						We will check if you are part of our club. What is your name? e.g. John Smith
+					</label>
+					<input type="text" name="myname" id="myname">
+				</div>
+
+				<div class="field full">
+					<label for="myname">
+						And your phone number?
+					</label>
+					<input type="tel" name="myphone" id="myphone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="555-555-5555">
+				</div>
+
+				<div class="field full">
+					<button type="button" onclick="DoNameCheck()">Check</button>
+				</div>
 			</div>
-			<div id="termcheck" style="display:none">
+			<!-- <div id="termcheck" style="display:none">
 				<p>You will now have to select a term which is not generally used in Bridge</p>
 				<form action="">
 					<div class="fields">
@@ -378,8 +337,8 @@
 						</div>
 					</div>
 				</form>
-			</div>
-			<div id="nonmemberscheck" style="display:none">
+			</div> -->
+			<!-- <div id="nonmemberscheck" style="display:none">
 				<p>Hopefully you know who plays at your club and who is not a member. You will
 					have to pick 2 persons who do not play at the club.
 				</p>
@@ -399,7 +358,7 @@
 						</div>
 					</div>
 				</form>
-			</div>
+			</div> -->
 		</div> <!--modal content -->
 	</div> <!--iwanttoanswerquestions -->
 

@@ -65,12 +65,12 @@ async function DoNonMembersCheck() {
 
     // const nonmemberscheckmodal = document.getElementById('nonmemberscheckmodal')
     // nonmemberscheckmodal.style.display = 'none'
-    // const namecheckmodal = document.getElementById('namecheckmodal')
-    // namecheckmodal.style.display = 'block'
-    
+    // const nameandphonecheck = document.getElementById('nameandphonecheck')
+    // nameandphonecheck.style.display = 'block'
+
     //result object has botharenonmember and temporarylogin properties
-    const botharenonmember=result.botharenonmembers
-    const temporarylogin=result.temporarylogin
+    const botharenonmember = result.botharenonmembers
+    const temporarylogin = result.temporarylogin
     if (botharenonmember) {
       showCustomAlert(`Correct! ${selectElement.selectedOptions[0].value} and 
         ${selectElement.selectedOptions[1].value} do not play at our club.`)
@@ -81,14 +81,14 @@ async function DoNonMembersCheck() {
       nonmemberscheckresult.innerText = "Sorry you failed to identify the non-members."
       // return false
     }
-    if(temporarylogin){
-      showCustomAlert ('Congratulations. You have passed all checks.')
+    if (temporarylogin) {
+      showCustomAlert('Congratulations. You have passed all checks.')
       //close the form
-      const form = document.getElementById("namecheckmodal")
-      form.display.style = 'none'
-    }else{
-      showCustomAlert ('Sorry. You have failed the checks.')
-      window.location.href = "localhost:3000"  
+      const form = document.getElementById("nameandphonecheck")
+      form.style.display = 'none'
+    } else {
+      showCustomAlert('Sorry. You have failed the checks.')
+      window.location.href = "localhost:3000"
     }
   } catch (err) {
     console.error('Error checking non-members:', err);
@@ -268,7 +268,7 @@ async function SubmitChanges() {
   el.focus();
 
   ClearForm();
-  DisableSubmitButton(true);
+  DisableSubmitButton(false);
 
   return res.json(); // updated resource (if returned)  
 }
@@ -321,6 +321,7 @@ async function PopulateFormForEdit(playerId) {
   // Placeholder function to populate form for editing a player
   console.log(`Populate form for editing player with ID: ${playerId}`);
   try {
+    DisableSubmitButton(false)
     const res = await fetch(`/api/playerdata/${playerId}`, {
       method: 'GET'
     });
@@ -328,7 +329,6 @@ async function PopulateFormForEdit(playerId) {
     const result = await res.json();
     console.log(result[0]);
     document.getElementById('playerImageDisplay').src = result[0].image_path === null || result[0].image_path === '' ? 'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
-    // document.getElementById('playerImagePreview').src = result[0].image_path===null ||result[0].image_path===''?'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1':`https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
     document.getElementById('playerId').value = result[0].id || '';
     document.getElementById('firstName').value = result[0].first || '';
     document.getElementById('lastName').value = result[0].last || '';
@@ -410,23 +410,55 @@ async function createPlayerTable() {
       const tr = document.createElement('tr');
       // append cells in the order the server returned them
       col_index = 0;
-      Object.values(row).forEach(val => {
+
+      Object.entries(row).forEach(entry => {
+        const key = entry[0]
+        const val = entry[1]
+
+        console.log(key, val)
         const td = document.createElement('td');
-        if (playerid_index === col_index && !show_playerid) {
-          td.classList.add('col-hidden');
+
+        if (playerid_index==col_index && key == 'id') {
+          if (!show_playerid) {
+            td.classList.add('col-hidden');
+          } else {
+            td.classList.remove('col-hidden');
+          }
         }
-        if (dob_month_index === col_index && !show_dob_month) {
-          td.classList.add('col-hidden');
+
+        if (dob_month_index==col_index && key == "dob_month") {
+          if (!show_dob_month) {
+            td.classList.add('col-hidden');
+          } else {
+            td.classList.remove('col-hidden');
+          }
         }
-        if (email_index === col_index && !show_email) {
-          td.classList.add('col-hidden');
+
+        if (email_index == col_index && key == "email") {
+          if (!show_email) {
+            td.classList.add('col-hidden');
+          } else {
+            td.classList.remove('col-hidden');
+          }
         }
-        if (ice_phone_index === col_index && !show_ice_phone) {
-          td.classList.add('col-hidden');
+
+        if (ice_phone_index == col_index && key == "ice_phone") {
+          if (!show_ice_phone) {
+            td.classList.add('col-hidden');
+          } else {
+            td.classList.remove('col-hidden');
+          }
         }
-        if (ice_relation_index === col_index && !show_ice_relation) {
-          td.classList.add('col-hidden');
+
+        if (ice_relation_index == col_index && key == "ice_relation") {
+          if (!show_ice_relation) {
+            td.classList.add('col-hidden');
+          } else {
+            td.classList.remove('col-hidden');
+          }
         }
+
+        
         if (image_index === col_index) {
           const img = document.createElement('img');
           if (val === null || val === '') {
@@ -555,12 +587,12 @@ async function IwantToLogin() {
 async function IwantToAnswerQuestions() {
   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
   shouldAdmitToSiteModal.style.display = 'none'
-  var IwantToAnswerQuestions = document.getElementById("namecheckmodal");
+  var IwantToAnswerQuestions = document.getElementById("nameandphonecheck");
   IwantToAnswerQuestions.style.display = "block";
 }
 
 async function PopulateTerms() {
-  // const questionsModal = document.getElementById('namecheckmodal')
+  // const questionsModal = document.getElementById('nameandphonecheck')
   // questionsModal.style.display = 'none'
   // const termCheckModal = document.getElementById('termcheckmodal')
 
@@ -582,7 +614,7 @@ async function PopulateTerms() {
 }
 
 async function PopulateNonMembers() {
-  // const questionsModal = document.getElementById('namecheckmodal')
+  // const questionsModal = document.getElementById('nameandphonecheck')
   // questionsModal.style.display = 'none'
   // const nonmemberscheckmodal = document.getElementById('nonmemberscheckmodal')
   // nonmemberscheckmodal.style.display = 'block'
@@ -608,9 +640,9 @@ async function PopulateNonMembers() {
 }
 
 async function DoTermCheck() {
-  document.getElementById('termcheck').style.display='none'
+  document.getElementById('termcheck').style.display = 'none'
   await PopulateNonMembers()
-  document.getElementById('nonmemberscheck').style.display='block'  
+  document.getElementById('nonmemberscheck').style.display = 'block'
   try {
 
     const select = document.getElementById('bridgeterm')
@@ -627,8 +659,8 @@ async function DoTermCheck() {
       const result = await res.json()
       // const termcheckmodalmodal = document.getElementById('termcheckmodal')
       // termcheckmodalmodal.style.display = 'none'
-      // const namecheckmodal = document.getElementById('namecheckmodal')
-      // namecheckmodal.style.display = 'block'
+      // const nameandphonecheck = document.getElementById('nameandphonecheck')
+      // nameandphonecheck.style.display = 'block'
       if (result == true) {
         showCustomAlert(`Correct! You seem to know Bridge terms`)
         termcheckresult.innerText = "You correctly identified invalid Bridge term."
@@ -649,11 +681,13 @@ async function DoNameCheck() {
   const myname = document.getElementById('myname')
   const name = myname.value
   const fullname = name.replace(/\s+/g, ' ').trim().toLowerCase()
-  const namecheckresult = document.getElementById('namecheckresult')
-  //hide namecheck, show termcheck
-  document.getElementById('namecheck').style.display='none'
-  await PopulateTerms()
-  document.getElementById('termcheck').style.display='block'
+  const phone = document.getElementById('myphone').value
+  const nameandphonecheckresult = document.getElementById('nameandphonecheckresult')
+  let ok
+  //hide nameandphonechecksection, show termcheck
+  document.getElementById('nameandphonechecksection').style.display = 'none'
+  // await PopulateTerms()
+  // document.getElementById('termcheck').style.display='block'
   try {
 
     const res = await fetch('/checkfullname', {
@@ -661,23 +695,30 @@ async function DoNameCheck() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ fullname })
+      body: JSON.stringify({ fullname, phone })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const result = await res.json()
     if (result == true) {
       showCustomAlert(`Correct! You seem to a member of the club`)
-      namecheckresult.innerText = "Correct! You seem to be a member of the club."
-      return true
+      nameandphonecheckresult.innerText = "Correct! You seem to be a member of the club."
+      ok = true
     } else {
       showCustomAlert(`Sorry! you are not from our club`)
-      namecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
-      return false
+      nameandphonecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
+      ok = false
     }
   } catch (err) {
     console.error('Error checking full name:', err);
     showCustomAlert('Error checking full name:', err)
-    return false
+    ok = false
+  }
+  delay(5000)
+  if (ok) {
+    const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
+    nameandphonecheckmodal.style.display = 'none'
+  } else {
+    window.location = '/'
   }
 }
 
@@ -687,8 +728,8 @@ window.toggleColumn = toggleColumn;
 // added for modal forms
 // Get the modal
 var loginModal = document.getElementById("login-modal");
-var changePasswordModal = document.getElementById("changePassword-modal");
-var nonmemberscheckmodal = document.getElementById("nonmemberscheckmodal");
+// var changePasswordModal = document.getElementById("changePassword-modal");
+// var nonmemberscheckmodal = document.getElementById("nonmemberscheckmodal");
 
 // Get the button that opens the modal
 // var btn = document.getElementById("open-modal-btn");
@@ -711,21 +752,57 @@ span2.onclick = function () {
 }
 
 // When the user clicks anywhere outside of the modal, close it
-window.onclick = function (event) {
-  if (event.target == loginModal) {
-    loginModal.style.display = "none";
-  }
-}
+// window.onclick = function (event) {
+//   if (event.target == loginModal) {
+//   }
+// }
 
 // changePasswordModal.style.display = "flex";
 
 //set this to block to see the login modal
-loginModal.style.display = "none";
+// loginModal.style.display = "none";
 
 
 // createNonPlayerForm();
 // nonmemberscheckmodal.style.display = "flex";
 
-shouldAdmitToSite()
+// shouldAdmitToSite()
 
 // checkIfUserShouldBeAllowedTemporayLogin()
+async function getSessionDetails() {
+  try {
+
+    const res = await fetch('/get-session-id', {
+      method: 'GET'
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const result = await res.json()
+    return [result.sessionId, result.securelogin]
+
+  } catch (err) {
+
+    console.error('API error:', err);
+  }
+}
+
+async function decide() {
+  const [sessionId, securelogin] = await getSessionDetails()
+  console.log(sessionId, securelogin)
+  const shouldadmittositemodal = document.getElementById('shouldadmittositemodal')
+  // Check if the session exists
+  // const [sessionid,securelogin]= await isUserLoggedIn()
+  if (sessionId && !securelogin) {
+    showCustomAlert('Note that you are logged in but not with a strong password. Hence you will not be able to make any changes.')
+    shouldadmittositemodal.style.display = 'none'
+  } else if (sessionId && securelogin) {
+    shouldadmittositemodal.style.display = 'none'
+  } else {
+    shouldadmittositemodal.style.display = 'none'
+    console.log("User is not logged in, redirecting to login.");
+  }
+}
+
+decide()
+

@@ -65,16 +65,19 @@ app.put('/checknonmembers', async (req, res) => {
     const secondIsNonPlayer = await isNonPlayer(nonmembers[1])
     const botharenonmembers = firstIsNonPlayer && secondIsNonPlayer
     req.session.nonmemberscheck=botharenonmembers
-    const temporarylogin = req.session.nonmemberscheck &&
-    req.session.termcheck && req.session.existscheck
+    const temporarylogin = botharenonmembers &&
+    req.session.termcheck && req.session.namecheck
     req.session.temporarylogin = temporarylogin
-    res.json({botharenonmembers,temporarylogin})
+
+    res.json({botharenonmembers:botharenonmembers,
+        temporarylogin:temporarylogin})
 })
 
 app.put('/checkfullname', async (req, res) => {
     const fullname = req.body.fullname
-    const isFromClub = await isPlayer(fullname)
-
+    const phone = req.body.phone
+    const isFromClub = await isPlayer(fullname,phone)
+    req.session.namecheck = isFromClub
     res.send(isFromClub)
 })
 
@@ -83,6 +86,11 @@ app.get('/bridgeterms', async (req, res) => {
     const result = await getBridgeTerms();
     res.send(result);
 });
+
+app.get('/logout', async (req, res) => {
+    req.session=null
+    res.send(true)
+})
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -96,11 +104,11 @@ app.post('/login', async (req, res) => {
     if (!passwordValid) {
         return res.json({ valid: false, message: 'Incorrect password' });
     }
-    const isAdmin = isAdmin(userId)
+    const admin = isAdmin(userId)
     req.session.username = username
     req.session.userid = userId
     req.session.isAdmin = isAdmin
-    res.json({ userId, isAdmin, valid: true, message: 'User validated successfully' });
+    res.json({ userId, isAdmin: admin, valid: true, message: 'User validated successfully' });
 });
 
 app.post('/changepassword', async (req, res) => {
@@ -163,7 +171,8 @@ app.get('/api/playerdata', async (req, res) => {
         // });
         const pool = globalPool;
         const client = await pool.connect();
-        const result = await client.query('SELECT id,image_path,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player;');
+        //order by last
+        const result = await client.query('SELECT id,image_path,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player order by last;');
         client.release();
         res.json(result.rows);
     } catch (err) {
@@ -224,7 +233,7 @@ app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
     if (alreadyExists) {
         return res.status(400).json({ error: 'Player with the same first and last name already exists' });
     }
-    console.log('Adding new player (playerdata):', { body: data, file: req.file && req.file.filename });
+    // console.log('Adding new player (playerdata):', { body: data, file: req.file && req.file.filename });
     try {
         // const pool = new Pool({
         //     user: process.env.PG_USER,
@@ -348,6 +357,19 @@ app.delete('/api/playerdata/:id', async (req, res) => {
     }
 });
 
+app.get('/get-session-id', (req, res) => {
+  // Check if a session exists
+  if (req.session) {
+    // Access the session ID
+    const sessionId = req.sessionID;
+    const securelogin = req.session.securelogin||false
+    console.log('Session ID:', sessionId);
+    res.json({sessionId,securelogin});
+  } else {
+    res.json(sessionId);
+  }
+});
+
 async function playerExists(first, last) {
     try {
         // const pool = new Pool({
@@ -363,7 +385,6 @@ async function playerExists(first, last) {
         const result = await client.query('SELECT EXISTS(SELECT 1 FROM player WHERE first = $1 AND last = $2)', [first, last]);
         client.release();
         const exists = result.rows[0].exists;
-        req.session.existscheck = exists
         return exists;
     } catch (err) {
         console.error('Error checking if player exists:', err);
