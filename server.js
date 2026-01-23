@@ -180,43 +180,23 @@ app.post('/isadmin', async (req, res) => {
 //     }
 // });
 
-app.get('/api/playerdata', async (req, res) => {
+app.get('/api/playerdata', (req, res) => {
     try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool;
-        const client = await pool.connect();
+        const stmt = db.prepare('SELECT id,image_path,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player order by last;');
         //order by last
-        const result = await client.query('SELECT id,image_path,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player order by last;');
-        client.release();
-        res.json(result.rows);
+        const result = stmt.all();        
+        res.json(result);
     } catch (err) {
         console.error('Error fetching player data:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-app.get('/api/playerdata/:id', async (req, res) => {
+app.get('/api/playerdata/:id',  (req, res) => {
     const playerId = req.params.id;
     try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool;
-        const client = await pool.connect();
-        const result = await client.query('SELECT * FROM player where id = $1;', [playerId]);
-        client.release();
-        res.json(result.rows);
+        const stmt = db.prepare('SELECT * FROM player where id = ?;');
+        const result = stmt.get(playerId);
+        res.json(result);
     } catch (err) {
         console.error('Error fetching player data:', err);
         res.status(500).json({ error: 'Internal server error' });
