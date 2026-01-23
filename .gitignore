@@ -1,6 +1,10 @@
 # Node
 node_modules/
 
+# database files
+*.sqlite
+*.sqlite3
+
 # Logs
 logs/
 *.log
@@ -54,4 +58,4 @@ uploads/
 
 test-pg.js
 
-testrest.http
+*.http

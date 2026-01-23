@@ -3,7 +3,63 @@ GET http://localhost:3000/api/registeredusers
 Accept: application/json
 
 ###
+
+PUT http://localhost:3000/bulkregister
+Content-Type: application/json
+
+{"users": [
+{"first": "Alok","last": "Joshi"} ,
+{"first": "Sadhna","last": "Joshi"} ,
+{"first": "Steven","last": "Tinling"} ,
+{"first": "Nony","last": "Bernal"} ,
+{"first": "David","last": "Kennedy"} ,
+{"first": "Scott","last": "Miller"}, 
+{"first": "Laura","last": "Miller"}, 
+{"first": "Elizabeth","last": "Silvius"} ,
+{"first": "Doreen","last": "Grant"} ,
+{"first": "Bruce","last": "Thompson"},
+{"first": "Gloria","last": "Harrison"},
+{"first": "Jan","last": "Geldreich"} ,
+{"first": "Theo","last": "Palmer"} ,
+{"first": "Linda","last": "Pearce"} ,
+{"first": "Kathy","last": "Kulsic"} ,
+{"first": "Chris","last": "Clautice"} ,
+{"first": "Bob","last": "Ritzau"} ,
+{"first": "Mary Ann","last": "Braden"}, 
+{"first": "James","last": "Tanner"} ,
+{"first": "James","last": "Borcuk"} ,
+{"first": "Alma","last": "Borcuk"} ,
+{"first": "George","last": "Pooley"} ,
+{"first": "Carma","last": "Pooley"} ,
+{"first": "Leo","last": "Harrison"},
+{"first": "Chris","last": "Marin"},
+{"first": "Celine","last": "Butler"},
+{"first": "Diane","last": "Marsh"},
+{"first": "Elliott","last": "Meltzer"},
+{"first": "Rober","last": "Davis"},
+{"first": "Virginia","last": "Devoe"},
+{"first": "Emoke","last": "Gasper"},
+{"first": "David","last": "Brown"},
+{"first": "Kitty","last": "Moon"},
+{"first": "Sharon","last": "Neiman"},
+{"first": "Anna","last": "Souza"},
+{"first": "Gonzalo","last": "Souza"},
+{"first": "Paul","last": "Caslavka"},
+{"first": "Clark","last": "Dupont"}
+]}
+
+### This should fail because alok2 username already exists
+PUT http://localhost:3000/register
+Content-Type: application/json
+
+{
+  "first": "Alok",
+  "last": "Joshi",
+  "username": "alokj"
+}
+
 ###
+
 POST http://localhost:3000/login
 Content-Type: application/json
 

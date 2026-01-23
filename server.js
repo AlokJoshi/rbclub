@@ -1,36 +1,50 @@
 require('dotenv').config({ quiet: true });
 const express = require('express');
-const pg = require('pg');
-const pgPool = new pg.Pool({
-    user: process.env.PG_USER,
-    host: process.env.PG_HOST,
-    database: process.env.PG_DATABASE,
-    password: process.env.PG_PASSWORD,
-    port: Number(process.env.PG_PORT) || 5432,
-    ssl: { rejectUnauthorized: false } // try if cloud requires SSL    
-})
+const sqlite = require('better-sqlite3');
+const session = require('express-session')
+const SqliteStore = require('better-sqlite3-session-store')(session);
+const bcrypt = require('bcrypt');
+
+
 const path = require('path');
 const app = express();
-const session = require('express-session')
 const PORT = process.env.PORT || 3000;
 const { upload } = require('./helper');
-const { userExists, addUser, passwordMatches, changePassword,
-    registeredUsers, isAdmin, getMixOfMembersAndNonMembers,
+const { userExists, addUser, login, changePassword,
+    registeredUsers, isAdmin, register, bulkregister,
     getBridgeTerms, isInvalidBridgeTerm, isNonPlayer,
-    isPlayer, globalPool } = require('./credentials')
+    isPlayer } = require('./credentials')
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+// 1. Initialize the SQLite database
+// connects to the existing SQLite database
+const db = new sqlite('mydb.sqlite', { verbose: console.log });
+
+// Optional: Enable WAL mode for better performance
+db.pragma('journal_mode = WAL');
+
+// 2. Configure session middleware
 app.use(session({
-    store: new (require('connect-pg-simple')(session))({
-        //connect-pg-simple options go here
-        // pool: pgPool
-        pool: globalPool
+    store: new SqliteStore({
+        client: db,
+
+        expired: {
+        clear: true, // Automatically clear expired sessions
+        intervalMs: 900000 // Interval in milliseconds (15 minutes) for the cleanup check
+      }
     }),
-    secret: process.env.COOKIE_SECRET,
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }  //30 days
-    // Insert express-session options here
-}))
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Use true if serving over HTTPS
+      maxAge: 1000 * 60 * 60 * 24, // Cookie expiration in milliseconds (e.g., 1 day)
+      sameSite: 'lax' // Recommended to mitigate CSRF
+    }
+}));    
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -40,23 +54,30 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-const { Pool } = require('pg');
-
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/mixofmembersandnonmembers', async (req, res) => {
-    const result = await getMixOfMembersAndNonMembers();
-    res.send(result);
-});
 
 app.get('/isinvalidbridgeterm/:term', async (req, res) => {
     const term = req.params.term
     const isinvalid = await isInvalidBridgeTerm(term)
     req.session.termcheck = isinvalid
     res.send(isinvalid)
+})
+
+app.put('/bulkregister', (req, res) => {
+    const users = req.body.users
+    const registrationresult = bulkregister(users) 
+    res.json(registrationresult)
+})
+
+app.put('/register', (req, res) => {
+    const first = req.body.first
+    const last = req.body.last
+    const username = req.body.username
+    const registrationresult = register(first, last, username) 
+    res.json(registrationresult)
 })
 
 app.put('/checknonmembers', async (req, res) => {
@@ -132,7 +153,7 @@ app.post('/changepassword', async (req, res) => {
 
 
 app.get('/api/registeredusers', async (req, res) => {
-    const users = await registeredUsers();
+    const users = registeredUsers();
     res.json({ users });
 });
 
@@ -145,19 +166,19 @@ app.post('/isadmin', async (req, res) => {
 //add user route should be available only to superuser or admin in real application
 //this is because anyone can hit this endpoint and create users whereas
 //in this application, list of users are pre-defined (members of the bridge club)
-app.post('/adduser', async (req, res) => {
-    const { username, password } = req.body;
-    const userExistsFlag = await userExists(username);
-    if (userExistsFlag) {
-        return res.status(400).json({ success: false, message: 'User already exists' });
-    }
-    const success = await addUser(username, password);
-    if (success) {
-        res.json({ success: true, message: 'User added successfully' });
-    } else {
-        res.status(500).json({ success: false, message: 'Failed to add user' });
-    }
-});
+// app.post('/adduser', async (req, res) => {
+//     const { username, password } = req.body;
+//     const userExistsFlag = await userExists(username);
+//     if (userExistsFlag) {
+//         return res.status(400).json({ success: false, message: 'User already exists' });
+//     }
+//     const success = await addUser(username, password);
+//     if (success) {
+//         res.json({ success: true, message: 'User added successfully' });
+//     } else {
+//         res.status(500).json({ success: false, message: 'Failed to add user' });
+//     }
+// });
 
 app.get('/api/playerdata', async (req, res) => {
     try {

@@ -9,13 +9,6 @@ let AdminLoggedIn = false;
 let UserLoggedIn = false;
 let UserLoggedInID = 0;
 
-// async function checkIfUserShouldBeAllowedTemporayLogin(){
-//   const q1 = await DoNameCheck()
-//   const q2 = await PopulateTerms()
-//   const q3 = await PopulateNonMembers()
-//   if(q1 && q2 && q3) showCustomAlert("You passed all checks")
-// }
-
 function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
 }
@@ -613,70 +606,7 @@ async function PopulateTerms() {
   })
 }
 
-async function PopulateNonMembers() {
-  // const questionsModal = document.getElementById('nameandphonecheck')
-  // questionsModal.style.display = 'none'
-  // const nonmemberscheckmodal = document.getElementById('nonmemberscheckmodal')
-  // nonmemberscheckmodal.style.display = 'block'
-  try {
-    const res = await fetch('/mixofmembersandnonmembers', {
-      method: 'GET'
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    console.log(result);
-    const select = document.getElementById('nonmembersselect');
-    if (!select) return console.warn('Select element #nonmembersselect not found');
-    select.innerHTML = '';
-    result.forEach(player => {
-      const option = document.createElement('option');
-      option.value = player.first;
-      option.textContent = `${player.first}`;
-      select.appendChild(option);
-    });
-  } catch (err) {
-    console.error('Error creating non-member form:', err);
-  }
-}
 
-async function DoTermCheck() {
-  document.getElementById('termcheck').style.display = 'none'
-  await PopulateNonMembers()
-  document.getElementById('nonmemberscheck').style.display = 'block'
-  try {
-
-    const select = document.getElementById('bridgeterm')
-    const termcheckresult = document.getElementById('termcheckresult')
-    //now hide this modal
-    if (select.selectedOptions.length !== 1) {
-      showCustomAlert('Please select one invalid Bridge term and then click on this button')
-    } else {
-      const invalidbridgeTerm = select.selectedOptions[0].value
-      const res = await fetch(`/isinvalidbridgeterm/${invalidbridgeTerm}`, {
-        method: 'GET'
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const result = await res.json()
-      // const termcheckmodalmodal = document.getElementById('termcheckmodal')
-      // termcheckmodalmodal.style.display = 'none'
-      // const nameandphonecheck = document.getElementById('nameandphonecheck')
-      // nameandphonecheck.style.display = 'block'
-      if (result == true) {
-        showCustomAlert(`Correct! You seem to know Bridge terms`)
-        termcheckresult.innerText = "You correctly identified invalid Bridge term."
-        return true
-      } else {
-        showCustomAlert(`Sorry! you failed to identify the invalid Bridge term.`)
-        termcheckresult.innerText = `Sorry ${invalidbridgeTerm} is a valid Bridge term.`
-        return false
-      }
-    }
-  } catch (err) {
-    console.log(`Error while checking bridge term: ${err}`)
-    showCustomAlert('Error checking bridge term:', err)
-    return false
-  }
-}
 async function DoNameCheck() {
   const myname = document.getElementById('myname')
   const name = myname.value
