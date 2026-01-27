@@ -1,13 +1,5 @@
-// const express = require("express");
-
-function greet(name) {
-  return `Hello, ${name}!`;
-}
-
-//Global variables
-let AdminLoggedIn = false;
-let UserLoggedIn = false;
-let UserLoggedInID = 0;
+//global
+let sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin
 
 function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
@@ -22,6 +14,41 @@ async function showCustomAlert(message) {
   // Fade out effect
   alertBox.style.transition = 'opacity 0.5s';
   alertBox.style.display = 'none';
+}
+
+function displaynameandphonecheckform() {
+  const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
+  nameandphonecheckmodal.style.display = 'block'
+}
+function displayloginform() {
+  const loginmodal = document.getElementById('loginmodal')
+  loginmodal.style.display = 'block'
+}
+function displaychangepasswordform() {
+  const changepasswordmodal = document.getElementById('changepasswordmodal')
+  changepasswordmodal.style.display = 'block'
+}
+function displayaddnewplayerform() {
+  const addnewplayermodal = document.getElementById('addnewplayermodal')
+  addnewplayermodal.style.display = 'block'
+}
+
+async function logout() {
+  try {
+    const res = await fetch('/logout', {
+      method: 'POST'
+    });
+    
+    if (!res.ok) {
+      throw new Error('Logout failed');
+    }
+    
+    showCustomAlert('You have been logged out.');
+    decide();
+  } catch (err) {
+    console.error('Logout error:', err);
+    showCustomAlert('Error during logout.');
+  }
 }
 
 async function nonmemberschanged() {
@@ -90,25 +117,6 @@ async function DoNonMembersCheck() {
 
 }
 
-async function isAdmin(userId) {
-  try {
-    const res = await fetch('/isadmin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ userId })
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    return result.isAdmin;
-  } catch (err) {
-    console.error('Error checking admin status:', err);
-    return false;
-  }
-}
-
-
 async function login() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
@@ -122,17 +130,22 @@ async function login() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result);
-    UserLoggedIn = true;
-    UserLoggedInID = result.userId;
-    AdminLoggedIn = result.isAdmin;
-    console.log(`Is Admin: ${AdminLoggedIn}`);
-    showCustomAlert('Successfully logged in ' + username + (AdminLoggedIn ? ' (Admin)' : ''));
+    if (!result.valid) {
+      showCustomAlert('Login failed: ' + result.message);
+      return;
+    } else {
+      console.log(result);
+      UserLoggedIn = true;
+      UserLoggedInID = result.userId;
+      AdminLoggedIn = result.isAdmin;
+      console.log(`Is Admin: ${AdminLoggedIn}`);
+      showCustomAlert('Successfully logged in ' + username + (AdminLoggedIn ? ' (Admin)' : ''));
+    }
   } catch (err) {
     console.error('API error:', err);
     showCustomAlert('Login failed: ' + err.message);
   }
-  const loginModal = document.getElementById('login-modal')
+  const loginModal = document.getElementById('loginmodal')
   loginModal.style.display = "none";
 }
 
@@ -411,7 +424,7 @@ async function createPlayerTable() {
         console.log(key, val)
         const td = document.createElement('td');
 
-        if (playerid_index==col_index && key == 'id') {
+        if (playerid_index == col_index && key == 'id') {
           if (!show_playerid) {
             td.classList.add('col-hidden');
           } else {
@@ -419,7 +432,7 @@ async function createPlayerTable() {
           }
         }
 
-        if (dob_month_index==col_index && key == "dob_month") {
+        if (dob_month_index == col_index && key == "dob_month") {
           if (!show_dob_month) {
             td.classList.add('col-hidden');
           } else {
@@ -451,7 +464,7 @@ async function createPlayerTable() {
           }
         }
 
-        
+
         if (image_index === col_index) {
           const img = document.createElement('img');
           if (val === null || val === '') {
@@ -573,7 +586,7 @@ async function shouldAdmitToSite() {
 async function IwantToLogin() {
   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
   shouldAdmitToSiteModal.style.display = 'none'
-  var loginModal = document.getElementById("login-modal");
+  var loginModal = document.getElementById("loginmodal");
   loginModal.style.display = "block";
 }
 
@@ -607,20 +620,18 @@ async function PopulateTerms() {
 }
 
 
-async function DoNameCheck() {
+async function DoNameAndPhoneCheck() {
   const myname = document.getElementById('myname')
   const name = myname.value
   const fullname = name.replace(/\s+/g, ' ').trim().toLowerCase()
-  const phone = document.getElementById('myphone').value
+  const phone = document.getElementById('myphone').value.replaceAll('-', '')
   const nameandphonecheckresult = document.getElementById('nameandphonecheckresult')
   let ok
   //hide nameandphonechecksection, show termcheck
-  document.getElementById('nameandphonechecksection').style.display = 'none'
-  // await PopulateTerms()
-  // document.getElementById('termcheck').style.display='block'
+  // document.getElementById('nameandphonechecksection').style.display = 'none'
   try {
 
-    const res = await fetch('/checkfullname', {
+    const res = await fetch('/checkfullnameandphone', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -629,26 +640,30 @@ async function DoNameCheck() {
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const result = await res.json()
-    if (result == true) {
-      showCustomAlert(`Correct! You seem to a member of the club`)
-      nameandphonecheckresult.innerText = "Correct! You seem to be a member of the club."
+    if (result.valid) {
+      casuallogin = true
+      showCustomAlert(result.message)
+      // nameandphonecheckresult.innerText = "Correct! You seem to be a member of the club."
       ok = true
     } else {
-      showCustomAlert(`Sorry! you are not from our club`)
-      nameandphonecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
+      showCustomAlert(result.message)
+      // nameandphonecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
+      casuallogin = false
       ok = false
     }
   } catch (err) {
-    console.error('Error checking full name:', err);
-    showCustomAlert('Error checking full name:', err)
+    console.error('Error checking full name and phone:', err);
+    showCustomAlert('Error checking full name and phone:', err)
+    casuallogin = false
     ok = false
   }
   delay(5000)
   if (ok) {
     const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
     nameandphonecheckmodal.style.display = 'none'
-  } else {
-    window.location = '/'
+    decide()
+  // } else {
+  //   window.location = '/'
   }
 }
 
@@ -657,7 +672,7 @@ window.toggleColumn = toggleColumn;
 
 // added for modal forms
 // Get the modal
-var loginModal = document.getElementById("login-modal");
+var loginModal = document.getElementById("loginmodal");
 // var changePasswordModal = document.getElementById("changePassword-modal");
 // var nonmemberscheckmodal = document.getElementById("nonmemberscheckmodal");
 
@@ -709,7 +724,7 @@ async function getSessionDetails() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const result = await res.json()
-    return [result.sessionId, result.securelogin]
+    return [result.sessionId, result.securelogin, result.insecurelogin, result.username, result.userid, result.isAdmin, result.casuallogin];  
 
   } catch (err) {
 
@@ -718,19 +733,33 @@ async function getSessionDetails() {
 }
 
 async function decide() {
-  const [sessionId, securelogin] = await getSessionDetails()
-  console.log(sessionId, securelogin)
-  const shouldadmittositemodal = document.getElementById('shouldadmittositemodal')
+  [sessionId,securelogin,insecurelogin,username,userid,isAdmin,casuallogin] = await getSessionDetails()
+  // Base the decision on global variables set during login or checks
+  console.log(sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin)
   // Check if the session exists
   // const [sessionid,securelogin]= await isUserLoggedIn()
-  if (sessionId && !securelogin) {
-    showCustomAlert('Note that you are logged in but not with a strong password. Hence you will not be able to make any changes.')
-    shouldadmittositemodal.style.display = 'none'
+
+  // remove blurred effect from all content classes
+  const contentElements = document.getElementsByClassName('content');
+  const show = sessionId && (casuallogin || securelogin);
+  for (let i = 0; i < contentElements.length; i++) {
+    if (!show) {
+      contentElements[i].classList.add('blurred');
+    } else {
+      contentElements[i].classList.remove('blurred');
+    }
+  }
+
+  if (sessionId && casuallogin) {
+    showCustomAlert('Note that you are logged in but you are a casual visitor. You can only view the data.')
+  }else if (sessionId && insecurelogin) {
+    showCustomAlert('Note that you are logged in but you are using a password that is not secure. You can only view the data.')
   } else if (sessionId && securelogin) {
-    shouldadmittositemodal.style.display = 'none'
+    showCustomAlert('Note that you are logged and can view data as well as edit your own data.')
+  } else if (sessionId && securelogin && isAdmin) {
+    showCustomAlert('Note that you are logged in as an admin and can view and edit all data.')
   } else {
-    shouldadmittositemodal.style.display = 'none'
-    console.log("User is not logged in, redirecting to login.");
+    console.log("User is not logged in.");
   }
 }
 

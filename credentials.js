@@ -15,7 +15,7 @@ function userExists(username) {
     try {
         const stmt = db.prepare('SELECT id, username FROM player WHERE username = ?;');
         const res = stmt.all(username);
-        const result = res.length === 0 ? false : true;
+        const result = (res.length === 0) ? false : true;
         return result;
     } catch (err) {
         console.error('Error fetching username:', err);
@@ -33,38 +33,37 @@ function addUser(username, password) {
 
 // this function is async because bcrypt.compare is async
 async function login(username, password) {
-    const stmt = db.prepare('SELECT id, password FROM users WHERE username = ?');
+    const stmt = db.prepare('SELECT id, password FROM player WHERE username = ?');
 
     const row = stmt.get(username);
     if (!row) {
         console.log('User not found.');
-        return false;
+        return { valid: false, message: 'User not found' };
     }
 
     // Compare the provided password with the stored hash
     const result = await bcrypt.compare(password, row.password);
     if (result) {
         console.log('Login successful! Passwords match.');
-        return { id: row.id, username: username };
+        return { valid:true, id: row.id, message: 'Login successful!' };
     } else {
         console.log('Invalid credentials. Passwords do not match.');
-        return false;
+        return { valid: false, message: 'Invalid credentials' };
     }
 }
 
-//this function should not be required as login handles password checking
-// async function passwordMatches(username, password) {
-//     try {
-//         const pool = globalPool
-//         const client = await pool.connect();
-//         const result = await client.query(`SELECT (password = crypt($2, password)) AS password_match FROM player WHERE username = $1;`, [username, password]);
-//         client.release();
-//         return result.rows.length > 0 && result.rows[0].password_match;
-//     } catch (err) {
-//         console.error('Error verifying password:', err);
-//         return false;
-//     }
-// }
+async function passwordMatches(username, password) {
+    try {
+        const pool = globalPool
+        const client = await pool.connect();
+        const result = await client.query(`SELECT (password = crypt($2, password)) AS password_match FROM player WHERE username = $1;`, [username, password]);
+        client.release();
+        return result.rows.length > 0 && result.rows[0].password_match;
+    } catch (err) {
+        console.error('Error verifying password:', err);
+        return false;
+    }
+}
 
 async function changePassword(username, oldPassword, newPassword) {
     try {
@@ -219,31 +218,23 @@ async function isNonPlayer(first) {
 
 }
 
-async function isPlayer(fullname, phone) {
+function isPlayer(fullname, phone) {
     try {
-        const pool = globalPool
-        const client = await pool.connect();
-
-        const result = await client.query('SELECT first, last, phone FROM player');
-        client.release();
-        let exists = false
-        result.rows.forEach(row => {
-            if ((row.first.toLowerCase().trim() + ' ' + row.last.toLowerCase().trim()) == fullname && row.phone == phone) {
-                exists = true
-            }
-        })
-        return exists;
+        const first = fullname.split(' ')[0];
+        const last = fullname.split(' ')[1];
+        const stmt = db.prepare('SELECT * FROM player where lower(first) = ? AND lower(last) = ? AND phone = ?;');
+        const result = stmt.all(first, last, phone.replaceAll('-',''));
+        console.log('isPlayer query result:', result);
+        let exists = result.length > 0 ? true : false;
+        return {exists, id: exists ? result[0].id : null, username: exists ? result[0].username : null, 
+            phone: exists ? result[0].phone : null, 
+            fullname: exists ? result[0].first + ' ' + result[0].last : null,
+         };
     } catch (err) {
         console.error('Error checking isPlayer:', err);
         return false;
     }
 
-}
-async function getMixOfMembersAndNonMembers() {
-    const players = await get18Players();
-    const nonmembers = await getTwoNonPlayer();
-    const mix = shuffle(players.concat(nonmembers));
-    return mix;
 }
 
 async function getBridgeTerms() {

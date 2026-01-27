@@ -14,10 +14,12 @@
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.6.2",
     "better-sqlite3-session-store": "^0.1.0",
+    "connect-sqlite3": "^0.9.16",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-session": "^1.18.2",
     "multer": "^2.0.2",
-    "multer-s3": "^3.0.1"
+    "multer-s3": "^3.0.1",
+    "sqlite3": "^5.1.7"
   }
 }

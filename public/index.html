@@ -21,10 +21,13 @@
 		<section class="intro">
 			<header>
 				<h1>Riverside Bridge Club (Unit 537)</h1>
-				<!-- <p>A free responsive site template designed by <a href="https://twitter.com/ajlkn">@ajlkn</a> / <a href="https://html5up.net">HTML5 UP</a></p> -->
-				<!-- <ul class="actions">
-								<li><a href="#first" class="arrow scrolly"><span class="label">Next</span></a></li>
-							</ul> -->
+				<form>
+					<button type="button" id="nameandphonecheckBtn" class="button primary" onclick="displaynameandphonecheckform()">Temporary Login</button>
+					<button type="button" id="loginBtn" class="button primary" onclick="displayloginform()">Login</button>
+					<button type="button" id="changePasswordBtn" class="button primary" onclick="displaychangepasswordform()">Change Password</button>
+					<button type="button" id="addnewplayerBtn" class="button primary" onclick="displayaddnewplayerform()">Add New Player</button>
+					<button type="button" id="logoutBtn" class="button primary" onclick="logout()">Logout</button>
+				</form>
 			</header>
 			<div class="content">
 				<h2 id="listofplayers">List of players</h2>
@@ -184,7 +187,7 @@
 	<!-- <button id="open-modal-btn">Open Login Form</button> -->
 
 	<!-- The Modal -->
-	<div id="login-modal" class="modal">
+	<div id="loginmodal" class="modal">
 
 		<!-- Modal content -->
 		<div class="modal-content">
@@ -318,7 +321,7 @@
 				</div>
 
 				<div class="field full">
-					<button type="button" onclick="DoNameCheck()">Check</button>
+					<button type="button" onclick="DoNameAndPhoneCheck()">Check</button>
 				</div>
 			</div>
 		</div> <!--modal content -->

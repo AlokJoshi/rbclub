@@ -69,6 +69,46 @@ Content-Type: application/json
 }
 ###
 
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+  "username": "alok2",
+  "password": "alok40"
+}
+
+###
+
+DELETE http://localhost:3000/api/playerdata/1
+# Content-Type: application/json
+
+# {
+#   "username": "alok2",
+#   "password": "alok40"
+# }
+
+###
+
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+  "username": "alokj",
+  "password": "alok2"
+}
+
+###
+
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+  "username": "mary annb",
+  "password": "mary ann19"
+}
+
+###
+
 POST http://localhost:3000/changePassword
 Content-Type: application/json
 
@@ -179,15 +219,16 @@ Content-Type: application/json
 }
 ###
 
-put http://localhost:3000/checkfullname
+put http://localhost:3000/checkfullnameandphone
 Content-Type: application/json
 
 {
-  "fullname": "sadhna joshi"
+  "fullname": "sadhna joshi",
+  "phone": "909-224-4956"
 }
 ###
 
-put http://localhost:3000/checkfullname
+put http://localhost:3000/checkfullnameandphone
 Content-Type: application/json
 
 {
@@ -197,5 +238,7 @@ Content-Type: application/json
 
 get http://localhost:3000/api/playerdata
 
-
+###
+GET http://localhost:3000/get-session-id
+Accept: application/json  
 

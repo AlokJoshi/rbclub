@@ -4144,6 +4144,11 @@ form button {
     border-radius: 3px;
 }
 
+.blurred {
+		filter: blur(5px);
+		pointer-events: none; /* Prevent interaction with blurred content */
+}
+
 /* added by alok */
 
 @media screen and (max-width: 1280px) {
