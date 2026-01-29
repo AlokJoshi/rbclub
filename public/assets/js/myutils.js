@@ -5,12 +5,13 @@ function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
 }
 
-async function showCustomAlert(message) {
+//delay duration in seconds
+async function showCustomAlert(message,delayDuration=3) {
   const alertBox = document.getElementById('customAlert');
   const alertMessage = alertBox.querySelector('p');
   alertMessage.textContent = message;
   alertBox.style.display = 'flex';
-  await delay(3000); // Display for 3 seconds
+  await delay(delayDuration * 1000); // Display for the specified duration
   // Fade out effect
   alertBox.style.transition = 'opacity 0.5s';
   alertBox.style.display = 'none';
@@ -28,9 +29,44 @@ function displaychangepasswordform() {
   const changepasswordmodal = document.getElementById('changepasswordmodal')
   changepasswordmodal.style.display = 'block'
 }
+
 function displayaddnewplayerform() {
   const addnewplayermodal = document.getElementById('addnewplayermodal')
   addnewplayermodal.style.display = 'block'
+}
+
+async function SubmitNewPlayer() {
+  try {
+    console.log('Adding new player first and last names only');
+    const res = await fetch(`/addnewplayer`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      first: document.getElementById('newplayerfirstname').value,
+      last: document.getElementById('newplayerlastname').value
+    })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    if (res.status === 400) {
+      showCustomAlert('Player with the same first and last name already exists',5);
+      return;
+    }
+    throw new Error(`Add player failed: ${res.status} ${err}`);
+  }
+    //res.message has the username and password
+    const result = await res.json();
+    if (!result.success)  {
+      showCustomAlert(`Adding new player failed: ${result.message}`,5);
+    } else {
+      showCustomAlert(result.message,20);
+    }
+  } catch (err) {
+    console.error('Error adding new player:', err);
+    showCustomAlert(`Error adding new player: ${err.message}`,5);
+  }
 }
 
 async function logout() {
@@ -47,7 +83,7 @@ async function logout() {
     decide();
   } catch (err) {
     console.error('Logout error:', err);
-    showCustomAlert('Error during logout.');
+    showCustomAlert('Error during logout.'+err.message,5);
   }
 }
 
@@ -65,56 +101,19 @@ async function nonmemberschanged() {
 
 }
 
-async function DoNonMembersCheck() {
-  const selectElement = document.getElementById('nonmembersselect');
-  const nonmemberscheckresult = document.getElementById('nonmemberscheckresult')
-  try {
+function closeLoginModal() {
+  const loginModal = document.getElementById("loginmodal");
+  loginModal.style.display = "none";
+}
 
-    const res = await fetch('/checknonmembers', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        "nonmembers": [selectElement.selectedOptions[0].value,
-        selectElement.selectedOptions[1].value]
-      })
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const result = await res.json()
+function closeChangePasswordModal() {
+  const changePasswordModal = document.getElementById("changepasswordmodal");
+  changePasswordModal.style.display = "none";
+}
 
-    // const nonmemberscheckmodal = document.getElementById('nonmemberscheckmodal')
-    // nonmemberscheckmodal.style.display = 'none'
-    // const nameandphonecheck = document.getElementById('nameandphonecheck')
-    // nameandphonecheck.style.display = 'block'
-
-    //result object has botharenonmember and temporarylogin properties
-    const botharenonmember = result.botharenonmembers
-    const temporarylogin = result.temporarylogin
-    if (botharenonmember) {
-      showCustomAlert(`Correct! ${selectElement.selectedOptions[0].value} and 
-        ${selectElement.selectedOptions[1].value} do not play at our club.`)
-      nonmemberscheckresult.innerText = "You correctly identified the non-members"
-      // return true
-    } else {
-      showCustomAlert(`Sorry! that answer is wrong.`)
-      nonmemberscheckresult.innerText = "Sorry you failed to identify the non-members."
-      // return false
-    }
-    if (temporarylogin) {
-      showCustomAlert('Congratulations. You have passed all checks.')
-      //close the form
-      const form = document.getElementById("nameandphonecheck")
-      form.style.display = 'none'
-    } else {
-      showCustomAlert('Sorry. You have failed the checks.')
-      window.location.href = "localhost:3000"
-    }
-  } catch (err) {
-    console.error('Error checking non-members:', err);
-    return false
-  }
-
+function closeAddNewPlayerModal() {
+  const addNewPlayerModal = document.getElementById("addnewplayermodal");
+  addNewPlayerModal.style.display = "none";
 }
 
 async function login() {
@@ -131,19 +130,27 @@ async function login() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     if (!result.valid) {
-      showCustomAlert('Login failed: ' + result.message);
+      showCustomAlert(`Login failed: ${result.message}`,5);
       return;
     } else {
       console.log(result);
-      UserLoggedIn = true;
-      UserLoggedInID = result.userId;
-      AdminLoggedIn = result.isAdmin;
-      console.log(`Is Admin: ${AdminLoggedIn}`);
-      showCustomAlert('Successfully logged in ' + username + (AdminLoggedIn ? ' (Admin)' : ''));
+      userid = result.userId;
+      isAdmin = result.isAdmin;
+      securelogin = result.securelogin
+      insecurelogin = result.insecurelogin
+      casuallogin = result.casuallogin
+      console.log(`Is Admin: ${isAdmin}`);
+      if (isAdmin && securelogin) {
+      showCustomAlert('Successfully and securely logged in ' + username + (isAdmin ? ' (Admin)' : ''),5);
+      }else if (isAdmin && insecurelogin) {
+        showCustomAlert('Successfully but insecurely logged in ' + username + (isAdmin ? ' (Admin)' : '') + '. Please change your password.',5); 
+      }else if (insecurelogin) {
+        showCustomAlert('Successfully logged in ' + username + '. Please change your password. You will not be able to change your data till you are securely logged in',10);
+      } 
     }
   } catch (err) {
     console.error('API error:', err);
-    showCustomAlert('Login failed: ' + err.message);
+    showCustomAlert(`Login failed: ${err.message}`,5);
   }
   const loginModal = document.getElementById('loginmodal')
   loginModal.style.display = "none";
@@ -155,7 +162,7 @@ async function changePassword() {
   const newpassword1 = document.getElementById('newpassword1').value;
   const newpassword2 = document.getElementById('newpassword2').value;
   if (newpassword1 !== newpassword2) {
-    showCustomAlert('New passwords do not match');
+    showCustomAlert('New passwords do not match',5);
     return;
   }
   try {
@@ -164,16 +171,18 @@ async function changePassword() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ username, currentpassword, newpassword1 })
+      body: JSON.stringify({ username, oldPassword: currentpassword, newPassword: newpassword1 })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result);
-    showCustomAlert('Password changed successfully');
+    showCustomAlert('Password changed successfully',5);
   } catch (err) {
     console.error('API error:', err);
-    showCustomAlert('Password change failed: ' + err.message);
+    showCustomAlert(`Password change failed: ${err.message}`,5);
   }
+  const changePasswordModal = document.getElementById('changepasswordmodal')  
+  changePasswordModal.style.display = "none";
 }
 
 async function showAttendance(day) {
@@ -307,7 +316,7 @@ async function AddPlayer() {
   if (!res.ok) {
     const err = await res.text();
     if (res.status === 400) {
-      showCustomAlert('Player with the same first and last name already exists');
+      showCustomAlert('Player with the same first and last name already exists',5);
       return;
     }
     throw new Error(`Add player failed: ${res.status} ${err}`);
@@ -333,26 +342,27 @@ async function PopulateFormForEdit(playerId) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result[0]);
-    document.getElementById('playerImageDisplay').src = result[0].image_path === null || result[0].image_path === '' ? 'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result[0].image_path} `;
-    document.getElementById('playerId').value = result[0].id || '';
-    document.getElementById('firstName').value = result[0].first || '';
-    document.getElementById('lastName').value = result[0].last || '';
-    document.getElementById('email').value = result[0].email || '';
-    document.getElementById('phone').value = result[0].phone || '';
-    document.getElementById('dobMonth').value = result[0].dob_month || '';
-    document.getElementById('acblnumber').value = result[0].acblNumber || '';
-    document.getElementById('ice_phone').value = result[0].ice_phone || '';
-    document.getElementById('ice_relation').value = result[0].ice_relation || '';
-    document.getElementById('m1').checked = result[0].m1 || false;
-    document.getElementById('t1').checked = result[0].t1 || false;
-    document.getElementById('f1').checked = result[0].f1 || false;
-    document.getElementById('ug').checked = result[0].ug || false;
+    console.log(result);
+    //todo: fix this
+    // document.getElementById('playerImageDisplay').src = result.image_path === null || result.image_path === '' ? 'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result.image_path} `;
+    document.getElementById('playerId').value = result.id || '';
+    document.getElementById('firstName').value = result.first || '';
+    document.getElementById('lastName').value = result.last || '';
+    document.getElementById('email').value = result.email || '';
+    document.getElementById('phone').value = result.phone || '';
+    document.getElementById('dobMonth').value = result.dob_month || '';
+    document.getElementById('acblnumber').value = result.acblNumber || '';
+    document.getElementById('ice_phone').value = result.ice_phone || '';
+    document.getElementById('ice_relation').value = result.ice_relation || '';
+    document.getElementById('m1').checked = result.m1 || false;
+    document.getElementById('t1').checked = result.t1 || false;
+    document.getElementById('f1').checked = result.f1 || false;
+    document.getElementById('ug').checked = result.ug || false;
 
     // populate image preview if available (supports either image_data or image_path)
     const preview = document.getElementById('playerImagePreview');
     const hidden = document.getElementById('playerImageData');
-    const src = result[0].image_data || result[0].image_path || '';
+    const src = result.image_data || result.image_path || '';
     if (src) {
       if (preview) { preview.src = src; preview.style.display = 'inline-block'; }
       if (hidden) hidden.value = src;
@@ -380,11 +390,11 @@ async function DeletePlayer(playerId) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    showCustomAlert(result.message);
+    showCustomAlert(result.message,5);
     // Refresh the table after deletion
     await createPlayerTable();
   } catch (err) {
-    showCustomAlert('Error deleting player:', err);
+    showCustomAlert(`Error deleting player: ${err.message}`,5);
   }
 }
 
@@ -491,10 +501,10 @@ async function createPlayerTable() {
       iEdit.className = 'fas fa-edit';
 
       iEdit.addEventListener('click', () => {
-        if (UserLoggedInID === row.id || AdminLoggedIn) {
+        if (((userid === row.id) && securelogin) || (isAdmin && securelogin)) {
           PopulateFormForEdit(row.id);
         } else {
-          showCustomAlert('You must be logged in as Admin or as yourself to edit a player record.');
+          showCustomAlert('You must be securelylogged in as Admin or as yourself to edit a player record.',10);
         }
       });
       tdEdit.appendChild(iEdit);
@@ -505,12 +515,12 @@ async function createPlayerTable() {
       const iDelete = document.createElement('i');
       iDelete.className = 'fas fa-trash';
       iDelete.addEventListener('click', async () => {
-        if (AdminLoggedIn) {
+        if (isAdmin && securelogin) {
           if (window.prompt(`Type DELETE to confirm deletion of player :${row.first} ${row.last}`, '') === 'DELETE') {
             await DeletePlayer(row.id);
           }
           else {
-            showCustomAlert('You must be loggen in as Admin to delete a player record.');
+            showCustomAlert('You must be securely logged in as Admin to delete a player record.',10);
           }
         }
       });
@@ -642,18 +652,18 @@ async function DoNameAndPhoneCheck() {
     const result = await res.json()
     if (result.valid) {
       casuallogin = true
-      showCustomAlert(result.message)
+      showCustomAlert(result.message,3)
       // nameandphonecheckresult.innerText = "Correct! You seem to be a member of the club."
       ok = true
     } else {
-      showCustomAlert(result.message)
+      showCustomAlert(result.message,3)
       // nameandphonecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
       casuallogin = false
       ok = false
     }
   } catch (err) {
     console.error('Error checking full name and phone:', err);
-    showCustomAlert('Error checking full name and phone:', err)
+    showCustomAlert(`Error checking full name and phone: ${err.message}`,5)
     casuallogin = false
     ok = false
   }
@@ -673,7 +683,7 @@ window.toggleColumn = toggleColumn;
 // added for modal forms
 // Get the modal
 var loginModal = document.getElementById("loginmodal");
-// var changePasswordModal = document.getElementById("changePassword-modal");
+// var changePasswordModal = document.getElementById("changepasswordmodal");
 // var nonmemberscheckmodal = document.getElementById("nonmemberscheckmodal");
 
 // Get the button that opens the modal
@@ -741,7 +751,7 @@ async function decide() {
 
   // remove blurred effect from all content classes
   const contentElements = document.getElementsByClassName('content');
-  const show = sessionId && (casuallogin || securelogin);
+  const show = sessionId && (casuallogin || insecurelogin ||securelogin);
   for (let i = 0; i < contentElements.length; i++) {
     if (!show) {
       contentElements[i].classList.add('blurred');
@@ -751,13 +761,13 @@ async function decide() {
   }
 
   if (sessionId && casuallogin) {
-    showCustomAlert('Note that you are logged in but you are a casual visitor. You can only view the data.')
+    showCustomAlert('Note that you are logged in but you are a casual visitor. You can only view the data.',10)
   }else if (sessionId && insecurelogin) {
-    showCustomAlert('Note that you are logged in but you are using a password that is not secure. You can only view the data.')
+    showCustomAlert('Note that you are logged in but you are using a password that is not secure. You can only view the data.',10)
   } else if (sessionId && securelogin) {
-    showCustomAlert('Note that you are logged and can view data as well as edit your own data.')
+    showCustomAlert('Note that you are logged and can view data as well as edit your own data.',10)
   } else if (sessionId && securelogin && isAdmin) {
-    showCustomAlert('Note that you are logged in as an admin and can view and edit all data.')
+    showCustomAlert('Note that you are logged in as an admin and can view and edit all data.',10)
   } else {
     console.log("User is not logged in.");
   }

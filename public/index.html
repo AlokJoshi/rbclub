@@ -76,7 +76,7 @@
 					<div class="fields">
 						<div class="field half">
 							<img src="" width="160" height="160" id="playerImageDisplay" alt="Player Image"
-								style="border:1px; border-radius:80px; solid #ccc; padding:4px;">
+								style="border:1px solid #ccc; border-radius:80px; padding:4px;">
 						</div>
 						<div class="field half">
 							<input type="file" id="playerImageInput" accept="image/*">
@@ -191,7 +191,7 @@
 
 		<!-- Modal content -->
 		<div class="modal-content">
-			<span class="close">&times;</span>
+			<span id="closeLoginModal" class="close" onclick="closeLoginModal()">&times;</span>
 			<h2>Login</h2>
 			<form action="">
 				<div class="fields">
@@ -222,11 +222,11 @@
 	</div>
 
 	<!-- The Modal -->
-	<div id="changePassword-modal" class="modal">
+	<div id="changepasswordmodal" class="modal">
 
 		<!-- Modal content -->
 		<div class="modal-content">
-			<span class="close">&times;</span>
+			<span id="closeChangePasswordModal" class="close" onclick="closeChangePasswordModal()">&times;</span>
 			<h2>Change Password</h2>
 			<form action="">
 				<div class="fields">
@@ -268,6 +268,31 @@
 			</form>
 		</div>
 		<p id="changeasswordError" style="color: red;"></p>
+	</div>
+
+	<div id="addnewplayermodal" class="modal wrap">
+
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span class="close" onclick="closeAddNewPlayerModal()">&times;</span>
+			<h2>Add New Player</h2>
+			<form id="addNewPlayerForm">
+				<div class="fields">
+
+					<div class="field half">
+						<label for="newplayerfirstname">First Name</label>
+						<input type="text" name="newplayerfirstname" id="newplayerfirstname" placeholder="First Name" required />
+					</div>
+					<div class="field half">
+						<label for="newplayerlastname">Last Name</label>
+						<input type="text" name="newplayerlastname" id="newplayerlastname" placeholder="Last Name" required />
+					</div>
+					<div class="field full">
+						<button id="submitNewPlayerButton" type="button" onclick="SubmitNewPlayer()" class="button primary">Add Player</button>
+					</div>
+				</div>
+			</form>	
+
 	</div>
 
 	<!-- The Modal -->

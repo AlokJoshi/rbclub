@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const { upload } = require('./helper');
 const { userExists, addUser, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
-    getBridgeTerms, isInvalidBridgeTerm, isNonPlayer,
+    getBridgeTerms, isInvalidBridgeTerm, passwordMatches,
     isPlayer } = require('./credentials')
 
 
@@ -164,10 +164,38 @@ app.post('/login', async (req, res) => {
     }
     const userId = result.id;
     const admin = isAdmin(userId)
+    req.session.securelogin = result.securelogin
+    req.session.insecurelogin = !result.securelogin
+    req.session.casuallogin = false
     req.session.username = username
     req.session.userid = userId
     req.session.isAdmin = admin
-    res.json({ userId, isAdmin: admin, valid: true, message: result.message });
+    res.json({ userId, casuallogin: result.casuallogin, securelogin: result.securelogin, insecurelogin: !result.securelogin, isAdmin: admin, valid: true, message: result.message });
+});
+
+app.post('/addnewplayer', async (req, res) => {
+    const data = req.body;
+    const alreadyExists = await playerExists(data.first, data.last);
+    if (alreadyExists) {
+        return res.status(400).json({ success: false, message: 'Player with the same first and last name already exists' });
+    }
+    try {
+        const username = data.first.trim().toLowerCase() + data.last.trim().toLowerCase().charAt(0);
+        const stmt = db.prepare('INSERT INTO player (first,last) VALUES (?, ?);');
+        const result = stmt.run(data.first,data.last)
+        const id = result.lastInsertRowid
+        const defaultPassword = data.first.trim().toLowerCase() + id.toString()        
+        // now create a password to store in the database
+        const saltRounds = 10;
+        const hashedPassword = bcrypt.hashSync(defaultPassword, saltRounds);
+        const updateStmt = db.prepare('UPDATE player SET username = ?, password = ? WHERE id = ?');
+        updateStmt.run(username, hashedPassword, id);       
+        res.json({ success: true, message: `User added successfully. Please inform the user
+            that their username is ${username} and their temporary password is ${defaultPassword}`});
+    } catch (err) {
+        console.error('Error adding new user:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
 });
 
 app.post('/changepassword', async (req, res) => {
@@ -176,12 +204,18 @@ app.post('/changepassword', async (req, res) => {
     if (!userExistsFlag) {
         return res.status(400).json({ success: false, message: 'User does not exist' });
     }
-    const oldPasswordValid = await passwordMatches(username, oldPassword);
-    if (!oldPasswordValid) {
-        return res.status(400).json({ success: false, message: 'Old password is incorrect' });
+    const match = await passwordMatches(username, oldPassword);
+    if (!match.valid) {
+        return res.status(400).json({ success: false, message: match.message });
     }
     const success = await changePassword(username, newPassword);
     if (success) {
+        req.session.securelogin = true
+        req.session.insecurelogin = false
+        req.session.casuallogin = false
+        req.session.username = username
+        req.session.userid = match.id
+        req.session.isAdmin = isAdmin(match.id) 
         res.json({ success: true, message: 'Password changed successfully' });
     } else {
         res.status(500).json({ success: false, message: 'Failed to change password' });
@@ -284,7 +318,7 @@ app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
         // });
         const pool = globalPool;
         const client = await pool.connect();
-        const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;', [
+        const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);', [
             data.first,
             data.last,
             data.email,
@@ -327,8 +361,9 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
     const filename = req.newFileName
     try {
 
-        const stmt = db.prepare('UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, image_path=? WHERE id = ? RETURNING *;', [
-            data.first,
+        const stmt = db.prepare('UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, image_path=? WHERE id = ? RETURNING *;');
+
+        const result = stmt.run(data.first,
             data.last,
             data.email,
             data.phone,
@@ -336,15 +371,12 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
             data.acblNumber,
             data.ice_phone,
             data.ice_relation,
-            (data.m1 === true || data.m1 === 'true' || data.m1 === 'on'),
-            (data.t1 === true || data.t1 === 'true' || data.t1 === 'on'),
-            (data.f1 === true || data.f1 === 'true' || data.f1 === 'on'),
-            (data.ug === true || data.ug === 'true' || data.ug === 'on'),
+            (data.m1 === true || data.m1 === 'true' || data.m1 === 'on') ? 1 : 0,
+            (data.t1 === true || data.t1 === 'true' || data.t1 === 'on') ? 1 : 0,
+            (data.f1 === true || data.f1 === 'true' || data.f1 === 'on') ? 1 : 0,
+            (data.ug === true || data.ug === 'true' || data.ug === 'on') ? 1 : 0,
             filename,
-            playerId
-        ]);
-
-        const result = stmt.run();
+            playerId);
 
         // If a file was uploaded, try to update the row with an image_path.
         // if (req.file) {
@@ -401,20 +433,9 @@ app.get('/get-session-id', (req, res) => {
 
 async function playerExists(first, last) {
     try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool;
-        const client = await pool.connect();
-        const result = await client.query('SELECT EXISTS(SELECT 1 FROM player WHERE first = $1 AND last = $2)', [first, last]);
-        client.release();
-        const exists = result.rows[0].exists;
-        return exists;
+        const stmt = db.prepare('SELECT EXISTS(SELECT 1 FROM player WHERE first = ? AND last = ?)');
+        const result = stmt.get(first, last);
+        return result['EXISTS(SELECT 1 FROM player WHERE first = ? AND last = ?)'] === 1;
     } catch (err) {
         console.error('Error checking if player exists:', err);
         return false;

@@ -33,7 +33,7 @@ function addUser(username, password) {
 
 // this function is async because bcrypt.compare is async
 async function login(username, password) {
-    const stmt = db.prepare('SELECT id, password FROM player WHERE username = ?');
+    const stmt = db.prepare('SELECT id, first, last, password FROM player WHERE username = ?');
 
     const row = stmt.get(username);
     if (!row) {
@@ -41,11 +41,13 @@ async function login(username, password) {
         return { valid: false, message: 'User not found' };
     }
 
+    const securelogin = (password === row.first.toLowerCase().trim() + row.id.toString()) ? false : true;
+
     // Compare the provided password with the stored hash
     const result = await bcrypt.compare(password, row.password);
     if (result) {
         console.log('Login successful! Passwords match.');
-        return { valid:true, id: row.id, message: 'Login successful!' };
+        return { valid: true, id: row.id, securelogin, message: 'Login successful!' };
     } else {
         console.log('Invalid credentials. Passwords do not match.');
         return { valid: false, message: 'Invalid credentials' };
@@ -53,36 +55,24 @@ async function login(username, password) {
 }
 
 async function passwordMatches(username, password) {
-    try {
-        const pool = globalPool
-        const client = await pool.connect();
-        const result = await client.query(`SELECT (password = crypt($2, password)) AS password_match FROM player WHERE username = $1;`, [username, password]);
-        client.release();
-        return result.rows.length > 0 && result.rows[0].password_match;
-    } catch (err) {
-        console.error('Error verifying password:', err);
-        return false;
+    const stmt = db.prepare('SELECT id, first, last, password FROM player WHERE username = ?');
+
+    const row = stmt.get(username);
+    if (!row) {
+        return { valid: false, message: 'User not found' };
     }
+
+    // Compare the provided password with the stored hash
+    const result = await bcrypt.compare(password, row.password);
+    return result ? { valid: true, id: row.id, message: 'Old Password matches' } : { valid: false, message: 'Old Password does not match' };
 }
 
-async function changePassword(username, oldPassword, newPassword) {
+async function changePassword(username, newPassword) {
     try {
-        const stmt = db.prepare('SELECT id, password FROM users WHERE username = ?');
-        const row = stmt.get(username);
-        if (!row) {
-            console.log('User not found.');
-            return false;
-        }
-        const isOldPasswordCorrect = await bcrypt.compare(oldPassword, row.password);
-        if (!isOldPasswordCorrect) {
-            console.log('Old password is incorrect.');
-            return false;
-        }
         const saltRounds = 10;
         const hashedNewPassword = bcrypt.hashSync(newPassword, saltRounds);
-        const updateStmt = db.prepare('UPDATE users SET password = ? WHERE id = ?');
-        updateStmt.run(hashedNewPassword, row.id);
-        console.log('Password changed successfully.');
+        const updateStmt = db.prepare('UPDATE player SET password = ? WHERE username = ?');
+        updateStmt.run(hashedNewPassword, username);
         return true;
     } catch (err) {
         console.error('Error changing password:', err);
@@ -96,11 +86,11 @@ const bulkregister = (users) => {
     users.forEach(user => {
         const result = register(user.first, user.last);
         registered.push({ first: user.first, last: user.last, ...result });
-    }); 
+    });
     return registered;
 }
 
-const register = (first,last,username) => {
+const register = (first, last, username) => {
     // since only members can register and use this app,
     // we add the first and last name and username
     // to the player table. After adding the user we get their id and use that
@@ -120,17 +110,17 @@ const register = (first,last,username) => {
         const hashedPassword = bcrypt.hashSync(tempPassword, saltRounds);
         const updateStmt = db.prepare('UPDATE player SET password = ? WHERE id = ?;');
         updateStmt.run(hashedPassword, id);
-        return { username: username, tempPassword: tempPassword}
+        return { username: username, tempPassword: tempPassword }
     } catch (err) {
         console.error('Error registering user:', err);
-    }       
+    }
 }
 
 const registeredUsers = () => {
     try {
         const stmt = db.prepare('SELECT first, last, username FROM player WHERE username IS NOT NULL;');
         return stmt.all();
-    } catch (err) {   
+    } catch (err) {
         console.error('Error fetching registered users:', err);
         return [];
     }
@@ -223,13 +213,14 @@ function isPlayer(fullname, phone) {
         const first = fullname.split(' ')[0];
         const last = fullname.split(' ')[1];
         const stmt = db.prepare('SELECT * FROM player where lower(first) = ? AND lower(last) = ? AND phone = ?;');
-        const result = stmt.all(first, last, phone.replaceAll('-',''));
+        const result = stmt.all(first, last, phone.replaceAll('-', ''));
         console.log('isPlayer query result:', result);
         let exists = result.length > 0 ? true : false;
-        return {exists, id: exists ? result[0].id : null, username: exists ? result[0].username : null, 
-            phone: exists ? result[0].phone : null, 
+        return {
+            exists, id: exists ? result[0].id : null, username: exists ? result[0].username : null,
+            phone: exists ? result[0].phone : null,
             fullname: exists ? result[0].first + ' ' + result[0].last : null,
-         };
+        };
     } catch (err) {
         console.error('Error checking isPlayer:', err);
         return false;
@@ -290,5 +281,6 @@ module.exports = {
     isPlayer,
     login,
     register,
-    bulkregister
+    bulkregister,
+    passwordMatches
 }
