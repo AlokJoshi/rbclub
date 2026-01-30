@@ -1,10 +1,22 @@
 require('dotenv').config({ quiet: true });
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const express = require('express');
 const sqlite = require('better-sqlite3');
 const session = require('express-session')
 const SQLiteStore = require('connect-sqlite3')(session);
 // const SqliteStore = require('better-sqlite3-session-store')(session);
 const bcrypt = require('bcrypt');
+// Email transporter configuration
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
 
 
 const path = require('path');
@@ -277,81 +289,80 @@ app.get('/api/playerdata/:id', (req, res) => {
 
 app.get('/api/attendance/:day', async (req, res) => {
     const day = req.params.day;
-    const query = `SELECT first, last, phone, email FROM player where ${day} order by first;`
+    const stmt = db.prepare(`SELECT first, last, phone, email FROM player where ${day} order by first;`);
     try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool;
-        const client = await pool.connect();
-        const result = await client.query(query);
-        client.release();
-        res.json(result.rows);
+        const result = stmt.all();
+        res.json(result);
     } catch (err) {
         console.error('Error fetching attendance data:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+app.put('/getdefaultlogincredentials', async (req, res) => {
+    const { first, last } = req.body;
+    try {
+        const stmt = db.prepare('SELECT id FROM player WHERE first = ? AND last = ?;');
+        const result = stmt.get(first, last);
+        if (result) {
+            const id = result.id;
+            const password = first.trim().toLowerCase() + id.toString();
+            const username = first.trim().toLowerCase() + last.trim().toLowerCase().charAt(0);
+            res.json({ success:true, username , password });
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (err) {
+        console.error('Error fetching default login credentials:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
 // POST route for creating a new player (accepts JSON or urlencoded)
 // Accept multipart/form-data with optional file field 'playerImage'
-app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
-    const data = req.body;
-    const alreadyExists = await playerExists(data.first, data.last);
-    if (alreadyExists) {
-        return res.status(400).json({ error: 'Player with the same first and last name already exists' });
-    }
-    // console.log('Adding new player (playerdata):', { body: data, file: req.file && req.file.filename });
-    try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool;
-        const client = await pool.connect();
-        const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);', [
-            data.first,
-            data.last,
-            data.email,
-            data.phone,
-            data.dob_month,
-            data.acblNumber,
-            data.ice_phone,
-            data.ice_relation,
-            (data.m1 === true || data.m1 === 'true' || data.m1 === 'on'),
-            (data.t1 === true || data.t1 === 'true' || data.t1 === 'on'),
-            (data.f1 === true || data.f1 === 'true' || data.f1 === 'on'),
-            (data.ug === true || data.ug === 'true' || data.ug === 'on')
-        ]);
+// app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
+//     const data = req.body;
+//     const alreadyExists = await playerExists(data.first, data.last);
+//     if (alreadyExists) {
+//         return res.status(400).json({ error: 'Player with the same first and last name already exists' });
+//     }
+//     // console.log('Adding new player (playerdata):', { body: data, file: req.file && req.file.filename });
+//     try {
+//         const pool = globalPool;
+//         const client = await pool.connect();
+//         const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);', [
+//             data.first,
+//             data.last,
+//             data.email,
+//             data.phone,
+//             data.dob_month,
+//             data.acblNumber,
+//             data.ice_phone,
+//             data.ice_relation,
+//             (data.m1 === true || data.m1 === 'true' || data.m1 === 'on'),
+//             (data.t1 === true || data.t1 === 'true' || data.t1 === 'on'),
+//             (data.f1 === true || data.f1 === 'true' || data.f1 === 'on'),
+//             (data.ug === true || data.ug === 'true' || data.ug === 'on')
+//         ]);
 
-        // If a file was uploaded, try to update the row with an image_path.
-        if (req.file) {
-            console.log('New file uploaded:', req.newFileName);
-            const imagePath = req.newFileName;
-            try {
-                await client.query('UPDATE player SET image_path = $1 WHERE id = $2;', [imagePath, result.rows[0].id]);
-                result.rows[0].image_path = imagePath;
-            } catch (e) {
-                console.warn('Could not persist image_path to DB (column may not exist):', e.message);
-            }
-        }
+//         // If a file was uploaded, try to update the row with an image_path.
+//         if (req.file) {
+//             console.log('New file uploaded:', req.newFileName);
+//             const imagePath = req.newFileName;
+//             try {
+//                 await client.query('UPDATE player SET image_path = $1 WHERE id = $2;', [imagePath, result.rows[0].id]);
+//                 result.rows[0].image_path = imagePath;
+//             } catch (e) {
+//                 console.warn('Could not persist image_path to DB (column may not exist):', e.message);
+//             }
+//         }
 
-        client.release();
-        res.json(result.rows[0]);
-    } catch (err) {
-        console.error('Error adding player (playerdata):', err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
+//         client.release();
+//         res.json(result.rows[0]);
+//     } catch (err) {
+//         console.error('Error adding player (playerdata):', err);
+//         res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
 
 // Accept multipart/form-data with optional file field 'playerImage' for updates
 app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) => {
@@ -428,6 +439,99 @@ app.get('/get-session-id', (req, res) => {
         res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin });
     } else {
         res.json({message: 'No session found'});
+    }
+});
+
+// Request password reset
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    
+    try {
+        // Find user by email
+        const stmt = db.prepare('SELECT id, first, last, username FROM player WHERE email = ?');
+        const user = stmt.get(email);
+        
+        if (!user) {
+            // Don't reveal if email exists
+            return res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
+        }
+        
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpires = Date.now() + 3600000; // 1 hour from now
+        
+        // Store token in database
+        const updateStmt = db.prepare('UPDATE player SET reset_token = ?, reset_token_expires = ? WHERE id = ?');
+        updateStmt.run(resetToken, resetTokenExpires, user.id);
+        
+        // Create reset URL
+        const resetUrl = `http://localhost:${PORT}/reset-password?token=${resetToken}`;
+        
+        // Send email
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Password Reset Request',
+            html: `
+                <h2>Password Reset Request</h2>
+                <p>Hello ${user.first},</p>
+                <p>You requested a password reset. Click the link below to reset your password:</p>
+                <a href="${resetUrl}">Reset Password</a>
+                <p>This link will expire in 1 hour.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+            `
+        });
+        
+        res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
+    } catch (err) {
+        console.error('Error in forgot password:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+// Verify reset token
+app.get('/verify-reset-token/:token', async (req, res) => {
+    const { token } = req.params;
+    
+    try {
+        const stmt = db.prepare('SELECT id, username, reset_token_expires FROM player WHERE reset_token = ?');
+        const user = stmt.get(token);
+        
+        if (!user || user.reset_token_expires < Date.now()) {
+            return res.json({ valid: false, message: 'Invalid or expired reset token' });
+        }
+        
+        res.json({ valid: true, username: user.username });
+    } catch (err) {
+        console.error('Error verifying reset token:', err);
+        res.status(500).json({ valid: false, message: 'Internal server error' });
+    }
+});
+
+// Reset password with token
+app.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+    
+    try {
+        const stmt = db.prepare('SELECT id, username, reset_token_expires FROM player WHERE reset_token = ?');
+        const user = stmt.get(token);
+        
+        if (!user || user.reset_token_expires < Date.now()) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+        }
+        
+        // Hash new password
+        const saltRounds = 10;
+        const hashedPassword = bcrypt.hashSync(newPassword, saltRounds);
+        
+        // Update password and clear reset token
+        const updateStmt = db.prepare('UPDATE player SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?');
+        updateStmt.run(hashedPassword, user.id);
+        
+        res.json({ success: true, message: 'Password reset successfully' });
+    } catch (err) {
+        console.error('Error resetting password:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
 

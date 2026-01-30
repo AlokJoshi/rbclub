@@ -21,20 +21,73 @@ function displaynameandphonecheckform() {
   const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
   nameandphonecheckmodal.style.display = 'block'
 }
+
 function displayloginform() {
   const loginmodal = document.getElementById('loginmodal')
   loginmodal.style.display = 'block'
 }
+
 function displaychangepasswordform() {
   const changepasswordmodal = document.getElementById('changepasswordmodal')
+  const changepasswordusername = document.getElementById('changepasswordusername')
+  changepasswordusername.value = ''
+  const currentpassword = document.getElementById('currentpassword')
+  currentpassword.value = ''
   changepasswordmodal.style.display = 'block'
 }
 
 function displayaddnewplayerform() {
   const addnewplayermodal = document.getElementById('addnewplayermodal')
+  const newplayerfirstname = document.getElementById('newplayerfirstname')
+  newplayerfirstname.value = ''
+  const newplayerlastname = document.getElementById('newplayerlastname')
+  newplayerlastname.value = ''
   addnewplayermodal.style.display = 'block'
 }
 
+function displaydefaultlogincredentialsform() {
+  const defaultlogincredentials = document.getElementById('defaultlogincredentials')
+  const dlc_name = document.getElementById('dlc_name')
+  dlc_name.value = ''
+  const defaultlogincredentialsresult = document.getElementById('defaultlogincredentialsresult')
+  defaultlogincredentialsresult.innerText = ''
+  defaultlogincredentials.style.display = 'block'
+}
+
+function closedefaultlogincredentialsform() {
+  const defaultlogincredentials = document.getElementById('defaultlogincredentials')
+  defaultlogincredentials.style.display = 'none'
+}
+
+function closeNameAndPhoneCheck() { 
+  const nameandphonecheckmodal = document.getElementById('nameandphonecheck') 
+  nameandphonecheckmodal.style.display = 'none'
+}
+
+async function GetDefaultLoginCredentials() {
+  try {
+    console.log('Fetching default login credentials');
+    const fullname = document.getElementById('dlc_name').value;
+    const first = fullname.split(' ')[0];
+    const last = fullname.split(' ').slice(1).join(' ');
+    const res = await fetch(`/getdefaultlogincredentials`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ first, last })
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log(result);
+    const defaultlogincredentialsresult = document.getElementById('defaultlogincredentialsresult')
+    defaultlogincredentialsresult.innerText = `Default Username: ${result.username}, Password: ${result.password}`
+  } catch (err) {
+    console.error('Error fetching default login credentials:', err);
+    showCustomAlert(`Error fetching default login credentials: ${err.message}`,5);
+  }
+}
 async function SubmitNewPlayer() {
   try {
     console.log('Adding new player first and last names only');
@@ -117,7 +170,7 @@ function closeAddNewPlayerModal() {
 }
 
 async function login() {
-  const username = document.getElementById('username').value;
+  const user_name = document.getElementById('username').value;
   const password = document.getElementById('password').value;
   try {
     const res = await fetch('/login', {
@@ -125,7 +178,7 @@ async function login() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username: user_name, password })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
@@ -134,12 +187,12 @@ async function login() {
       return;
     } else {
       console.log(result);
+      username = user_name;
       userid = result.userId;
       isAdmin = result.isAdmin;
       securelogin = result.securelogin
       insecurelogin = result.insecurelogin
       casuallogin = result.casuallogin
-      console.log(`Is Admin: ${isAdmin}`);
       if (isAdmin && securelogin) {
       showCustomAlert('Successfully and securely logged in ' + username + (isAdmin ? ' (Admin)' : ''),5);
       }else if (isAdmin && insecurelogin) {
@@ -287,50 +340,51 @@ async function SubmitChanges() {
 
   return res.json(); // updated resource (if returned)  
 }
-async function AddPlayer() {
-  // Placeholder function to add a player
-  console.log('Adding a new player...');
-  // Build FormData for multipart upload (includes file if selected)
-  const form = new FormData();
-  form.append('first', document.getElementById('firstName').value);
-  form.append('last', document.getElementById('lastName').value);
-  form.append('email', document.getElementById('email').value);
-  form.append('phone', document.getElementById('phone').value);
-  form.append('dob_month', document.getElementById('dobMonth').value == '' ? 0 : document.getElementById('dobMonth').value);
-  form.append('acblNumber', document.getElementById('acblnumber').value);
-  form.append('ice_phone', document.getElementById('ice_phone').value);
-  form.append('ice_relation', document.getElementById('ice_relation').value);
-  if (document.getElementById('m1').checked) form.append('m1', 'on');
-  if (document.getElementById('t1').checked) form.append('t1', 'on');
-  if (document.getElementById('f1').checked) form.append('f1', 'on');
-  if (document.getElementById('ug').checked) form.append('ug', 'on');
-  const fileInput2 = document.getElementById('playerImageInput');
-  if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
-    form.append('playerImage', fileInput2.files[0]);
-  }
-  console.log('Adding player (multipart)...');
-  const res = await fetch(`/api/playerdata`, {
-    method: 'POST',
-    body: form
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    if (res.status === 400) {
-      showCustomAlert('Player with the same first and last name already exists',5);
-      return;
-    }
-    throw new Error(`Add player failed: ${res.status} ${err}`);
-  }
 
-  createPlayerTable(); // refresh the table display
+// async function AddPlayer() {
+//   // Placeholder function to add a player
+//   console.log('Adding a new player...');
+//   // Build FormData for multipart upload (includes file if selected)
+//   const form = new FormData();
+//   form.append('first', document.getElementById('firstName').value);
+//   form.append('last', document.getElementById('lastName').value);
+//   form.append('email', document.getElementById('email').value);
+//   form.append('phone', document.getElementById('phone').value);
+//   form.append('dob_month', document.getElementById('dobMonth').value == '' ? 0 : document.getElementById('dobMonth').value);
+//   form.append('acblNumber', document.getElementById('acblnumber').value);
+//   form.append('ice_phone', document.getElementById('ice_phone').value);
+//   form.append('ice_relation', document.getElementById('ice_relation').value);
+//   if (document.getElementById('m1').checked) form.append('m1', 'on');
+//   if (document.getElementById('t1').checked) form.append('t1', 'on');
+//   if (document.getElementById('f1').checked) form.append('f1', 'on');
+//   if (document.getElementById('ug').checked) form.append('ug', 'on');
+//   const fileInput2 = document.getElementById('playerImageInput');
+//   if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
+//     form.append('playerImage', fileInput2.files[0]);
+//   }
+//   console.log('Adding player (multipart)...');
+//   const res = await fetch(`/api/playerdata`, {
+//     method: 'POST',
+//     body: form
+//   });
+//   if (!res.ok) {
+//     const err = await res.text();
+//     if (res.status === 400) {
+//       showCustomAlert('Player with the same first and last name already exists',5);
+//       return;
+//     }
+//     throw new Error(`Add player failed: ${res.status} ${err}`);
+//   }
 
-  const el = document.getElementById('listofplayers');
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  el.setAttribute('tabindex', '-1');
-  el.focus();
+//   createPlayerTable(); // refresh the table display
 
-  return res.json(); // updated resource (if returned) 
-}
+//   const el = document.getElementById('listofplayers');
+//   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+//   el.setAttribute('tabindex', '-1');
+//   el.focus();
+
+//   return res.json(); // updated resource (if returned) 
+// }
 
 async function PopulateFormForEdit(playerId) {
   // Placeholder function to populate form for editing a player
@@ -582,30 +636,30 @@ function toggleColumn(tableSelector, colIndex) {
   });
 }
 
-//function to check if the user should be admitted to the site
-async function shouldAdmitToSite() {
-  //show a modal message explaining the two options:
-  //1. Login with the provided login details
-  //2. Gain admittance after proving that
-  //   a. Your name matches with club user list
-  //   b. You can spot a non-bridge term in a list of bridge terms
-  //   c. You can spot 2 non-members in a list of members and members
-  const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
-  shouldAdmitToSiteModal.style.display = 'block'
-}
-async function IwantToLogin() {
-  const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
-  shouldAdmitToSiteModal.style.display = 'none'
-  var loginModal = document.getElementById("loginmodal");
-  loginModal.style.display = "block";
-}
+// //function to check if the user should be admitted to the site
+// async function shouldAdmitToSite() {
+//   //show a modal message explaining the two options:
+//   //1. Login with the provided login details
+//   //2. Gain admittance after proving that
+//   //   a. Your name matches with club user list
+//   //   b. You can spot a non-bridge term in a list of bridge terms
+//   //   c. You can spot 2 non-members in a list of members and members
+//   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
+//   shouldAdmitToSiteModal.style.display = 'block'
+// }
+// async function IwantToLogin() {
+//   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
+//   shouldAdmitToSiteModal.style.display = 'none'
+//   var loginModal = document.getElementById("loginmodal");
+//   loginModal.style.display = "block";
+// }
 
-async function IwantToAnswerQuestions() {
-  const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
-  shouldAdmitToSiteModal.style.display = 'none'
-  var IwantToAnswerQuestions = document.getElementById("nameandphonecheck");
-  IwantToAnswerQuestions.style.display = "block";
-}
+// async function IwantToAnswerQuestions() {
+//   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
+//   shouldAdmitToSiteModal.style.display = 'none'
+//   var IwantToAnswerQuestions = document.getElementById("nameandphonecheck");
+//   IwantToAnswerQuestions.style.display = "block";
+// }
 
 async function PopulateTerms() {
   // const questionsModal = document.getElementById('nameandphonecheck')
@@ -677,6 +731,69 @@ async function DoNameAndPhoneCheck() {
   }
 }
 
+async function forgotPassword() {
+    const email = document.getElementById('forgotPasswordEmail').value;
+    
+    if (!email) {
+        showCustomAlert('Please enter your email address');
+        return;
+    }
+    
+    try {
+        const res = await fetch('/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await res.json();
+        showCustomAlert(data.message, 5);
+        
+        if (data.success) {
+            closeForgotPasswordModal();
+        }
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        showCustomAlert('Error requesting password reset');
+    }
+}
+function closeForgotPasswordModal() {
+    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+    forgotPasswordModal.style.display = 'none';
+}
+
+async function resetPassword() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        showCustomAlert('Passwords do not match');
+        return;
+    }
+    
+    try {
+        const res = await fetch('/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, newPassword })
+        });
+        
+        const data = await res.json();
+        showCustomAlert(data.message, 5);
+        
+        if (data.success) {
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        }
+    } catch (err) {
+        console.error('Reset password error:', err);
+        showCustomAlert('Error resetting password');
+    }
+}
+
 // Expose for use in console or other scripts
 window.toggleColumn = toggleColumn;
 
@@ -689,22 +806,13 @@ var loginModal = document.getElementById("loginmodal");
 // Get the button that opens the modal
 // var btn = document.getElementById("open-modal-btn");
 
-// Get the <span> element that closes the modal
-const span1 = document.getElementsByClassName("close")[0];
-const span2 = document.getElementsByClassName("close")[1];
-
 // When the user clicks the button, open the modal
 // btn.onclick = function() {
 //   modal.style.display = "block";
 // }
 
-// When the user clicks on <span> (x), close the modal
-span1.onclick = function () {
-  loginModal.style.display = "none";
-}
-span2.onclick = function () {
-  changePasswordModal.style.display = "none";
-}
+
+
 
 // When the user clicks anywhere outside of the modal, close it
 // window.onclick = function (event) {

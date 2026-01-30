@@ -46,6 +46,7 @@ tmp/
 temp/
 uploads/
 *.tgz
+sundry.txt
 
 # Optional: compiled binaries
 *.exe

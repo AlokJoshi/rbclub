@@ -22,10 +22,15 @@
 			<header>
 				<h1>Riverside Bridge Club (Unit 537)</h1>
 				<form>
-					<button type="button" id="nameandphonecheckBtn" class="button primary" onclick="displaynameandphonecheckform()">Temporary Login</button>
+					<button type="button" id="nameandphonecheckBtn" class="button primary"
+						onclick="displaynameandphonecheckform()">Temporary Login</button>
 					<button type="button" id="loginBtn" class="button primary" onclick="displayloginform()">Login</button>
-					<button type="button" id="changePasswordBtn" class="button primary" onclick="displaychangepasswordform()">Change Password</button>
-					<button type="button" id="addnewplayerBtn" class="button primary" onclick="displayaddnewplayerform()">Add New Player</button>
+					<button type="button" id="changePasswordBtn" class="button primary"
+						onclick="displaychangepasswordform()">Change Password</button>
+					<button type="button" id="addnewplayerBtn" class="button primary" onclick="displayaddnewplayerform()">Add New
+						Player</button>
+					<button type="button" id="defaultlogincredentialsBtn" class="button primary"
+						onclick="displaydefaultlogincredentialsform()">Default Login Credentials</button>
 					<button type="button" id="logoutBtn" class="button primary" onclick="logout()">Logout</button>
 				</form>
 			</header>
@@ -136,7 +141,7 @@
 						</div>
 						<button id="submitPlayerChangesButton" disabled="true" type="button" onclick="SubmitChanges()"
 							class="button half primary">Submit Changes</button>
-						<button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button>
+						<!-- <button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button> -->
 						<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
 					</div>
 					<footer>
@@ -219,6 +224,18 @@
 			</form>
 		</div>
 		<p>Note: If you do not log in you will not be able to make changes to your data.</p>
+		<!-- Add "Forgot Password?" link to your login modal -->
+		<a href="#" onclick="displayForgotPasswordForm(); return false;">Forgot Password?</a>
+	</div>
+
+	<!-- Forgot Password Modal -->
+	<div id="forgotPasswordModal" class="modal">
+		<div class="modal-content">
+			<span class="close" onclick="closeForgotPasswordModal()">&times;</span>
+			<h2>Forgot Password</h2>
+			<input type="email" id="forgotPasswordEmail" placeholder="Enter your email">
+			<button onclick="forgotPassword()">Send Reset Link</button>
+		</div>
 	</div>
 
 	<!-- The Modal -->
@@ -288,17 +305,17 @@
 						<input type="text" name="newplayerlastname" id="newplayerlastname" placeholder="Last Name" required />
 					</div>
 					<div class="field full">
-						<button id="submitNewPlayerButton" type="button" onclick="SubmitNewPlayer()" class="button primary">Add Player</button>
+						<button id="submitNewPlayerButton" type="button" onclick="SubmitNewPlayer()" class="button primary">Add
+							Player</button>
 					</div>
 				</div>
-			</form>	
+			</form>
 
-	</div>
+		</div>
 
-	<!-- The Modal -->
-	<div id="shouldadmittositemodal" class="modal wrap">
+	</div> <!-- addnewplayermodal -->
 
-		<!-- Modal content -->
+	<!-- <div id="shouldadmittositemodal" class="modal wrap">
 		<div class="modal-content">
 			<span class="close">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
@@ -317,18 +334,16 @@
 			<p>If you get these right you will get a limited access to the site</p>
 			<button type="button" onclick="IwantToAnswerQuestions()">I want to answer questions</button>
 
-		</div> <!--modal content -->
-	</div> <!--shouldadmittositemodal -->
+		</div> 
+	</div>  -->
 
 	<!-- The Modal -->
 	<div id="nameandphonecheck" class="modal wrap">
 		<!-- Modal content -->
 		<div class="modal-content">
-			<span class="close">&times;</span>
+			<span class="close" onclick="closeNameAndPhoneCheck()">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
 			<h3 id="nameandphonecheckresult"></h3>
-			<!-- <h3 id="termcheckresult"></h3>
-			<h3 id="nonmemberscheckresult"></h3> -->
 			<div class="fields" id="nameandphonechecksection" style="display:block">
 
 				<div class="field full">
@@ -350,10 +365,36 @@
 				</div>
 			</div>
 		</div> <!--modal content -->
-	</div> <!--iwanttoanswerquestions -->
-
-
 	</div>
+
+	<!-- The Modal -->
+	<div id="defaultlogincredentials" class="modal wrap">
+		<!-- Modal content -->
+		<div class="modal-content">
+			<span id="defaultlogincredentialsclose" onclick="closedefaultlogincredentialsform()" class="close">&times;</span>
+			<h2>Riverside Bridge Club (Unit 537)</h2>
+			<div class="fields" id="defaultlogincredentialssection" style="display:block">
+
+				<div class="field full">
+					<label for="dlc_name">
+						Default Login Credentials - Enter the name:
+					</label>
+					<input type="text" placeholder="John Smith" name="dlc_name" id="dlc_name">
+				</div>
+
+				<div class="field full">
+					<h3 id="defaultlogincredentialsresult"></h3>
+				</div>
+
+				<div class="field full">
+					<button type="button" onclick="GetDefaultLoginCredentials()">Get Default Login Credentials</button>
+				</div>
+			</div>
+		</div> <!--modal content -->
+	</div>
+
+
+	<!-- </div> -->
 
 	<!-- The custom alert box container -->
 	<div id="customAlert" class="alert-container">
