@@ -489,7 +489,7 @@ app.post('/forgot-password', async (req, res) => {
     }
 });
 
-// Verify reset token
+// Verify reset token. This route is not being used right now but can be useful.
 app.get('/verify-reset-token/:token', async (req, res) => {
     const { token } = req.params;
     

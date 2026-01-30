@@ -757,6 +757,12 @@ async function forgotPassword() {
         showCustomAlert('Error requesting password reset');
     }
 }
+
+function displayForgotPasswordForm() {
+    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+    forgotPasswordModal.style.display = 'block';
+}
+
 function closeForgotPasswordModal() {
     const forgotPasswordModal = document.getElementById('forgotPasswordModal');
     forgotPasswordModal.style.display = 'none';
