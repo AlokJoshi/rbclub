@@ -60,3 +60,4 @@ sundry.txt
 test-pg.js
 
 *.http
+session-storage issue.txt

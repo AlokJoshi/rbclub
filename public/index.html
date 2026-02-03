@@ -393,9 +393,24 @@
 		</div> <!--modal content -->
 	</div>
 
-
-	<!-- </div> -->
-
+<div id="resetPasswordModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeResetPasswordModal()">&times;</span>
+        <h2>Reset Password</h2>
+				<div class="fields">
+					<div class="field full">
+						<input type="password" id="newPassword" placeholder="New Password (min 6 characters)">
+					</div>
+					<div class="field full">
+						<input type="password" id="confirmPassword" placeholder="Confirm Password">
+					</div>
+					<div class="field full">
+						<button onclick="resetPassword()">Reset Password</button>
+					</div>
+				</div>
+    </div>
+</div>
+	
 	<!-- The custom alert box container -->
 	<div id="customAlert" class="alert-container">
 		<div class="alert-content">

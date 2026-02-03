@@ -113,6 +113,7 @@ async function SubmitNewPlayer() {
     const result = await res.json();
     if (!result.success)  {
       showCustomAlert(`Adding new player failed: ${result.message}`,5);
+      await createPlayerTable(); // refresh the table display
     } else {
       showCustomAlert(result.message,20);
     }
@@ -167,6 +168,15 @@ function closeChangePasswordModal() {
 function closeAddNewPlayerModal() {
   const addNewPlayerModal = document.getElementById("addnewplayermodal");
   addNewPlayerModal.style.display = "none";
+}
+
+function closeResetPasswordModal() {
+    const resetPasswordModal = document.getElementById('resetPasswordModal');
+    if (resetPasswordModal) {
+        resetPasswordModal.style.display = 'none';
+        // Clear the token from URL
+        window.history.replaceState({}, document.title, '/');
+    }
 }
 
 async function login() {
@@ -590,6 +600,21 @@ async function createPlayerTable() {
 
 document.addEventListener('DOMContentLoaded', createPlayerTable);
 
+function displayResetPasswordModal(token) {
+    // Hide any other modals that might be open
+    closeLoginModal();
+    closeForgotPasswordModal();
+    closeNameAndPhoneCheck();
+    
+    // Show reset password modal
+    const resetPasswordModal = document.getElementById('resetPasswordModal');
+    if (resetPasswordModal) {
+        resetPasswordModal.style.display = 'block';
+        // Store token in a data attribute for later use
+        resetPasswordModal.dataset.token = token;
+    }
+}
+
 // Image input handling: read selected image as DataURL and store in hidden input for submission
 function setupImageInput() {
   const fileInput = document.getElementById('playerImageInput');
@@ -769,10 +794,15 @@ function closeForgotPasswordModal() {
 }
 
 async function resetPassword() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const resetPasswordModal = document.getElementById('resetPasswordModal');
+    const token = resetPasswordModal.dataset.token;
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!newPassword || newPassword.length < 6) {
+        showCustomAlert('Password must be at least 6 characters');
+        return;
+    }
     
     if (newPassword !== confirmPassword) {
         showCustomAlert('Passwords do not match');
@@ -790,9 +820,10 @@ async function resetPassword() {
         showCustomAlert(data.message, 5);
         
         if (data.success) {
+            closeResetPasswordModal();
             setTimeout(() => {
-                window.location.href = '/';
-            }, 3000);
+                displayloginform();
+            }, 2000);
         }
     } catch (err) {
         console.error('Reset password error:', err);

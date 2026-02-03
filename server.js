@@ -91,6 +91,9 @@ app.get('/', (req, res) => {
     // res.sendFile(path.join(__dirname, 'public', 'index.html')); 
 });
 
+// app.get('/reset-password', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
+// });
 
 app.get('/isinvalidbridgeterm/:term', async (req, res) => {
     const term = req.params.term
@@ -465,7 +468,8 @@ app.post('/forgot-password', async (req, res) => {
         updateStmt.run(resetToken, resetTokenExpires, user.id);
         
         // Create reset URL
-        const resetUrl = `http://localhost:${PORT}/reset-password?token=${resetToken}`;
+        // const resetUrl = `http://localhost:${PORT}/reset-password?token=${resetToken}`;
+        const resetUrl = `http://localhost:${PORT}/?token=${resetToken}`;
         
         // Send email
         await transporter.sendMail({
@@ -527,6 +531,7 @@ app.post('/reset-password', async (req, res) => {
         // Update password and clear reset token
         const updateStmt = db.prepare('UPDATE player SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?');
         updateStmt.run(hashedPassword, user.id);
+        console.error('Password reset successfully', err);
         
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {
