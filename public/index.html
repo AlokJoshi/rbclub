@@ -21,7 +21,6 @@
 		<section class="intro">
 			<header>
 				<h1>Riverside Bridge Club (Unit 537)</h1>
-				<form>
 					<button type="button" id="nameandphonecheckBtn" class="button primary"
 						onclick="displaynameandphonecheckform()">Temporary Login</button>
 					<button type="button" id="loginBtn" class="button primary" onclick="displayloginform()">Login</button>
@@ -32,11 +31,9 @@
 					<button type="button" id="defaultlogincredentialsBtn" class="button primary"
 						onclick="displaydefaultlogincredentialsform()">Default Login Credentials</button>
 					<button type="button" id="logoutBtn" class="button primary" onclick="logout()">Logout</button>
-				</form>
 			</header>
 			<div class="content">
-				<h2 id="listofplayers">List of players</h2>
-				<h2>Display:</h2>
+				<h2 id="listofplayers">List of players:</h2>
 				<input type="checkbox" id="DOB_Month" onclick="toggleColumn('#playertable', 6);"><label
 					for="DOB_Month">DOB(Month)</label>
 				<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 4);"><label for="Email">Email</label>
@@ -71,11 +68,11 @@
 		<!-- Section -->
 		<section id="addoreditplayer">
 			<header>
-				<h2>Add or Edit Players</h2>
+				<h2>Update or Edit Players</h2>
 			</header>
 			<div class="content">
 
-				<h3>Add or Edit Players</h3>
+				<h3>Update or Edit Players</h3>
 				<form id="addEditPlayerForm">
 					<input type="hidden" id="playerId" name="playerId" value="">
 					<div class="fields">
@@ -93,11 +90,11 @@
 						</div>
 						<div class="field half">
 							<label for="firstName">First Name</label>
-							<input type="text" name="firstName" id="firstName" placeholder="First Name" required />
+							<input type="text" name="firstName" id="firstName" placeholder="First Name" disabled />
 						</div>
 						<div class="field half">
 							<label for="lastName">Last Name</label>
-							<input type="text" name="lastName" id="lastName" placeholder="Last Name" required />
+							<input type="text" name="lastName" id="lastName" placeholder="Last Name" disabled />
 						</div>
 						<div class="field half">
 							<label for="email">Email</label>
@@ -139,6 +136,26 @@
 							<label for="ug">Unit Game</label>
 							<input type="checkbox" id="ug"><label for="ug">Plays</label>
 						</div>
+						<div class="field third">
+							<!-- <label for="isDirector">Director</label> -->
+							<input type="checkbox" id="isDirector"><label for="isDirector">Director</label>
+						</div>
+						<div class="field third">
+							<!-- <label for="isPresident">President</label> -->
+							<input type="checkbox" id="isPresident"><label for="isPresident">President</label>
+						</div>
+						<div class="field third">
+							<!-- <label for="isBoardmember">Board member</label> -->
+							<input type="checkbox" id="isBoardmember"><label for="isBoardmember">Board member</label>
+						</div>
+						<div class="field half">
+							<!-- <label for="isSecretary">Secretary</label> -->
+							<input type="checkbox" id="isSecretary"><label for="isSecretary">Secretary</label>
+						</div>
+						<div class="field half">
+							<!-- <label for="isTreasurer">Treasurer</label> -->
+							<input type="checkbox" id="isTreasurer"><label for="isTreasurer">Treasurer</label>
+						</div>
 						<button id="submitPlayerChangesButton" disabled="true" type="button" onclick="SubmitChanges()"
 							class="button half primary">Submit Changes</button>
 						<!-- <button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button> -->
@@ -176,6 +193,53 @@
 					<tbody id="attendanceTableBody">
 						<tr>
 							<td colspan="4">Select one of the days to view attendance</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Section -->
+		<section>
+			<header>
+				<h2>Directors</h2>
+			</header>
+			<div class="content">
+				<table id="directorsTable">
+					<thead>
+						<tr>
+							<th>First</th>
+							<th>Last</th>
+							<th>Phone</th>
+							<th>Email</th>
+						</tr>
+					</thead>
+					<tbody id="directorsTableBody">
+						<tr>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Section -->
+		<section>
+			<header>
+				<h2>Officers</h2>
+			</header>
+			<div class="content">
+				<table id="officersTable">
+					<thead>
+						<tr>
+							<th>First</th>
+							<th>Last</th>
+							<th>Phone</th>
+							<th>Email</th>
+							<th>Position</th>
+						</tr>
+					</thead>
+					<tbody id="officersTableBody">
+						<tr>
 						</tr>
 					</tbody>
 				</table>
@@ -234,7 +298,10 @@
 			<span class="close" onclick="closeForgotPasswordModal()">&times;</span>
 			<h2>Forgot Password</h2>
 			<input type="email" id="forgotPasswordEmail" placeholder="Enter your email">
-			<button onclick="forgotPassword()">Send Reset Link</button>
+			<div class="wrap">
+				<button type="button" class="button primary" style="margin-top: 30px;" 
+				onclick="forgotPassword()">Send Reset Link</button>
+			</div>
 		</div>
 	</div>
 
@@ -304,8 +371,9 @@
 						<label for="newplayerlastname">Last Name</label>
 						<input type="text" name="newplayerlastname" id="newplayerlastname" placeholder="Last Name" required />
 					</div>
-					<div class="field full">
-						<button id="submitNewPlayerButton" type="button" onclick="SubmitNewPlayer()" class="button primary">Add
+					<div class="field full wrap">
+						<button id="submitNewPlayerButton" type="button" 
+						style="margin-top: 30px;" onclick="SubmitNewPlayer()" class="button primary">Add
 							Player</button>
 					</div>
 				</div>
@@ -360,8 +428,8 @@
 					<input type="tel" name="myphone" id="myphone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="555-555-5555">
 				</div>
 
-				<div class="field full">
-					<button type="button" onclick="DoNameAndPhoneCheck()">Check</button>
+				<div class="field full wrap">
+					<button type="button" class="button primary" style="margin-top: 30px;" onclick="DoNameAndPhoneCheck()">Check</button>
 				</div>
 			</div>
 		</div> <!--modal content -->
@@ -386,8 +454,8 @@
 					<h3 id="defaultlogincredentialsresult"></h3>
 				</div>
 
-				<div class="field full">
-					<button type="button" onclick="GetDefaultLoginCredentials()">Get Default Login Credentials</button>
+				<div class="field full wrap">
+					<button type="button" class="button primary" style="margin-top: 30px;" onclick="GetDefaultLoginCredentials()">Get Default Login Credentials</button>
 				</div>
 			</div>
 		</div> <!--modal content -->
@@ -404,7 +472,7 @@
 					<div class="field full">
 						<input type="password" id="confirmPassword" placeholder="Confirm Password">
 					</div>
-					<div class="field full">
+					<div class="field full wrap">
 						<button onclick="resetPassword()">Reset Password</button>
 					</div>
 				</div>

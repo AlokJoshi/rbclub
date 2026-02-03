@@ -266,6 +266,29 @@ app.post('/isadmin', async (req, res) => {
 //         res.status(500).json({ success: false, message: 'Failed to add user' });
 //     }
 // });
+app.get('/api/directorsdata', (req, res) => {
+    try {
+        const stmt = db.prepare('SELECT first,last,phone,email FROM player where director=1 order by last;');
+        const result = stmt.all();
+        res.json(result);
+    } catch (err) {
+        console.error('Error fetching director data:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/officersdata', (req, res) => {
+    try {
+        const stmt = db.prepare(`SELECT first,last,phone,email,president,boardmember,secretary,
+            treasurer FROM player where president=1 or  
+             boardmember=1 or secretary=1 or treasurer=1 order by last;`);
+        const result = stmt.all();
+        res.json(result);
+    } catch (err) {
+        console.error('Error fetching director data:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 app.get('/api/playerdata', (req, res) => {
     try {
@@ -531,7 +554,7 @@ app.post('/reset-password', async (req, res) => {
         // Update password and clear reset token
         const updateStmt = db.prepare('UPDATE player SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?');
         updateStmt.run(hashedPassword, user.id);
-        console.error('Password reset successfully', err);
+        console.error('Password reset successfully');
         
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {

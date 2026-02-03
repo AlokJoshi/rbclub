@@ -4096,7 +4096,7 @@ form input {
 }
 
 form button {
-	width: 100%;
+	/*width: 100%; removed on 02/02/2026*/
 	padding: 10px;
 	background-color: #4CAF50;
 	color: white;

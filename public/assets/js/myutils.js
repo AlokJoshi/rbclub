@@ -37,6 +37,10 @@ function displaychangepasswordform() {
 }
 
 function displayaddnewplayerform() {
+  if (!isAdmin || !securelogin) {
+    showCustomAlert('You must be securely logged in as Admin to add a new player.',10);
+    return;
+  }
   const addnewplayermodal = document.getElementById('addnewplayermodal')
   const newplayerfirstname = document.getElementById('newplayerfirstname')
   newplayerfirstname.value = ''
@@ -46,6 +50,10 @@ function displayaddnewplayerform() {
 }
 
 function displaydefaultlogincredentialsform() {
+  if (!isAdmin || !securelogin) {
+    showCustomAlert('You must be securely logged in as Admin to view default login credentials.',10);
+    return;
+  }
   const defaultlogincredentials = document.getElementById('defaultlogincredentials')
   const dlc_name = document.getElementById('dlc_name')
   dlc_name.value = ''
@@ -203,13 +211,14 @@ async function login() {
       securelogin = result.securelogin
       insecurelogin = result.insecurelogin
       casuallogin = result.casuallogin
-      if (isAdmin && securelogin) {
-      showCustomAlert('Successfully and securely logged in ' + username + (isAdmin ? ' (Admin)' : ''),5);
-      }else if (isAdmin && insecurelogin) {
-        showCustomAlert('Successfully but insecurely logged in ' + username + (isAdmin ? ' (Admin)' : '') + '. Please change your password.',5); 
-      }else if (insecurelogin) {
-        showCustomAlert('Successfully logged in ' + username + '. Please change your password. You will not be able to change your data till you are securely logged in',10);
-      } 
+      // if (isAdmin && securelogin) {
+      // showCustomAlert('Successfully and securely logged in ' + username + (isAdmin ? ' (Admin)' : ''),5);
+      // }else if (isAdmin && insecurelogin) {
+      //   showCustomAlert('Successfully but insecurely logged in ' + username + (isAdmin ? ' (Admin)' : '') + '. Please change your password.',5); 
+      // }else if (insecurelogin) {
+      //   showCustomAlert('Successfully logged in ' + username + '. Please change your password. You will not be able to change your data till you are securely logged in',10);
+      // } 
+      decide();
     }
   } catch (err) {
     console.error('API error:', err);
@@ -351,51 +360,6 @@ async function SubmitChanges() {
   return res.json(); // updated resource (if returned)  
 }
 
-// async function AddPlayer() {
-//   // Placeholder function to add a player
-//   console.log('Adding a new player...');
-//   // Build FormData for multipart upload (includes file if selected)
-//   const form = new FormData();
-//   form.append('first', document.getElementById('firstName').value);
-//   form.append('last', document.getElementById('lastName').value);
-//   form.append('email', document.getElementById('email').value);
-//   form.append('phone', document.getElementById('phone').value);
-//   form.append('dob_month', document.getElementById('dobMonth').value == '' ? 0 : document.getElementById('dobMonth').value);
-//   form.append('acblNumber', document.getElementById('acblnumber').value);
-//   form.append('ice_phone', document.getElementById('ice_phone').value);
-//   form.append('ice_relation', document.getElementById('ice_relation').value);
-//   if (document.getElementById('m1').checked) form.append('m1', 'on');
-//   if (document.getElementById('t1').checked) form.append('t1', 'on');
-//   if (document.getElementById('f1').checked) form.append('f1', 'on');
-//   if (document.getElementById('ug').checked) form.append('ug', 'on');
-//   const fileInput2 = document.getElementById('playerImageInput');
-//   if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
-//     form.append('playerImage', fileInput2.files[0]);
-//   }
-//   console.log('Adding player (multipart)...');
-//   const res = await fetch(`/api/playerdata`, {
-//     method: 'POST',
-//     body: form
-//   });
-//   if (!res.ok) {
-//     const err = await res.text();
-//     if (res.status === 400) {
-//       showCustomAlert('Player with the same first and last name already exists',5);
-//       return;
-//     }
-//     throw new Error(`Add player failed: ${res.status} ${err}`);
-//   }
-
-//   createPlayerTable(); // refresh the table display
-
-//   const el = document.getElementById('listofplayers');
-//   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-//   el.setAttribute('tabindex', '-1');
-//   el.focus();
-
-//   return res.json(); // updated resource (if returned) 
-// }
-
 async function PopulateFormForEdit(playerId) {
   // Placeholder function to populate form for editing a player
   console.log(`Populate form for editing player with ID: ${playerId}`);
@@ -495,7 +459,7 @@ async function createPlayerTable() {
         const key = entry[0]
         const val = entry[1]
 
-        console.log(key, val)
+        // console.log(key, val)
         const td = document.createElement('td');
 
         if (playerid_index == col_index && key == 'id') {
@@ -583,9 +547,8 @@ async function createPlayerTable() {
           if (window.prompt(`Type DELETE to confirm deletion of player :${row.first} ${row.last}`, '') === 'DELETE') {
             await DeletePlayer(row.id);
           }
-          else {
-            showCustomAlert('You must be securely logged in as Admin to delete a player record.',10);
-          }
+        }else {
+          showCustomAlert('You must be securely logged in as Admin to delete a player record.',10);
         }
       });
       tdDel.appendChild(iDelete);
@@ -600,6 +563,20 @@ async function createPlayerTable() {
 
 document.addEventListener('DOMContentLoaded', createPlayerTable);
 
+// Add this after your existing DOMContentLoaded listeners
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if we're on a password reset flow
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+        // User clicked email link - show reset password modal
+        displayResetPasswordModal(token);
+        console.log('Displaying reset password modal with token:', token);
+    }else{
+        console.log('No reset token found in URL.');
+    }
+});
 function displayResetPasswordModal(token) {
     // Hide any other modals that might be open
     closeLoginModal();
@@ -740,6 +717,7 @@ async function DoNameAndPhoneCheck() {
       casuallogin = false
       ok = false
     }
+    decide()
   } catch (err) {
     console.error('Error checking full name and phone:', err);
     showCustomAlert(`Error checking full name and phone: ${err.message}`,5)
@@ -886,6 +864,72 @@ async function getSessionDetails() {
     console.error('API error:', err);
   }
 }
+async function PopulateDirectosTable() {
+  try {
+    const res = await fetch('api/directorsdata', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`); 
+    const result = await res.json();
+    console.log(result);
+    const tbody = document.getElementById('directorsTableBody');
+    if (!tbody) return console.warn('Table body #directorsTableBody not found');
+    tbody.innerHTML = ''; 
+    result.forEach(row => {
+      const tr = document.createElement('tr');
+      // append cells in the order the server returned them
+      Object.values(row).forEach(val => {
+        const td = document.createElement('td');
+        td.textContent = val == null ? '' : val;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('API error:', err);
+  }
+}
+
+async function PopulateOfficersTable() {
+  try {
+    const res = await fetch('api/officersdata', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`); 
+    const result = await res.json();
+    console.log(result);
+    const tbody = document.getElementById('officersTableBody');
+    if (!tbody) return console.warn('Table body #officersTableBody not found');
+    tbody.innerHTML = ''; 
+    result.forEach(row => {
+      const tr = document.createElement('tr');
+      // append cells in the order the server returned them
+      // but only the first 4 columns
+      let col=0
+      for (const val of Object.values(row)) {
+        col++;
+        const td = document.createElement('td');
+        td.textContent = val == null ? '' : val;
+        tr.appendChild(td);
+        if (col==4) {
+          const td = document.createElement('td');
+          td.textContent = row.president==1?'President':
+                          row.boardmember==1?'Board member':
+                          row.secretary==1?'Secretary':
+                          row.treasurer==1?'Treasurer':'';
+          tr.appendChild(td);
+          break;
+        };
+      }
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('API error:', err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', PopulateDirectosTable);
+document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
 
 async function decide() {
   [sessionId,securelogin,insecurelogin,username,userid,isAdmin,casuallogin] = await getSessionDetails()
@@ -906,13 +950,13 @@ async function decide() {
   }
 
   if (sessionId && casuallogin) {
-    showCustomAlert('Note that you are logged in but you are a casual visitor. You can only view the data.',10)
+    showCustomAlert(`Note that you are logged in as ${username} but you are a casual visitor. You can only view the data.`,10)
   }else if (sessionId && insecurelogin) {
-    showCustomAlert('Note that you are logged in but you are using a password that is not secure. You can only view the data.',10)
+    showCustomAlert(`Note that you are logged in as ${username} but you are using a password that is not secure. You can only view the data.`,10)
   } else if (sessionId && securelogin) {
-    showCustomAlert('Note that you are logged and can view data as well as edit your own data.',10)
+    showCustomAlert(`Note that you are securely logged in as ${username} and you can view data as well as edit your own data.`,10)
   } else if (sessionId && securelogin && isAdmin) {
-    showCustomAlert('Note that you are logged in as an admin and can view and edit all data.',10)
+    showCustomAlert(`Note that you are logged in as ${username}, an Admin, and can view and edit all data.`,10)
   } else {
     console.log("User is not logged in.");
   }
