@@ -310,6 +310,8 @@ function ClearForm() {
   document.getElementById('ug').checked = false;
   document.getElementById('playerImageInput').value = '';
   document.getElementById('playerImageData').value = '';
+  document.getElementById('isDirector').checked = false;
+  document.getElementById('officerPosition').value = 'None';
 }
 
 function DisableSubmitButton(disable) {
@@ -333,6 +335,9 @@ async function SubmitChanges() {
   if (document.getElementById('t1').checked) form.append('t1', 'on');
   if (document.getElementById('f1').checked) form.append('f1', 'on');
   if (document.getElementById('ug').checked) form.append('ug', 'on');
+  if (document.getElementById('isDirector').checked) form.append('isDirector', 'on');
+  const officerPosition = document.getElementById('officerPosition').value;
+  if (officerPosition) form.append('officerPosition', officerPosition);
   const fileInput = document.getElementById('playerImageInput');
   if (fileInput && fileInput.files && fileInput.files[0]) {
     form.append('playerImage', fileInput.files[0]);
@@ -386,6 +391,8 @@ async function PopulateFormForEdit(playerId) {
     document.getElementById('t1').checked = result.t1 || false;
     document.getElementById('f1').checked = result.f1 || false;
     document.getElementById('ug').checked = result.ug || false;
+    document.getElementById('isDirector').checked = result.director || false;
+    document.getElementById('officerPosition').value = result.position || '';
 
     // populate image preview if available (supports either image_data or image_path)
     const preview = document.getElementById('playerImagePreview');
@@ -562,6 +569,7 @@ async function createPlayerTable() {
 }
 
 document.addEventListener('DOMContentLoaded', createPlayerTable);
+document.addEventListener('DOMContentLoaded', ClearForm);
 
 // Add this after your existing DOMContentLoaded listeners
 document.addEventListener('DOMContentLoaded', async () => {
@@ -903,23 +911,10 @@ async function PopulateOfficersTable() {
     tbody.innerHTML = ''; 
     result.forEach(row => {
       const tr = document.createElement('tr');
-      // append cells in the order the server returned them
-      // but only the first 4 columns
-      let col=0
       for (const val of Object.values(row)) {
-        col++;
         const td = document.createElement('td');
         td.textContent = val == null ? '' : val;
         tr.appendChild(td);
-        if (col==4) {
-          const td = document.createElement('td');
-          td.textContent = row.president==1?'President':
-                          row.boardmember==1?'Board member':
-                          row.secretary==1?'Secretary':
-                          row.treasurer==1?'Treasurer':'';
-          tr.appendChild(td);
-          break;
-        };
       }
       tbody.appendChild(tr);
     });

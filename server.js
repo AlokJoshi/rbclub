@@ -68,8 +68,28 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+// Old
+// app.get('/', (req, res) => {
+//     try {
+//         req.session.insecurelogin = req.session.insecurelogin || false;
+//         req.session.securelogin = req.session.securelogin || false;
+//         req.session.username = req.session.username || '';
+//         req.session.userid = req.session.userid || 0;
+//         req.session.isAdmin = req.session.isAdmin || false;
+//         req.session.casuallogin = req.session.casuallogin || false;
+//         res.sendFile(path.join(__dirname, 'public', 'index.html'));
+//     }
+//     catch (err) {
+//         console.error('Error in root route:', err);
+//     }
+// });
+
 app.get('/', (req, res) => {
-    // req.session.viewCount = (req.session.viewCount || 0) + 1;
+    res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+// Members route
+app.get('/members', (req, res) => {
     try {
         req.session.insecurelogin = req.session.insecurelogin || false;
         req.session.securelogin = req.session.securelogin || false;
@@ -77,23 +97,17 @@ app.get('/', (req, res) => {
         req.session.userid = req.session.userid || 0;
         req.session.isAdmin = req.session.isAdmin || false;
         req.session.casuallogin = req.session.casuallogin || false;
-        // req.session.save((err) => {
-        //     if (err) {
-        //         console.error('Error saving session:', err);
-        //     }
-        // });
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        res.sendFile(path.join(__dirname, 'public', 'members.html'));
+    } catch (err) {
+        console.error('Error in members route:', err);
+        res.status(500).send('Server error');
     }
-    catch (err) {
-        console.error('Error in root route:', err);
-    }
-    // console.log(`View count for this session: ${req.session.viewCount}`);
-    // res.sendFile(path.join(__dirname, 'public', 'index.html')); 
 });
 
-// app.get('/reset-password', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
-// });
+// Guests route
+app.get('/guests', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'guests.html'));
+});
 
 app.get('/isinvalidbridgeterm/:term', async (req, res) => {
     const term = req.params.term
@@ -279,9 +293,7 @@ app.get('/api/directorsdata', (req, res) => {
 
 app.get('/api/officersdata', (req, res) => {
     try {
-        const stmt = db.prepare(`SELECT first,last,phone,email,president,boardmember,secretary,
-            treasurer FROM player where president=1 or  
-             boardmember=1 or secretary=1 or treasurer=1 order by last;`);
+        const stmt = db.prepare(`SELECT first,last,phone,email,position FROM player where position is not null order by last;`);
         const result = stmt.all();
         res.json(result);
     } catch (err) {
@@ -398,7 +410,9 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
     const filename = req.newFileName
     try {
 
-        const stmt = db.prepare('UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, image_path=? WHERE id = ? RETURNING *;');
+        const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, 
+                                 acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, 
+                                 image_path=?, director=?, position=? WHERE id = ?;`); 
 
         const result = stmt.run(data.first,
             data.last,
@@ -413,6 +427,8 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
             (data.f1 === true || data.f1 === 'true' || data.f1 === 'on') ? 1 : 0,
             (data.ug === true || data.ug === 'true' || data.ug === 'on') ? 1 : 0,
             filename,
+            (data.isDirector === true || data.isDirector === 'true' || data.isDirector === 'on') ? 1 : 0,
+            (!data.officerPosition || data.officerPosition === 'None') ? null : data.officerPosition,
             playerId);
 
         // If a file was uploaded, try to update the row with an image_path.

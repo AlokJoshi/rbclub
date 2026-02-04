@@ -209,7 +209,8 @@
 })(jQuery);
 
 window.onload = function() {
-    import('./myutils.js').then(module => {
-      console.log('myutils module loaded.');
-    }); 
+		//commented out to prevent loading myutils.js twice
+    // import('./myutils.js').then(module => {
+    //   console.log('myutils module loaded.');
+    // }); 
 };
