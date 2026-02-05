@@ -646,54 +646,6 @@ function toggleColumn(tableSelector, colIndex) {
   });
 }
 
-// //function to check if the user should be admitted to the site
-// async function shouldAdmitToSite() {
-//   //show a modal message explaining the two options:
-//   //1. Login with the provided login details
-//   //2. Gain admittance after proving that
-//   //   a. Your name matches with club user list
-//   //   b. You can spot a non-bridge term in a list of bridge terms
-//   //   c. You can spot 2 non-members in a list of members and members
-//   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
-//   shouldAdmitToSiteModal.style.display = 'block'
-// }
-// async function IwantToLogin() {
-//   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
-//   shouldAdmitToSiteModal.style.display = 'none'
-//   var loginModal = document.getElementById("loginmodal");
-//   loginModal.style.display = "block";
-// }
-
-// async function IwantToAnswerQuestions() {
-//   const shouldAdmitToSiteModal = document.getElementById('shouldadmittositemodal')
-//   shouldAdmitToSiteModal.style.display = 'none'
-//   var IwantToAnswerQuestions = document.getElementById("nameandphonecheck");
-//   IwantToAnswerQuestions.style.display = "block";
-// }
-
-async function PopulateTerms() {
-  // const questionsModal = document.getElementById('nameandphonecheck')
-  // questionsModal.style.display = 'none'
-  // const termCheckModal = document.getElementById('termcheckmodal')
-
-  //populate the terms
-  const res = await fetch('/bridgeterms', {
-    method: 'GET'
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const result = await res.json()
-  console.log(result);
-  const select = document.getElementById('bridgeterm')
-  // termCheckModal.style.display = "block";
-  result.forEach((row) => {
-    const option = document.createElement('option');
-    option.value = row.term;
-    option.textContent = `${row.term}`;
-    select.appendChild(option);
-  })
-}
-
-
 async function DoNameAndPhoneCheck() {
   const myname = document.getElementById('myname')
   const name = myname.value

@@ -186,28 +186,6 @@ async function get18Players() {
     }
 }
 
-async function isNonPlayer(first) {
-    try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool
-        const client = await pool.connect();
-        const result = await client.query('SELECT first FROM nonplayer where first = $1;', [first]);
-        client.release();
-        return result.rows.length > 0 ? true : false;
-    } catch (err) {
-        console.error('Error fetching isNonPlayer:', err);
-        return false;
-    }
-
-}
-
 function isPlayer(fullname, phone) {
     try {
         const first = fullname.split(' ')[0];
@@ -228,44 +206,29 @@ function isPlayer(fullname, phone) {
 
 }
 
-async function getBridgeTerms() {
+function saveGuestInquiry(firstName, lastName, email, phone, acbl, visitDate, message) {
     try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool
-        const client = await pool.connect();
-        const result = await client.query('SELECT term FROM bridgeterm;');
-        client.release();
-        return result.rows;
+        const stmt = db.prepare('INSERT INTO guestinquiry (firstname, lastname, email, phone, acbl, visitdate, message) VALUES (?, ?, ?, ?, ?, ?, ?);');
+        stmt.run(firstName, lastName, email, phone, acbl, visitDate, message);
+        return true;
     } catch (err) {
-        console.error('Error fetching bridge terms:', err);
-        return [];
-    }
-}
-async function isInvalidBridgeTerm(term) {
-    try {
-        // const pool = new Pool({
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool
-        const client = await pool.connect();
-        const result = await client.query('SELECT valid FROM bridgeterm where term =$1;', [term]);
-        client.release();
-        return !(result.rows.length > 0 && result.rows[0].valid)
-    } catch (err) {
-        console.error('Error checking bridge term validity:', err);
+        console.error('Error saving guest inquiry:', err);
         return false;
+    } 
+}
+
+function getMailingListAddresses(listname) {
+    try {
+        const stmt = db.prepare(`select player.email from player inner join mailinglistdetails 
+            on player.id = mailinglistdetails.playerid inner join mailinglist on 
+            mailinglistdetails.mailinglistid = mailinglist.id where mailinglist.name = ?
+            and player.email IS NOT NULL and trim(player.email) != '';`);
+        const result = stmt.all(listname);
+        console.log('Mailing list query result:', result);
+        return result.map(row => row.email).join(','); // return comma-separated string of email addresses
+    } catch (err) {
+        console.error('Error fetching mailing list addresses:', err);
+        return [];
     }
 }
 
@@ -275,12 +238,11 @@ module.exports = {
     changePassword,
     registeredUsers,
     isAdmin,
-    getBridgeTerms,
-    isInvalidBridgeTerm,
-    isNonPlayer,
     isPlayer,
     login,
     register,
     bulkregister,
-    passwordMatches
+    passwordMatches,
+    saveGuestInquiry,
+    getMailingListAddresses
 }

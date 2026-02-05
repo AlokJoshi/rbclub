@@ -343,5 +343,51 @@
     </div>
     <div class="copyright">&copy; Riverside Bridge Club. Design: <a href="https://html5up.net">HTML5 UP</a>.</div>
 </body>
-
+<!-- Scripts -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+    
+    <script>
+        // Handle guest form submission
+        document.getElementById('guestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                firstName: document.getElementById('guestFirstName').value,
+                lastName: document.getElementById('guestLastName').value,
+                email: document.getElementById('guestEmail').value,
+                phone: document.getElementById('guestPhone').value,
+                acbl: document.getElementById('guestACBL').value,
+                visitDate: document.getElementById('visitDate').value,
+                message: document.getElementById('guestMessage').value
+            };
+            // console.log('Submitting guest inquiry:', JSON.stringify(formData));
+            try {
+                const response = await fetch('/api/guest-inquiry', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                // console.log('Guest inquiry response:', JSON.stringify(result));
+                const messageDiv = document.getElementById('guestFormMessage');
+                
+                if (result.success) {
+                    messageDiv.innerHTML = '<p style="color: green;background:white;">Thank you for your inquiry! We\'ll be in touch soon.</p>';
+                    document.getElementById('guestForm').reset();
+                } else {
+                    messageDiv.innerHTML = '<p style="color: red;background:white;">Sorry, there was an error. Please try again or contact us directly.</p>';
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                document.getElementById('guestFormMessage').innerHTML = '<p style="color: red;">Sorry, there was an error. Please try again or contact us directly.</p>';
+            }
+        });
+    </script>
 </html>

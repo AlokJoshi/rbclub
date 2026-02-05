@@ -25,8 +25,8 @@ const PORT = process.env.PORT || 3000;
 const { upload } = require('./helper');
 const { userExists, addUser, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
-    getBridgeTerms, isInvalidBridgeTerm, passwordMatches,
-    isPlayer } = require('./credentials')
+    passwordMatches,getMailingListAddresses,
+    isPlayer,saveGuestInquiry } = require('./credentials')
 
 
 
@@ -109,13 +109,6 @@ app.get('/guests', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'guests.html'));
 });
 
-app.get('/isinvalidbridgeterm/:term', async (req, res) => {
-    const term = req.params.term
-    const isinvalid = await isInvalidBridgeTerm(term)
-    req.session.termcheck = isinvalid
-    res.send(isinvalid)
-})
-
 // moved this here so that app.get('/') can initialize session variables first
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -132,22 +125,6 @@ app.put('/register', (req, res) => {
     const registrationresult = register(first, last, username)
     res.json(registrationresult)
 })
-
-// app.put('/checknonmembers', async (req, res) => {
-//     const nonmembers = req.body.nonmembers
-//     const firstIsNonPlayer = await isNonPlayer(nonmembers[0])
-//     const secondIsNonPlayer = await isNonPlayer(nonmembers[1])
-//     const botharenonmembers = firstIsNonPlayer && secondIsNonPlayer
-//     req.session.nonmemberscheck = botharenonmembers
-//     const temporarylogin = botharenonmembers &&
-//         req.session.termcheck && req.session.namecheck
-//     req.session.temporarylogin = temporarylogin
-
-//     res.json({
-//         botharenonmembers: botharenonmembers,
-//         temporarylogin: temporarylogin
-//     })
-// })
 
 app.put('/checkfullnameandphone', async (req, res) => {
     const player = await isPlayer(req.body.fullname, req.body.phone)
@@ -167,12 +144,6 @@ app.put('/checkfullnameandphone', async (req, res) => {
     },
     )
 })
-
-
-app.get('/bridgeterms', async (req, res) => {
-    const result = await getBridgeTerms();
-    res.send(result);
-});
 
 app.post('/logout', async (req, res) => {
     req.session.destroy((err) => {
@@ -575,6 +546,28 @@ app.post('/reset-password', async (req, res) => {
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {
         console.error('Error resetting password:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.post('/api/guest-inquiry', async (req, res) => {
+    const { firstName, lastName, email, phone, acbl, visitDate, message } = req.body;
+    try {
+        //save the guest inquiry to the database or send an email
+        saveGuestInquiry(firstName, lastName, email, phone, acbl, visitDate, message);
+        const mailingList = getMailingListAddresses('boardmembers');
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: mailingList,
+            subject: 'New Guest Inquiry',
+            text: `Our web site has received a new guest inquiry from 
+            First Name:${firstName} Last Name: ${lastName} Phone:${phone}
+            Email:(${email}) For Visit Date: ${visitDate}.\n\nMessage: ${message}
+            President will reach out to the guest or assign someone to reach out to the guest.`
+        }); 
+        res.json({ success: true, message: 'Inquiry received. We will contact you soon.' });
+    } catch (err) {
+        console.error('Error handling guest inquiry:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
