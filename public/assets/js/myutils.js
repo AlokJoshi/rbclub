@@ -6,7 +6,7 @@ function delay(durationInMilliseconds) {
 }
 
 //delay duration in seconds
-async function showCustomAlert(message,delayDuration=3) {
+async function showCustomAlert(message, delayDuration = 3) {
   const alertBox = document.getElementById('customAlert');
   const alertMessage = alertBox.querySelector('p');
   alertMessage.textContent = message;
@@ -38,7 +38,7 @@ function displaychangepasswordform() {
 
 function displayaddnewplayerform() {
   if (!isAdmin || !securelogin) {
-    showCustomAlert('You must be securely logged in as Admin to add a new player.',10);
+    showCustomAlert('You must be securely logged in as Admin to add a new player.', 10);
     return;
   }
   const addnewplayermodal = document.getElementById('addnewplayermodal')
@@ -51,7 +51,7 @@ function displayaddnewplayerform() {
 
 function displaydefaultlogincredentialsform() {
   if (!isAdmin || !securelogin) {
-    showCustomAlert('You must be securely logged in as Admin to view default login credentials.',10);
+    showCustomAlert('You must be securely logged in as Admin to view default login credentials.', 10);
     return;
   }
   const defaultlogincredentials = document.getElementById('defaultlogincredentials')
@@ -67,8 +67,8 @@ function closedefaultlogincredentialsform() {
   defaultlogincredentials.style.display = 'none'
 }
 
-function closeNameAndPhoneCheck() { 
-  const nameandphonecheckmodal = document.getElementById('nameandphonecheck') 
+function closeNameAndPhoneCheck() {
+  const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
   nameandphonecheckmodal.style.display = 'none'
 }
 
@@ -93,41 +93,41 @@ async function GetDefaultLoginCredentials() {
     defaultlogincredentialsresult.innerText = `Default Username: ${result.username}, Password: ${result.password}`
   } catch (err) {
     console.error('Error fetching default login credentials:', err);
-    showCustomAlert(`Error fetching default login credentials: ${err.message}`,5);
+    showCustomAlert(`Error fetching default login credentials: ${err.message}`, 5);
   }
 }
 async function SubmitNewPlayer() {
   try {
     console.log('Adding new player first and last names only');
     const res = await fetch(`/addnewplayer`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      first: document.getElementById('newplayerfirstname').value,
-      last: document.getElementById('newplayerlastname').value
-    })
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    if (res.status === 400) {
-      showCustomAlert('Player with the same first and last name already exists',5);
-      return;
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        first: document.getElementById('newplayerfirstname').value,
+        last: document.getElementById('newplayerlastname').value
+      })
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      if (res.status === 400) {
+        showCustomAlert('Player with the same first and last name already exists', 5);
+        return;
+      }
+      throw new Error(`Add player failed: ${res.status} ${err}`);
     }
-    throw new Error(`Add player failed: ${res.status} ${err}`);
-  }
     //res.message has the username and password
     const result = await res.json();
-    if (!result.success)  {
-      showCustomAlert(`Adding new player failed: ${result.message}`,5);
+    if (!result.success) {
+      showCustomAlert(`Adding new player failed: ${result.message}`, 5);
       await createPlayerTable(); // refresh the table display
     } else {
-      showCustomAlert(result.message,20);
+      showCustomAlert(result.message, 20);
     }
   } catch (err) {
     console.error('Error adding new player:', err);
-    showCustomAlert(`Error adding new player: ${err.message}`,5);
+    showCustomAlert(`Error adding new player: ${err.message}`, 5);
   }
 }
 
@@ -136,16 +136,16 @@ async function logout() {
     const res = await fetch('/logout', {
       method: 'POST'
     });
-    
+
     if (!res.ok) {
       throw new Error('Logout failed');
     }
-    
+
     showCustomAlert('You have been logged out.');
     decide();
   } catch (err) {
     console.error('Logout error:', err);
-    showCustomAlert('Error during logout.'+err.message,5);
+    showCustomAlert('Error during logout.' + err.message, 5);
   }
 }
 
@@ -179,12 +179,12 @@ function closeAddNewPlayerModal() {
 }
 
 function closeResetPasswordModal() {
-    const resetPasswordModal = document.getElementById('resetPasswordModal');
-    if (resetPasswordModal) {
-        resetPasswordModal.style.display = 'none';
-        // Clear the token from URL
-        window.history.replaceState({}, document.title, '/');
-    }
+  const resetPasswordModal = document.getElementById('resetPasswordModal');
+  if (resetPasswordModal) {
+    resetPasswordModal.style.display = 'none';
+    // Clear the token from URL
+    window.history.replaceState({}, document.title, '/');
+  }
 }
 
 async function login() {
@@ -201,7 +201,7 @@ async function login() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     if (!result.valid) {
-      showCustomAlert(`Login failed: ${result.message}`,5);
+      showCustomAlert(`Login failed: ${result.message}`, 5);
       return;
     } else {
       console.log(result);
@@ -222,7 +222,7 @@ async function login() {
     }
   } catch (err) {
     console.error('API error:', err);
-    showCustomAlert(`Login failed: ${err.message}`,5);
+    showCustomAlert(`Login failed: ${err.message}`, 5);
   }
   const loginModal = document.getElementById('loginmodal')
   loginModal.style.display = "none";
@@ -234,7 +234,7 @@ async function changePassword() {
   const newpassword1 = document.getElementById('newpassword1').value;
   const newpassword2 = document.getElementById('newpassword2').value;
   if (newpassword1 !== newpassword2) {
-    showCustomAlert('New passwords do not match',5);
+    showCustomAlert('New passwords do not match', 5);
     return;
   }
   try {
@@ -248,12 +248,12 @@ async function changePassword() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result);
-    showCustomAlert('Password changed successfully',5);
+    showCustomAlert('Password changed successfully', 5);
   } catch (err) {
     console.error('API error:', err);
-    showCustomAlert(`Password change failed: ${err.message}`,5);
+    showCustomAlert(`Password change failed: ${err.message}`, 5);
   }
-  const changePasswordModal = document.getElementById('changepasswordmodal')  
+  const changePasswordModal = document.getElementById('changepasswordmodal')
   changePasswordModal.style.display = "none";
 }
 
@@ -425,11 +425,11 @@ async function DeletePlayer(playerId) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    showCustomAlert(result.message,5);
+    showCustomAlert(result.message, 5);
     // Refresh the table after deletion
     await createPlayerTable();
   } catch (err) {
-    showCustomAlert(`Error deleting player: ${err.message}`,5);
+    showCustomAlert(`Error deleting player: ${err.message}`, 5);
   }
 }
 
@@ -539,7 +539,7 @@ async function createPlayerTable() {
         if (((userid === row.id) && securelogin) || (isAdmin && securelogin)) {
           PopulateFormForEdit(row.id);
         } else {
-          showCustomAlert('You must be securelylogged in as Admin or as yourself to edit a player record.',10);
+          showCustomAlert('You must be securelylogged in as Admin or as yourself to edit a player record.', 10);
         }
       });
       tdEdit.appendChild(iEdit);
@@ -554,8 +554,8 @@ async function createPlayerTable() {
           if (window.prompt(`Type DELETE to confirm deletion of player :${row.first} ${row.last}`, '') === 'DELETE') {
             await DeletePlayer(row.id);
           }
-        }else {
-          showCustomAlert('You must be securely logged in as Admin to delete a player record.',10);
+        } else {
+          showCustomAlert('You must be securely logged in as Admin to delete a player record.', 10);
         }
       });
       tdDel.appendChild(iDelete);
@@ -573,31 +573,31 @@ document.addEventListener('DOMContentLoaded', ClearForm);
 
 // Add this after your existing DOMContentLoaded listeners
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if we're on a password reset flow
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    
-    if (token) {
-        // User clicked email link - show reset password modal
-        displayResetPasswordModal(token);
-        console.log('Displaying reset password modal with token:', token);
-    }else{
-        console.log('No reset token found in URL.');
-    }
+  // Check if we're on a password reset flow
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
+  if (token) {
+    // User clicked email link - show reset password modal
+    displayResetPasswordModal(token);
+    console.log('Displaying reset password modal with token:', token);
+  } else {
+    console.log('No reset token found in URL.');
+  }
 });
 function displayResetPasswordModal(token) {
-    // Hide any other modals that might be open
-    closeLoginModal();
-    closeForgotPasswordModal();
-    closeNameAndPhoneCheck();
-    
-    // Show reset password modal
-    const resetPasswordModal = document.getElementById('resetPasswordModal');
-    if (resetPasswordModal) {
-        resetPasswordModal.style.display = 'block';
-        // Store token in a data attribute for later use
-        resetPasswordModal.dataset.token = token;
-    }
+  // Hide any other modals that might be open
+  closeLoginModal();
+  closeForgotPasswordModal();
+  closeNameAndPhoneCheck();
+
+  // Show reset password modal
+  const resetPasswordModal = document.getElementById('resetPasswordModal');
+  if (resetPasswordModal) {
+    resetPasswordModal.style.display = 'block';
+    // Store token in a data attribute for later use
+    resetPasswordModal.dataset.token = token;
+  }
 }
 
 // Image input handling: read selected image as DataURL and store in hidden input for submission
@@ -668,11 +668,11 @@ async function DoNameAndPhoneCheck() {
     const result = await res.json()
     if (result.valid) {
       casuallogin = true
-      showCustomAlert(result.message,3)
+      showCustomAlert(result.message, 3)
       // nameandphonecheckresult.innerText = "Correct! You seem to be a member of the club."
       ok = true
     } else {
-      showCustomAlert(result.message,3)
+      showCustomAlert(result.message, 3)
       // nameandphonecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
       casuallogin = false
       ok = false
@@ -680,7 +680,7 @@ async function DoNameAndPhoneCheck() {
     decide()
   } catch (err) {
     console.error('Error checking full name and phone:', err);
-    showCustomAlert(`Error checking full name and phone: ${err.message}`,5)
+    showCustomAlert(`Error checking full name and phone: ${err.message}`, 5)
     casuallogin = false
     ok = false
   }
@@ -689,84 +689,84 @@ async function DoNameAndPhoneCheck() {
     const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
     nameandphonecheckmodal.style.display = 'none'
     decide()
-  // } else {
-  //   window.location = '/'
+    // } else {
+    //   window.location = '/'
   }
 }
 
 async function forgotPassword() {
-    const email = document.getElementById('forgotPasswordEmail').value;
-    
-    if (!email) {
-        showCustomAlert('Please enter your email address');
-        return;
+  const email = document.getElementById('forgotPasswordEmail').value;
+
+  if (!email) {
+    showCustomAlert('Please enter your email address');
+    return;
+  }
+
+  try {
+    const res = await fetch('/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+    showCustomAlert(data.message, 5);
+
+    if (data.success) {
+      closeForgotPasswordModal();
     }
-    
-    try {
-        const res = await fetch('/forgot-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-        });
-        
-        const data = await res.json();
-        showCustomAlert(data.message, 5);
-        
-        if (data.success) {
-            closeForgotPasswordModal();
-        }
-    } catch (err) {
-        console.error('Forgot password error:', err);
-        showCustomAlert('Error requesting password reset');
-    }
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    showCustomAlert('Error requesting password reset');
+  }
 }
 
 function displayForgotPasswordForm() {
-    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
-    forgotPasswordModal.style.display = 'block';
+  const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+  forgotPasswordModal.style.display = 'block';
 }
 
 function closeForgotPasswordModal() {
-    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
-    forgotPasswordModal.style.display = 'none';
+  const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+  forgotPasswordModal.style.display = 'none';
 }
 
 async function resetPassword() {
-    const resetPasswordModal = document.getElementById('resetPasswordModal');
-    const token = resetPasswordModal.dataset.token;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (!newPassword || newPassword.length < 6) {
-        showCustomAlert('Password must be at least 6 characters');
-        return;
+  const resetPasswordModal = document.getElementById('resetPasswordModal');
+  const token = resetPasswordModal.dataset.token;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+
+  if (!newPassword || newPassword.length < 6) {
+    showCustomAlert('Password must be at least 6 characters');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showCustomAlert('Passwords do not match');
+    return;
+  }
+
+  try {
+    const res = await fetch('/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword })
+    });
+
+    const data = await res.json();
+    showCustomAlert(data.message, 5);
+
+    if (data.success) {
+      closeResetPasswordModal();
+      setTimeout(() => {
+        displayloginform();
+      }, 2000);
     }
-    
-    if (newPassword !== confirmPassword) {
-        showCustomAlert('Passwords do not match');
-        return;
-    }
-    
-    try {
-        const res = await fetch('/reset-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, newPassword })
-        });
-        
-        const data = await res.json();
-        showCustomAlert(data.message, 5);
-        
-        if (data.success) {
-            closeResetPasswordModal();
-            setTimeout(() => {
-                displayloginform();
-            }, 2000);
-        }
-    } catch (err) {
-        console.error('Reset password error:', err);
-        showCustomAlert('Error resetting password');
-    }
+  } catch (err) {
+    console.error('Reset password error:', err);
+    showCustomAlert('Error resetting password');
+  }
 }
 
 // Expose for use in console or other scripts
@@ -817,7 +817,7 @@ async function getSessionDetails() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const result = await res.json()
-    return [result.sessionId, result.securelogin, result.insecurelogin, result.username, result.userid, result.isAdmin, result.casuallogin];  
+    return [result.sessionId, result.securelogin, result.insecurelogin, result.username, result.userid, result.isAdmin, result.casuallogin];
 
   } catch (err) {
 
@@ -829,12 +829,12 @@ async function PopulateDirectosTable() {
     const res = await fetch('api/directorsdata', {
       method: 'GET'
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`); 
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result);
     const tbody = document.getElementById('directorsTableBody');
     if (!tbody) return console.warn('Table body #directorsTableBody not found');
-    tbody.innerHTML = ''; 
+    tbody.innerHTML = '';
     result.forEach(row => {
       const tr = document.createElement('tr');
       // append cells in the order the server returned them
@@ -855,12 +855,12 @@ async function PopulateOfficersTable() {
     const res = await fetch('api/officersdata', {
       method: 'GET'
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`); 
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result);
+    console.log(result.mailingLists);
     const tbody = document.getElementById('officersTableBody');
     if (!tbody) return console.warn('Table body #officersTableBody not found');
-    tbody.innerHTML = ''; 
+    tbody.innerHTML = '';
     result.forEach(row => {
       const tr = document.createElement('tr');
       for (const val of Object.values(row)) {
@@ -874,12 +874,110 @@ async function PopulateOfficersTable() {
     console.error('API error:', err);
   }
 }
+async function PopulateEmailList() {
+
+  const tbody = document.getElementById('emaillistbody');
+  if(!tbody) return console.warn('Table body #emaillistbody not found');
+
+  tbody.innerHTML = '';
+
+  const res = await fetch('/api/mailinglists', {
+    method: 'GET'
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const result = await res.json();
+
+
+  result.mailingLists.forEach(row => {
+    const tr = document.createElement('tr');
+
+    const id = document.createElement('td');
+    id.textContent = row.id;
+    tr.appendChild(id);
+
+    const name = document.createElement('td');
+    name.textContent = row.name;
+    tr.appendChild(name);
+
+    const description = document.createElement('td');
+    description.textContent = row.description;
+    tr.appendChild(description);
+
+    const cell_edit = document.createElement('td');
+    const iEdit = document.createElement('i');
+    iEdit.className = 'fas fa-edit';
+    iEdit.addEventListener('click', () => {
+      // Implement edit functionality here
+    });
+    cell_edit.appendChild(iEdit);
+    tr.appendChild(cell_edit);
+    
+    const cell_delete = document.createElement('td');
+    const iDelete = document.createElement('i');
+    iDelete.className = 'fas fa-trash';
+    iDelete.style.marginLeft = '10px';
+    iDelete.addEventListener('click', async () => {
+      // Implement delete functionality here
+      console.log(`Delete mailing list with ID: ${row.id}`);
+      const res = await fetch(`/api/mailinglist/${row.id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        showCustomAlert(`Error deleting mailing list: ${res.status} ${err}`, 5);
+        return;
+      } else {
+        showCustomAlert(`Mailing list deleted successfully`, 5);
+        await PopulateEmailList(); // Refresh the list after deletion
+      }   
+    });
+    cell_delete.appendChild(iDelete);
+    tr.appendChild(cell_delete);
+
+    tbody.appendChild(tr);
+  });
+}
+
+async function AddMailingList() {
+  const nameInput = document.getElementById('newMailingListName');
+  const descriptionInput = document.getElementById('newMailingListDescription');
+  const name = nameInput.value.trim();
+  const description = descriptionInput.value.trim();
+
+  if (!name) {
+    showCustomAlert('Please enter a name for the mailing list.', 5);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/mailinglists', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, description })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      showCustomAlert(`Error adding mailing list: ${err.message}`, 5);
+      return;
+    }
+    showCustomAlert('Mailing list added successfully.', 5);
+    await PopulateEmailList();
+    nameInput.value = '';
+    descriptionInput.value = '';
+  } catch (err) {
+    console.error('Error adding mailing list:', err);
+    showCustomAlert(`Error adding mailing list. ${err}`, 5);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', PopulateDirectosTable);
 document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
+document.addEventListener('DOMContentLoaded', PopulateEmailList);
 
 async function decide() {
-  [sessionId,securelogin,insecurelogin,username,userid,isAdmin,casuallogin] = await getSessionDetails()
+  [sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin] = await getSessionDetails()
   // Base the decision on global variables set during login or checks
   console.log(sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin)
   // Check if the session exists
@@ -887,7 +985,7 @@ async function decide() {
 
   // remove blurred effect from all content classes
   const contentElements = document.getElementsByClassName('content');
-  const show = sessionId && (casuallogin || insecurelogin ||securelogin);
+  const show = sessionId && (casuallogin || insecurelogin || securelogin);
   for (let i = 0; i < contentElements.length; i++) {
     if (!show) {
       contentElements[i].classList.add('blurred');
@@ -897,13 +995,13 @@ async function decide() {
   }
 
   if (sessionId && casuallogin) {
-    showCustomAlert(`Note that you are logged in as ${username} but you are a casual visitor. You can only view the data.`,10)
-  }else if (sessionId && insecurelogin) {
-    showCustomAlert(`Note that you are logged in as ${username} but you are using a password that is not secure. You can only view the data.`,10)
+    showCustomAlert(`Note that you are logged in as ${username} but you are a casual visitor. You can only view the data.`, 10)
+  } else if (sessionId && insecurelogin) {
+    showCustomAlert(`Note that you are logged in as ${username} but you are using a password that is not secure. You can only view the data.`, 10)
   } else if (sessionId && securelogin) {
-    showCustomAlert(`Note that you are securely logged in as ${username} and you can view data as well as edit your own data.`,10)
+    showCustomAlert(`Note that you are securely logged in as ${username} and you can view data as well as edit your own data.`, 10)
   } else if (sessionId && securelogin && isAdmin) {
-    showCustomAlert(`Note that you are logged in as ${username}, an Admin, and can view and edit all data.`,10)
+    showCustomAlert(`Note that you are logged in as ${username}, an Admin, and can view and edit all data.`, 10)
   } else {
     console.log("User is not logged in.");
   }

@@ -232,6 +232,52 @@ function getMailingListAddresses(listname) {
     }
 }
 
+function getMailingLists(listnme) {
+    try {
+        const stmt = db.prepare(`select * from mailinglist`);
+        const result = stmt.all();
+        console.log('getMailingLists result:', result);
+        return result
+    } catch (err) {
+        console.error('Error fetching mailing lists:', err);
+        return [];
+    }
+}
+
+function deleteMailingList(listId) {
+    try {
+        const deleteDetailsStmt = db.prepare('DELETE FROM mailinglistdetails WHERE mailinglistid = ?;');
+        deleteDetailsStmt.run(listId);
+        const deleteListStmt = db.prepare('DELETE FROM mailinglist WHERE id = ?;');
+        deleteListStmt.run(listId);
+        return true;
+    } catch (err) {
+        console.error('Error deleting mailing list:', err);
+        return false;
+    }
+}
+function createMailingList(name, description) {
+    try {
+        const stmt = db.prepare('INSERT INTO mailinglist (name, description) VALUES (?, ?);');
+        stmt.run(name, description);
+        return true;
+    } catch (err) {
+        console.error('Error creating mailing list:', err);
+        return false;
+    }
+}
+
+function existsMailingList(name) {
+    try {
+        const stmt = db.prepare('SELECT * FROM mailinglist WHERE name = ?;');
+        const result = stmt.all(name);
+        return result.length > 0;
+    } catch (err) {
+        console.error('Error checking if mailing list exists:', err);
+        return false;
+    }
+}
+
 module.exports = {
     userExists,
     addUser,
@@ -244,5 +290,9 @@ module.exports = {
     bulkregister,
     passwordMatches,
     saveGuestInquiry,
-    getMailingListAddresses
+    getMailingListAddresses,
+    getMailingLists,
+    deleteMailingList,
+    createMailingList,
+    existsMailingList
 }

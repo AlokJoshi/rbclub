@@ -220,7 +220,7 @@
 			</div>
 		</section>
 
-		<!-- Section -->
+		<!-- Section to display officers-->
 		<section>
 			<header>
 				<h2>Officers</h2>
@@ -241,6 +241,52 @@
 						</tr>
 					</tbody>
 				</table>
+			</div>
+		</section>
+
+		<!-- Section to display email list names-->
+		<section>
+			<header>
+				<h2>Email List</h2>
+			</header>
+			<div class="content">
+				<div style="height:200px;overflow:scroll" id="emaillist">
+					<table>
+						<thead>
+							<tr>
+								<th>Id</th>
+								<th>Email List Name</th>
+								<th>Description</th>
+								<th>Edit</th>
+								<th>Delete</th>
+							</tr>
+						</thead>
+						<tbody id="emaillistbody">
+							<tr>
+								<td colspan="5">Loading email lists names..</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<form action="" id="addMailingListForm" style="margin-top:20px;">
+					<div class="fields">
+						<div class="field half">
+							<label for="newMailingListName">New Mailing List Name</label>
+							<input type="text" name="newMailingListName" id="newMailingListName" placeholder="New Mailing List Name" required />	
+						</div>
+						<div class="field half">
+							<label for="newMailingListDescription">New Mailing List Description</label>
+							<input type="text" name="newMailingListDescription" id="newMailingListDescription" placeholder="New Mailing List Description"/>	
+						</div>
+						<div class="field half">
+							<button type="button" class="button primary" style="margin-top: 30px;"onclick="AddMailingList()">Add Mailing List</button>
+						</div>
+						<div class="field half">
+							<button type="button" class="button primary" style="margin-top: 30px;" onclick="UpdateMailingList()">Update Mainling List</button>
+						</div>
+					</div>
+				</form>
+				</form>
 			</div>
 		</section>
 

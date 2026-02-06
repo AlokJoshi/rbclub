@@ -25,8 +25,9 @@ const PORT = process.env.PORT || 3000;
 const { upload } = require('./helper');
 const { userExists, addUser, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
-    passwordMatches,getMailingListAddresses,
-    isPlayer,saveGuestInquiry } = require('./credentials')
+    passwordMatches,getMailingListAddresses,getMailingLists,
+    deleteMailingList,createMailingList,existsMailingList,isPlayer,
+    saveGuestInquiry } = require('./credentials')
 
 
 
@@ -561,9 +562,12 @@ app.post('/api/guest-inquiry', async (req, res) => {
             to: mailingList,
             subject: 'New Guest Inquiry',
             text: `Our web site has received a new guest inquiry from 
-            First Name:${firstName} Last Name: ${lastName} Phone:${phone}
-            Email:(${email}) For Visit Date: ${visitDate}.\n\nMessage: ${message}
-            President will reach out to the guest or assign someone to reach out to the guest.`
+            \nFirst Name:${firstName} Last Name: ${lastName} 
+            \nPhone:${phone} Email:(${email}) 
+            \nExpressing interest in visiting club on:${visitDate}.
+            \n\nMessage: ${message}
+            \n\nPresident will reach out to the guest or assign someone to reach out to the guest.
+            \n\nThis email was sent automatically from the website to all board members.`
         }); 
         res.json({ success: true, message: 'Inquiry received. We will contact you soon.' });
     } catch (err) {
@@ -571,6 +575,53 @@ app.post('/api/guest-inquiry', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+
+app.get('/api/mailinglists', async (req, res) => {
+    try {
+        const mailingLists = getMailingLists();   
+        res.json({ success: true, mailingLists });
+    } catch (err) {
+        console.error('Error fetching mailing lists:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.get('/api/mailinglist/:listname', async (req, res) => {
+    const listName = req.params.listname;
+    try {
+        const emails = getMailingListAddresses(listName);
+        res.json({ success: true, emails });
+    } catch (err) {
+        console.error('Error fetching mailing list:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}); 
+
+app.delete('/api/mailinglist/:listid', async (req, res) => {
+    const listId = req.params.listid;
+    try {
+        deleteMailingList(listId);
+        res.json({ success: true, message: 'Mailing list deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting mailing list:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}); 
+
+app.post('/api/mailinglists', async (req, res) => {
+    const {name,description} = req.body;
+    try {
+        if (existsMailingList(name)) {
+            res.status(400).json({ success: false, message: 'Mailing list already exists' });
+            return;
+        }
+        createMailingList(name, description);
+        res.json({ success: true, message: 'Mailing list created successfully' });
+    } catch (err) {
+        console.error('Error deleting mailing list:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}); 
 
 async function playerExists(first, last) {
     try {
