@@ -26,7 +26,8 @@ const { upload } = require('./helper');
 const { userExists, addUser, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
     passwordMatches,getMailingListAddresses,getMailingLists,
-    deleteMailingList,createMailingList,existsMailingList,isPlayer,
+    deleteMailingList,createMailingList,existsMailingList,
+    updateMailingList,isPlayer,
     saveGuestInquiry } = require('./credentials')
 
 
@@ -618,10 +619,37 @@ app.post('/api/mailinglists', async (req, res) => {
         createMailingList(name, description);
         res.json({ success: true, message: 'Mailing list created successfully' });
     } catch (err) {
-        console.error('Error deleting mailing list:', err);
+        console.error('Error creating mailing list:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 }); 
+
+app.put('/api/mailinglists', async (req, res) => {
+    const {id,name,description} = req.body;
+    try {
+        if (existsMailingList(name)) {
+            res.status(400).json({ success: false, message: 'Mailing list already exists' });
+            return;
+        }
+        updateMailingList(id, name, description);
+        res.json({ success: true, message: 'Mailing list updated successfully' });
+    } catch (err) {
+        console.error('Error updating mailing list:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}); 
+
+app.get(`/api/mailinglist/:mailinglistid/recipients`, async (req, res) => {
+    const mailingListId = req.params.mailinglistid;
+    try {
+        const result = getMailingListRecipients(mailingListId);
+        res.json({ success: result.success, recipients: result.recipients, message: result.message });
+    } catch (err) {
+        console.error('Error fetching mailing list recipients:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
 
 async function playerExists(first, last) {
     try {

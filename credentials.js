@@ -266,6 +266,16 @@ function createMailingList(name, description) {
         return false;
     }
 }
+function updateMailingList(id,name, description) {
+    try {
+        const stmt = db.prepare('UPDATE mailinglist SET name = ?, description = ? WHERE id = ?;');
+        stmt.run(name, description, id);
+        return true;
+    } catch (err) {
+        console.error('Error updating mailing list:', err);
+        return false;
+    }
+}
 
 function existsMailingList(name) {
     try {
@@ -275,6 +285,17 @@ function existsMailingList(name) {
     } catch (err) {
         console.error('Error checking if mailing list exists:', err);
         return false;
+    }
+}
+function getMailingListRecipients(listId) {
+    try {
+        const stmt = db.prepare(`SELECT player.id as id, CONCAT(player.first," ",player.last) AS name FROM player INNER JOIN mailinglistdetails ON player.id = mailinglistdetails.playerid WHERE mailinglistdetails.mailinglistid = ?;`);
+        const result = stmt.all(listId);
+        console.log('getMailingListRecipients result:', result);
+        return {success: true, recipients: result, message: 'Recipients fetched successfully'}; // return array of recipient objects with id and name);
+    } catch (err) {
+        console.error('Error fetching mailing list recipients:', err);
+        return {success: false, recipients: [], message: 'Error fetching recipients'};
     }
 }
 
@@ -294,5 +315,7 @@ module.exports = {
     getMailingLists,
     deleteMailingList,
     createMailingList,
-    existsMailingList
+    existsMailingList,
+    updateMailingList,
+    getMailingListRecipients
 }

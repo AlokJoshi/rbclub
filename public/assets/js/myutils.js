@@ -907,7 +907,12 @@ async function PopulateEmailList() {
     const iEdit = document.createElement('i');
     iEdit.className = 'fas fa-edit';
     iEdit.addEventListener('click', () => {
-      // Implement edit functionality here
+      // Copy the data to the addMailingList form and enable the update button
+      document.getElementById('mailingListId').value = row.id;
+      document.getElementById('newMailingListName').value = row.name;
+      document.getElementById('newMailingListDescription').value = row.description; 
+      document.getElementById('updateMailingListButton').disabled = false;
+      document.getElementById('addMailingListButton').disabled = true;
     });
     cell_edit.appendChild(iEdit);
     tr.appendChild(cell_edit);
@@ -937,6 +942,41 @@ async function PopulateEmailList() {
     tbody.appendChild(tr);
   });
 }
+async function UpdateMailingList() {
+  const mailingListId = document.getElementById('mailingListId').value;
+  const nameInput = document.getElementById('newMailingListName');
+  const descriptionInput = document.getElementById('newMailingListDescription');
+  const name = nameInput.value.trim();
+  const description = descriptionInput.value.trim();
+  if (!name) {
+    showCustomAlert('Please enter a name for the mailing list.', 5);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/mailinglists', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: mailingListId, name, description })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      showCustomAlert(`Error updating mailing list: ${err.message}`, 5);
+      return;
+    }
+    showCustomAlert('Mailing list updated successfully.', 5);
+    await PopulateEmailList();
+    nameInput.value = '';
+    descriptionInput.value = '';
+    document.getElementById('updateMailingListButton').disabled = true;
+    document.getElementById('addMailingListButton').disabled = false;
+  } catch (err) {
+    console.error('Error updating mailing list:', err);
+    showCustomAlert(`Error updating mailing list. ${err}`, 5);
+  }
+} 
 
 async function AddMailingList() {
   const nameInput = document.getElementById('newMailingListName');
@@ -972,9 +1012,68 @@ async function AddMailingList() {
   }
 }
 
+async function PopulateMailingLists() {
+  try {
+    const res = await fetch('/api/mailinglists', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    const select = document.getElementById('mailingListSelect');
+    if (!select) return console.warn('Select element #mailingListSelect not found');
+    select.innerHTML = '<option value="">Select a mailing list</option>';
+    result.mailingLists.forEach(ml => {
+      const option = document.createElement('option');
+      option.value = ml.id;
+      option.textContent = ml.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error('Error populating mailing lists:', err);
+  }
+}
+
+async function loadEmailRecipients  () {
+  const select = document.getElementById('mailingListSelect');
+  const mailingListId = select.value;
+  if (!mailingListId) {
+    showCustomAlert('Please select a mailing list to load recipients.', 5);
+    return;
+  }
+  try {
+    const res = await fetch(`/api/mailinglist/${mailingListId}/recipients`, {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    const tableBody = document.getElementById('emailRecipientsTableBody');
+    if (!tableBody) return console.warn('Table body #emailRecipientsTableBody not found');
+    tableBody.innerHTML = '';
+    result.recipients.forEach(recipient => {
+      const row = document.createElement('tr');
+      const idCell = document.createElement('td');
+      idCell.textContent = recipient.id;
+      row.appendChild(idCell);
+      const nameCell = document.createElement('td');
+      nameCell.textContent = recipient.name;
+      row.appendChild(nameCell);
+      const deleteCell = document.createElement('td');
+      const deleteIcon = document.createElement('i');
+      deleteIcon.className = 'fas fa-trash';
+      deleteCell.appendChild(deleteIcon);
+      row.appendChild(deleteCell);
+      tableBody.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Error loading email recipients:', err);
+    showCustomAlert(`Error loading email recipients. ${err}`, 5);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', PopulateDirectosTable);
 document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
 document.addEventListener('DOMContentLoaded', PopulateEmailList);
+document.addEventListener('DOMContentLoaded', PopulateMailingLists);
 
 async function decide() {
   [sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin] = await getSessionDetails()

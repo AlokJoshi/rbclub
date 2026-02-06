@@ -154,7 +154,7 @@
 						</div>
 						<div class="field full wrap">
 							<button id="submitPlayerChangesButton" disabled="true" type="button" onclick="SubmitChanges()"
-							class="button primary">Submit Changes</button>
+								class="button primary">Submit Changes</button>
 						</div>
 						<!-- <button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button> -->
 						<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
@@ -247,7 +247,7 @@
 		<!-- Section to display email list names-->
 		<section>
 			<header>
-				<h2>Email List</h2>
+				<h2>Maililng Lists</h2>
 			</header>
 			<div class="content">
 				<div style="height:200px;overflow:scroll" id="emaillist">
@@ -255,7 +255,7 @@
 						<thead>
 							<tr>
 								<th>Id</th>
-								<th>Email List Name</th>
+								<th>Mailing List Name</th>
 								<th>Description</th>
 								<th>Edit</th>
 								<th>Delete</th>
@@ -263,33 +263,68 @@
 						</thead>
 						<tbody id="emaillistbody">
 							<tr>
-								<td colspan="5">Loading email lists names..</td>
+								<td colspan="5">Loading mailing lists names..</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
+				<br>
+				<label for="addMailingListForm">Add or Edit Mailing List</label>
 				<form action="" id="addMailingListForm" style="margin-top:20px;">
 					<div class="fields">
-						<div class="field half">
-							<label for="newMailingListName">New Mailing List Name</label>
-							<input type="text" name="newMailingListName" id="newMailingListName" placeholder="New Mailing List Name" required />	
+						<input type="hidden" id="mailingListId" name="mailingListId" value="">	
+						<div style="display:flex; justify-content: space-around;">
+							<div class="field half">
+								<label for="newMailingListName">New Mailing List Name</label>
+								<input type="text" name="newMailingListName" id="newMailingListName" placeholder="New Mailing List Name"
+									required />
+							</div>
+							<div class="field half">
+								<label for="newMailingListDescription">New Mailing List Description</label>
+								<input type="text" name="newMailingListDescription" id="newMailingListDescription"
+									placeholder="New Mailing List Description" />
+							</div>
 						</div>
-						<div class="field half">
-							<label for="newMailingListDescription">New Mailing List Description</label>
-							<input type="text" name="newMailingListDescription" id="newMailingListDescription" placeholder="New Mailing List Description"/>	
-						</div>
-						<div class="field half">
-							<button type="button" class="button primary" style="margin-top: 30px;"onclick="AddMailingList()">Add Mailing List</button>
-						</div>
-						<div class="field half">
-							<button type="button" class="button primary" style="margin-top: 30px;" onclick="UpdateMailingList()">Update Mainling List</button>
+						<div style="display:flex; justify-content: space-around;">
+							<div class="field half">
+								<button id="addMailingListButton" type="button" class="button primary" style="margin-top: 30px;" onclick="AddMailingList()">Add
+									Mailing List</button>
+							</div>
+							<div class="field half">
+								<button id="updateMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
+									onclick="UpdateMailingList()" disabled>Update Mainling List</button>
+							</div>
 						</div>
 					</div>
-				</form>
 				</form>
 			</div>
 		</section>
 
+		<!-- Section to Add/Delete email recipients from mailing lists-->
+		<section>
+			<header>
+				<h2>Email Recipients Management</h2>
+			</header>
+			<div class="content">
+				<Select id="mailingListSelect" onchange="loadEmailRecipients()">
+					<option value="">Select Mailing List</option>
+				</Select>
+				<table id="emailRecipientsTable">
+					<thead>
+						<tr>
+							<th>Member Id</th>
+							<th>Name</th>
+							<th>Delete</th>
+						</tr>
+					</thead>
+					<tbody id="emailRecipientsTableBody">
+						<tr>
+							<td colspan="3">Loading email recipients...</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
 
 		<!-- Copyright -->
 		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
@@ -426,28 +461,6 @@
 		</div>
 
 	</div> <!-- addnewplayermodal -->
-
-	<!-- <div id="shouldadmittositemodal" class="modal wrap">
-		<div class="modal-content">
-			<span class="close">&times;</span>
-			<h2>Riverside Bridge Club (Unit 537)</h2>
-			<p>Please note that this web-site is for current members of the club.All club members have been sent their login credentials: username and
-				password. The most straightforward method to get full access to the site is to
-				click on the Login button below. For this you will need the username and
-				password that was sent to you. Please note that the password that was sent to you
-				was a temporary password and if you use that password you will not be able to make
-				any changes.
-			</p>
-			<button type="button" onclick="IwantToLogin()">Login</button>
-			<p>If you did not receive your credentials or if you have forgotten them
-				you can gain access to the site by proving that you are a member of the club.
-				You do this by</p>
-			<p>Providing your name and phone number which will both be checked against the club records.</p>
-			<p>If you get these right you will get a limited access to the site</p>
-			<button type="button" onclick="IwantToAnswerQuestions()">I want to answer questions</button>
-
-		</div> 
-	</div>  -->
 
 	<!-- The Modal -->
 	<div id="nameandphonecheck" class="modal wrap">
