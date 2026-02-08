@@ -25,10 +25,11 @@ const PORT = process.env.PORT || 3000;
 const { upload } = require('./helper');
 const { userExists, addUser, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
-    passwordMatches,getMailingListAddresses,getMailingLists,
-    deleteMailingList,createMailingList,existsMailingList,
-    updateMailingList,isPlayer,
-    saveGuestInquiry } = require('./credentials')
+    passwordMatches, getMailingListAddresses, getMailingLists,
+    deleteMailingList, createMailingList, existsMailingList,
+    updateMailingList, getMailingListRecipients, isPlayer,
+    saveGuestInquiry, getNonMailingListRecipients,
+    addRecipientToMailingList } = require('./credentials')
 
 
 
@@ -131,9 +132,9 @@ app.put('/register', (req, res) => {
 app.put('/checkfullnameandphone', async (req, res) => {
     const player = await isPlayer(req.body.fullname, req.body.phone)
     const valid = player.exists
-    const id= player.id
-    const username= player.username
-    const fullname= player.fullname
+    const id = player.id
+    const username = player.username
+    const fullname = player.fullname
     console.log('isPlayer response:', player);
     req.session.casuallogin = valid
     req.session.securelogin = false
@@ -141,8 +142,9 @@ app.put('/checkfullnameandphone', async (req, res) => {
     req.session.isAdmin = false
     req.session.username = username
     req.session.fullname = fullname
-    res.json({ valid, id, fullname,
-        message: valid ? 'Member of the club but you can only view the data.' : 'Not a member of the club. Sorry no access.' 
+    res.json({
+        valid, id, fullname,
+        message: valid ? 'Member of the club but you can only view the data.' : 'Not a member of the club. Sorry no access.'
     },
     )
 })
@@ -184,16 +186,18 @@ app.post('/addnewplayer', async (req, res) => {
     try {
         const username = data.first.trim().toLowerCase() + data.last.trim().toLowerCase().charAt(0);
         const stmt = db.prepare('INSERT INTO player (first,last) VALUES (?, ?);');
-        const result = stmt.run(data.first,data.last)
+        const result = stmt.run(data.first, data.last)
         const id = result.lastInsertRowid
-        const defaultPassword = data.first.trim().toLowerCase() + id.toString()        
+        const defaultPassword = data.first.trim().toLowerCase() + id.toString()
         // now create a password to store in the database
         const saltRounds = 10;
         const hashedPassword = bcrypt.hashSync(defaultPassword, saltRounds);
         const updateStmt = db.prepare('UPDATE player SET username = ?, password = ? WHERE id = ?');
-        updateStmt.run(username, hashedPassword, id);       
-        res.json({ success: true, message: `User added successfully. Please inform the user
-            that their username is ${username} and their temporary password is ${defaultPassword}`});
+        updateStmt.run(username, hashedPassword, id);
+        res.json({
+            success: true, message: `User added successfully. Please inform the user
+            that their username is ${username} and their temporary password is ${defaultPassword}`
+        });
     } catch (err) {
         console.error('Error adding new user:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
@@ -217,7 +221,7 @@ app.post('/changepassword', async (req, res) => {
         req.session.casuallogin = false
         req.session.username = username
         req.session.userid = match.id
-        req.session.isAdmin = isAdmin(match.id) 
+        req.session.isAdmin = isAdmin(match.id)
         res.json({ success: true, message: 'Password changed successfully' });
     } else {
         res.status(500).json({ success: false, message: 'Failed to change password' });
@@ -318,7 +322,7 @@ app.put('/getdefaultlogincredentials', async (req, res) => {
             const id = result.id;
             const password = first.trim().toLowerCase() + id.toString();
             const username = first.trim().toLowerCase() + last.trim().toLowerCase().charAt(0);
-            res.json({ success:true, username , password });
+            res.json({ success: true, username, password });
         } else {
             res.status(404).json({ error: 'User not found' });
         }
@@ -385,7 +389,7 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
 
         const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, 
                                  acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, 
-                                 image_path=?, director=?, position=? WHERE id = ?;`); 
+                                 image_path=?, director=?, position=? WHERE id = ?;`);
 
         const result = stmt.run(data.first,
             data.last,
@@ -428,6 +432,7 @@ app.delete('/api/playerdata/:id', async (req, res) => {
     }
     const playerId = req.params.id;
     try {
+        db.prepare('DELETE FROM mailinglistdetails WHERE playerid = ?;').run(playerId);
         const result = db.prepare('DELETE FROM player WHERE id = ? RETURNING *;').run(playerId);
         if (result.changes === 0) {
             return res.status(404).json({ error: 'Player not found' });
@@ -439,13 +444,27 @@ app.delete('/api/playerdata/:id', async (req, res) => {
     }
 });
 
+app.delete(`/api/mailinglist/:mailingListDetailsId/removerecipient`, async (req, res) => {
+    const mailingListDetailsId = req.params.mailingListDetailsId;
+    try {
+        const result = db.prepare('DELETE FROM mailinglistdetails WHERE id = ?;').run(mailingListDetailsId);
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Recipient not found' });
+        }
+        res.json({ success: true, message: 'Recipient removed successfully' });
+    } catch (err) {
+        console.error('Error removing recipient:', err);
+        res.status(500).json({ error: 'Could not remove recipient. Internal server error.' });
+    }
+});
+
 app.get('/get-session-id', (req, res) => {
     // Check if a session exists
     if (req.session) {
         // Access the session ID
         const sessionId = req.sessionID;
-        const securelogin = req.session.securelogin ;
-        const insecurelogin = req.session.insecurelogin ;
+        const securelogin = req.session.securelogin;
+        const insecurelogin = req.session.insecurelogin;
         const username = req.session.username;
         const userid = req.session.userid;
         const isAdmin = req.session.isAdmin;
@@ -453,36 +472,36 @@ app.get('/get-session-id', (req, res) => {
         console.log('Session ID:', sessionId);
         res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin });
     } else {
-        res.json({message: 'No session found'});
+        res.json({ message: 'No session found' });
     }
 });
 
 // Request password reset
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    
+
     try {
         // Find user by email
         const stmt = db.prepare('SELECT id, first, last, username FROM player WHERE email = ?');
         const user = stmt.get(email);
-        
+
         if (!user) {
             // Don't reveal if email exists
             return res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
         }
-        
+
         // Generate reset token
         const resetToken = crypto.randomBytes(32).toString('hex');
         const resetTokenExpires = Date.now() + 3600000; // 1 hour from now
-        
+
         // Store token in database
         const updateStmt = db.prepare('UPDATE player SET reset_token = ?, reset_token_expires = ? WHERE id = ?');
         updateStmt.run(resetToken, resetTokenExpires, user.id);
-        
+
         // Create reset URL
         // const resetUrl = `http://localhost:${PORT}/reset-password?token=${resetToken}`;
         const resetUrl = `http://localhost:${PORT}/?token=${resetToken}`;
-        
+
         // Send email
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -497,7 +516,7 @@ app.post('/forgot-password', async (req, res) => {
                 <p>If you didn't request this, please ignore this email.</p>
             `
         });
-        
+
         res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
     } catch (err) {
         console.error('Error in forgot password:', err);
@@ -508,15 +527,15 @@ app.post('/forgot-password', async (req, res) => {
 // Verify reset token. This route is not being used right now but can be useful.
 app.get('/verify-reset-token/:token', async (req, res) => {
     const { token } = req.params;
-    
+
     try {
         const stmt = db.prepare('SELECT id, username, reset_token_expires FROM player WHERE reset_token = ?');
         const user = stmt.get(token);
-        
+
         if (!user || user.reset_token_expires < Date.now()) {
             return res.json({ valid: false, message: 'Invalid or expired reset token' });
         }
-        
+
         res.json({ valid: true, username: user.username });
     } catch (err) {
         console.error('Error verifying reset token:', err);
@@ -527,24 +546,24 @@ app.get('/verify-reset-token/:token', async (req, res) => {
 // Reset password with token
 app.post('/reset-password', async (req, res) => {
     const { token, newPassword } = req.body;
-    
+
     try {
         const stmt = db.prepare('SELECT id, username, reset_token_expires FROM player WHERE reset_token = ?');
         const user = stmt.get(token);
-        
+
         if (!user || user.reset_token_expires < Date.now()) {
             return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
         }
-        
+
         // Hash new password
         const saltRounds = 10;
         const hashedPassword = bcrypt.hashSync(newPassword, saltRounds);
-        
+
         // Update password and clear reset token
         const updateStmt = db.prepare('UPDATE player SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?');
         updateStmt.run(hashedPassword, user.id);
         console.error('Password reset successfully');
-        
+
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {
         console.error('Error resetting password:', err);
@@ -569,7 +588,7 @@ app.post('/api/guest-inquiry', async (req, res) => {
             \n\nMessage: ${message}
             \n\nPresident will reach out to the guest or assign someone to reach out to the guest.
             \n\nThis email was sent automatically from the website to all board members.`
-        }); 
+        });
         res.json({ success: true, message: 'Inquiry received. We will contact you soon.' });
     } catch (err) {
         console.error('Error handling guest inquiry:', err);
@@ -579,7 +598,7 @@ app.post('/api/guest-inquiry', async (req, res) => {
 
 app.get('/api/mailinglists', async (req, res) => {
     try {
-        const mailingLists = getMailingLists();   
+        const mailingLists = getMailingLists();
         res.json({ success: true, mailingLists });
     } catch (err) {
         console.error('Error fetching mailing lists:', err);
@@ -596,7 +615,7 @@ app.get('/api/mailinglist/:listname', async (req, res) => {
         console.error('Error fetching mailing list:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}); 
+});
 
 app.delete('/api/mailinglist/:listid', async (req, res) => {
     const listId = req.params.listid;
@@ -607,10 +626,10 @@ app.delete('/api/mailinglist/:listid', async (req, res) => {
         console.error('Error deleting mailing list:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}); 
+});
 
 app.post('/api/mailinglists', async (req, res) => {
-    const {name,description} = req.body;
+    const { name, description } = req.body;
     try {
         if (existsMailingList(name)) {
             res.status(400).json({ success: false, message: 'Mailing list already exists' });
@@ -622,10 +641,10 @@ app.post('/api/mailinglists', async (req, res) => {
         console.error('Error creating mailing list:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}); 
+});
 
 app.put('/api/mailinglists', async (req, res) => {
-    const {id,name,description} = req.body;
+    const { id, name, description } = req.body;
     try {
         if (existsMailingList(name)) {
             res.status(400).json({ success: false, message: 'Mailing list already exists' });
@@ -637,7 +656,7 @@ app.put('/api/mailinglists', async (req, res) => {
         console.error('Error updating mailing list:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}); 
+});
 
 app.get(`/api/mailinglist/:mailinglistid/recipients`, async (req, res) => {
     const mailingListId = req.params.mailinglistid;
@@ -646,6 +665,49 @@ app.get(`/api/mailinglist/:mailinglistid/recipients`, async (req, res) => {
         res.json({ success: result.success, recipients: result.recipients, message: result.message });
     } catch (err) {
         console.error('Error fetching mailing list recipients:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.get(`/api/nonemailrecipients/:mailinglistid`, async (req, res) => {
+    const mailingListId = req.params.mailinglistid;
+    try {
+        const result = getNonMailingListRecipients(mailingListId);
+        res.json({ success: result.success, recipients: result.recipients, message: result.message });
+    } catch (err) {
+        console.error('Error fetching non-mailing list recipients:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.post('/api/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
+    const mailingListId = req.params.mailinglistid;
+    const { memberid } = req.body;
+    try {
+        addRecipientToMailingList(mailingListId, memberid);
+        res.json({ success: true, message: 'Recipients added successfully' });
+    } catch (err) {
+        console.error('Error adding recipients to mailing list:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+app.post('/api/sendemail', async (req, res) => {
+    const { mailinglistId, memberid, subject, text } = req.body;
+    const recipients = mailinglistId? getMailingListRecipients(mailinglistId).recipients : [];
+    const recipientEmails = recipients.map(r => r.email)
+    const filteredRecipientEmails = recipientEmails.filter(email => email!==null && email!==undefined && email.trim() !== ''); // Filter out null or undefined emails
+    const recipient = memberid ? db.prepare('SELECT email FROM player WHERE id = ?').get(memberid)?.email : null;
+    const to = recipients.length > 0 ? filteredRecipientEmails.join(',') : recipient;
+    try {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to,
+            subject,
+            text
+        });
+        res.json({ success: true, message: 'Email sent successfully' });
+    } catch (err) {
+        console.error('Error sending email:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });

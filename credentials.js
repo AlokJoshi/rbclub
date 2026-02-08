@@ -289,13 +289,36 @@ function existsMailingList(name) {
 }
 function getMailingListRecipients(listId) {
     try {
-        const stmt = db.prepare(`SELECT player.id as id, CONCAT(player.first," ",player.last) AS name FROM player INNER JOIN mailinglistdetails ON player.id = mailinglistdetails.playerid WHERE mailinglistdetails.mailinglistid = ?;`);
+        const stmt = db.prepare(`SELECT mailinglistdetails.id as mailinglistdetailsid, CONCAT(player.first,' ',player.last) AS name, player.email FROM player INNER JOIN mailinglistdetails ON player.id = mailinglistdetails.playerid WHERE mailinglistdetails.mailinglistid = ? order by player.first, player.last;`);
         const result = stmt.all(listId);
         console.log('getMailingListRecipients result:', result);
         return {success: true, recipients: result, message: 'Recipients fetched successfully'}; // return array of recipient objects with id and name);
     } catch (err) {
         console.error('Error fetching mailing list recipients:', err);
         return {success: false, recipients: [], message: 'Error fetching recipients'};
+    }
+}
+
+function getNonMailingListRecipients(listId) {
+    try {
+        const stmt = db.prepare(`SELECT player.id as playerid, CONCAT(player.first,' ',player.last) AS name, player.email FROM player LEFT JOIN mailinglistdetails ON player.id = mailinglistdetails.playerid and mailinglistdetails.mailinglistid=? WHERE mailinglistdetails.mailinglistid IS NULL order by player.first, player.last;`);
+        const result = stmt.all(listId);
+        console.log('getNonMailingListRecipients result:', result);
+        return {success: true, recipients: result, message: 'Non Recipients fetched successfully'}; // return array of recipient objects with id and name);
+    } catch (err) {
+        console.error('Error fetching non-mailing list recipients:', err);
+        return {success: false, recipients: [], message: 'Error fetching recipients'};
+    }
+}
+
+function addRecipientToMailingList(listId, playerId) {
+    try {
+        const stmt = db.prepare('INSERT INTO mailinglistdetails (mailinglistid, playerid) VALUES (?, ?);'); 
+        stmt.run(listId, playerId);
+        return {success: true, message: 'Recipient added successfully'};
+    } catch (err) {
+        console.error('Error adding recipient to mailing list:', err);
+        return {success: false, message: 'Error adding recipient'};
     }
 }
 
@@ -317,5 +340,7 @@ module.exports = {
     createMailingList,
     existsMailingList,
     updateMailingList,
-    getMailingListRecipients
+    getMailingListRecipients,
+    getNonMailingListRecipients,
+    addRecipientToMailingList
 }

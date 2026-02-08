@@ -877,7 +877,7 @@ async function PopulateOfficersTable() {
 async function PopulateEmailList() {
 
   const tbody = document.getElementById('emaillistbody');
-  if(!tbody) return console.warn('Table body #emaillistbody not found');
+  if (!tbody) return console.warn('Table body #emaillistbody not found');
 
   tbody.innerHTML = '';
 
@@ -910,13 +910,13 @@ async function PopulateEmailList() {
       // Copy the data to the addMailingList form and enable the update button
       document.getElementById('mailingListId').value = row.id;
       document.getElementById('newMailingListName').value = row.name;
-      document.getElementById('newMailingListDescription').value = row.description; 
+      document.getElementById('newMailingListDescription').value = row.description;
       document.getElementById('updateMailingListButton').disabled = false;
       document.getElementById('addMailingListButton').disabled = true;
     });
     cell_edit.appendChild(iEdit);
     tr.appendChild(cell_edit);
-    
+
     const cell_delete = document.createElement('td');
     const iDelete = document.createElement('i');
     iDelete.className = 'fas fa-trash';
@@ -934,7 +934,7 @@ async function PopulateEmailList() {
       } else {
         showCustomAlert(`Mailing list deleted successfully`, 5);
         await PopulateEmailList(); // Refresh the list after deletion
-      }   
+      }
     });
     cell_delete.appendChild(iDelete);
     tr.appendChild(cell_delete);
@@ -976,7 +976,7 @@ async function UpdateMailingList() {
     console.error('Error updating mailing list:', err);
     showCustomAlert(`Error updating mailing list. ${err}`, 5);
   }
-} 
+}
 
 async function AddMailingList() {
   const nameInput = document.getElementById('newMailingListName');
@@ -1033,7 +1033,16 @@ async function PopulateMailingLists() {
   }
 }
 
-async function loadEmailRecipients  () {
+async function loadEmailTo() {
+  const select = document.getElementById('mailingListSelect');
+  const mailingListId = select.value;
+  if (!mailingListId) {
+    showCustomAlert('Please select a mailing list to load recipients.', 5);
+    return;
+  }
+}
+
+async function loadEmailRecipients() {
   const select = document.getElementById('mailingListSelect');
   const mailingListId = select.value;
   if (!mailingListId) {
@@ -1052,28 +1061,148 @@ async function loadEmailRecipients  () {
     result.recipients.forEach(recipient => {
       const row = document.createElement('tr');
       const idCell = document.createElement('td');
-      idCell.textContent = recipient.id;
+      idCell.textContent = recipient.mailinglistdetailsid;
       row.appendChild(idCell);
       const nameCell = document.createElement('td');
       nameCell.textContent = recipient.name;
       row.appendChild(nameCell);
+      const emailCell = document.createElement('td');
+      emailCell.textContent = recipient.email;
+      row.appendChild(emailCell);
       const deleteCell = document.createElement('td');
+      deleteCell.style.cursor = 'pointer';
+      deleteCell.addEventListener('click', async () => {
+        // Implement delete functionality here
+        const mailingListDetailsId = recipient.mailinglistdetailsid;
+        const res = await fetch(`/api/mailinglist/${mailingListDetailsId}/removerecipient`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const result = await res.json();
+        if (result.success) {
+          row.remove();
+          showCustomAlert(`Recipient ${recipient.name} removed successfully.`, 2);
+        } else {
+          showCustomAlert(`Error removing recipient. ${result.message}`, 5);
+        }
+      });
       const deleteIcon = document.createElement('i');
       deleteIcon.className = 'fas fa-trash';
       deleteCell.appendChild(deleteIcon);
       row.appendChild(deleteCell);
       tableBody.appendChild(row);
     });
+    populateNonEmailRecipients();
   } catch (err) {
     console.error('Error loading email recipients:', err);
     showCustomAlert(`Error loading email recipients. ${err}`, 5);
   }
 }
+async function populateNonEmailRecipients() {
+  try {
+    const mailingListId = document.getElementById('mailingListSelect').value;
+    const res = await fetch(`/api/nonemailrecipients/${mailingListId}`, {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    const container = document.getElementById('nonEmailRecipients');
+    if (!container) return console.warn('Container #nonEmailRecipients not found');
+    container.innerHTML = '';
+    result.recipients.forEach(recipient => {
+      const div = document.createElement('div');
+      div.style.cursor = 'pointer';
+      div.textContent = `${recipient.name}`;
+      div.onclick = async () => {
+        // Handle click to include recipient
+        const memberid = recipient.playerid;
+        const res = await fetch(`/api/mailinglist/${mailingListId}/addrecipient`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberid })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const result = await res.json();
+        if (result.success) {
+          div.style.display = 'none';
+          showCustomAlert(`Recipient ${recipient.name} added successfully.`, 2);
+          loadEmailRecipients(); // Refresh the email recipients list
+        } else {
+          showCustomAlert(`Error adding recipient. ${result.message}`, 5);
+        }
+      };
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Error populating non-email recipients:', err);
+    showCustomAlert(`Error populating non-email recipients. ${err}`, 5);
+  }
+}
 
+function sendEmail() {
+  if (isAdmin) {
+    const mailinglistId = document.getElementById('toEmailGroup').value;
+  } else {
+    const memberid = document.getElementById('toEmailIndividual').value;
+  }
+  const subject = document.getElementById('emailSubject').value.trim();
+  const body = document.getElementById('emailBody').value.trim();
+  if (isAdmin && !mailinglistId) {
+    showCustomAlert('Please select a mailing list to send the email to.', 5);
+    return;
+  }
+  if (!isAdmin && !memberid) {
+    showCustomAlert('Please select a member to send the email to.', 5);
+    return;
+  }
+  if (!subject) {
+    showCustomAlert('Please enter a subject for the email.', 5);
+    return;
+  }
+  if (!body) {
+    showCustomAlert('Please enter a body for the email.', 5);
+    return;
+  }
+  const emailData = {
+    mailinglistId: isAdmin ? mailinglistId : null,
+    memberid: !isAdmin ? memberid : null,
+    subject,
+    text: body
+  };
+  // Send the email using fetch or any other method
+  fetch('/api/sendemail', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(emailData)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(result => {
+      if (result.success) {
+        showCustomAlert('Email sent successfully.', 2);
+      } else {
+        showCustomAlert(`Error sending email. ${result.message}`, 5);
+      }
+    })
+    .catch(err => {
+      console.error('Error sending email:', err);
+      showCustomAlert(`Error sending email. ${err}`, 5);
+    });
+
+}
 document.addEventListener('DOMContentLoaded', PopulateDirectosTable);
 document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
 document.addEventListener('DOMContentLoaded', PopulateEmailList);
 document.addEventListener('DOMContentLoaded', PopulateMailingLists);
+
+function SetupForAdmin(isAdmin) {
+  const toEmailIndividual = document.getElementById('toEmailIndividual');
+  const toEmailGroup = document.getElementById('toEmailGroup');
+  toEmailIndividual.style.display = isAdmin ? 'none' : 'block';
+  toEmailGroup.style.display = isAdmin ? 'block' : 'none';
+}
 
 async function decide() {
   [sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin] = await getSessionDetails()
@@ -1104,6 +1233,10 @@ async function decide() {
   } else {
     console.log("User is not logged in.");
   }
+
+
+  SetupForAdmin(isAdmin)
+
 }
 
 decide()

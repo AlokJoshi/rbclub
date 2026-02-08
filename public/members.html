@@ -272,7 +272,7 @@
 				<label for="addMailingListForm">Add or Edit Mailing List</label>
 				<form action="" id="addMailingListForm" style="margin-top:20px;">
 					<div class="fields">
-						<input type="hidden" id="mailingListId" name="mailingListId" value="">	
+						<input type="hidden" id="mailingListId" name="mailingListId" value="">
 						<div style="display:flex; justify-content: space-around;">
 							<div class="field half">
 								<label for="newMailingListName">New Mailing List Name</label>
@@ -287,7 +287,8 @@
 						</div>
 						<div style="display:flex; justify-content: space-around;">
 							<div class="field half">
-								<button id="addMailingListButton" type="button" class="button primary" style="margin-top: 30px;" onclick="AddMailingList()">Add
+								<button id="addMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
+									onclick="AddMailingList()">Add
 									Mailing List</button>
 							</div>
 							<div class="field half">
@@ -312,20 +313,68 @@
 				<table id="emailRecipientsTable">
 					<thead>
 						<tr>
-							<th>Member Id</th>
+							<th>Id</th>
 							<th>Name</th>
+							<th>Email</th>
 							<th>Delete</th>
 						</tr>
 					</thead>
 					<tbody id="emailRecipientsTableBody">
 						<tr>
-							<td colspan="3">Loading email recipients...</td>
+							<td colspan="4">Loading email recipients...</td>
 						</tr>
 					</tbody>
 				</table>
+				<br>
+				<label for="addEmailRecipientForm">Add (by clicking) Email Recipient to Mailing List</label>
+				<form action="" id="addEmailRecipientForm" style="margin-top:20px;">
+					<div class="fields">
+						<div class="field full">
+							<div id="nonEmailRecipients"
+								style="height: 300px; width:200px; overflow: scroll; border:1px solid #ccc; padding:4px;">
+								<!-- This will be populated with list of all members that are not already in the selected mailing list -->
+							</div>
+						</div>
+					</div>
+				</form>
 			</div>
 		</section>
 
+		<section>
+			<header>
+				<h2>Send Email</h2>
+			</header>
+			<div class="content">
+				<p>This is another section for future use.</p>
+				<form action="">
+						<div id="toEmailIndividual" class="field full">
+							<label for="toEmailIndividual">Email To:</label>
+							<select name= "toEmailIndividual" id="toEmailIndividual" placeholder="To Email" required >
+								<option value="">Select Recipient</option>
+							</select>
+						</div>
+						<div id="toEmailGroup" class="field full">
+							<label for="toEmailGroup">Email To:</label>
+							<select name= "toEmailGroup" id="toEmailGroup" placeholder="To Email" required >
+								<option value="">Select Group</option>
+							</select>
+						</div>
+						<div class="field full">
+							<label for="emailSubject">Email Subject</label>
+							<input type="text" name="emailSubject" id="emailSubject" placeholder="Email Subject" required />
+						</div>
+						<div class="field full">
+							<label for="emailBody">Email Text</label>
+							<textarea name="emailBody" id="emailBody" placeholder="Email Body" required></textarea>
+						</div>
+						<div class="field full wrap">
+							<button class="button primary" type="button" style="margin-top: 30px;" onclick="sendEmail()">
+								Send Email
+							</button>
+						</div>
+				</form>
+			</div>
+		</section>
 		<!-- Copyright -->
 		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
 		</div>
