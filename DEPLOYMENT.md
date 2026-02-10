@@ -22,7 +22,7 @@ sudo apt-get install -y build-essential python3 git
 
 # Install Node.js (if not already installed)
 # Using NodeSource repository for latest LTS version
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
