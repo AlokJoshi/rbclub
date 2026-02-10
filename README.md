@@ -64,6 +64,7 @@ For deploying to a DigitalOcean droplet or other Linux servers, see [DEPLOYMENT.
    git clone https://github.com/AlokJoshi/rbclub.git
    cd rbclub
    npm install
+   npm run rebuild  # Rebuild native modules for Linux
    cp .env.example .env
    # Edit .env with your settings
    ```
@@ -116,8 +117,9 @@ Key tables:
 ## Scripts
 
 - `npm start` - Start the server
-- `npm run dev` - Start in development mode
-- `npm run rebuild` - Rebuild native modules (bcrypt, better-sqlite3)
+- `npm run dev` - Start in development mode (same as start)
+- `npm run rebuild` - Rebuild native modules (bcrypt, better-sqlite3) for current OS
+- `npm run prepare:production` - Prepare for production deployment (rebuilds modules)
 
 ## Common Issues
 

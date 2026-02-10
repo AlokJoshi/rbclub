@@ -53,12 +53,16 @@ Update the following variables in `.env`:
 ## Step 4: Install Dependencies
 
 ```bash
-# Install all dependencies and rebuild native modules
+# Install all dependencies
 npm install
 
-# If you encounter errors with bcrypt or better-sqlite3, rebuild them:
-npm rebuild bcrypt better-sqlite3
+# Rebuild native modules for Linux (IMPORTANT on DigitalOcean)
+npm run rebuild
+# Or use the prepare:production script
+npm run prepare:production
 ```
+
+**Why rebuild?** The `bcrypt` and `better-sqlite3` modules contain native C++ code that must be compiled for your specific operating system. If you developed on Windows/macOS and deploy to Linux, you must rebuild these modules.
 
 ## Step 5: Start the Application
 

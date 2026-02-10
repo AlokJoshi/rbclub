@@ -21,17 +21,22 @@ sudo apt-get install -y build-essential python3
 
 # Rebuild native modules
 cd /path/to/rbclub
-npm rebuild bcrypt better-sqlite3
+npm run rebuild
+# Or: npm rebuild bcrypt better-sqlite3
 ```
 
-### Automatic Fix (already implemented):
-The `package.json` now includes a `postinstall` script that automatically rebuilds these modules whenever you run `npm install`. This means:
+### Rebuild Script Available:
+The `package.json` includes a `rebuild` script for easy native module rebuilding:
 
 ```bash
-npm install
+# After npm install, run:
+npm run rebuild
+
+# Or for production deployment:
+npm run prepare:production
 ```
 
-Will automatically rebuild the native modules for your Linux environment.
+This rebuilds `bcrypt` and `better-sqlite3` modules for your Linux environment.
 
 ## Other Common Issues
 

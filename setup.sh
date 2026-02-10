@@ -46,8 +46,8 @@ echo "Step 4: Installing npm dependencies..."
 npm install
 
 echo ""
-echo "Step 5: Rebuilding native modules..."
-npm rebuild bcrypt better-sqlite3
+echo "Step 5: Rebuilding native modules for Linux..."
+npm run rebuild
 
 echo ""
 echo "Step 6: Checking environment configuration..."
