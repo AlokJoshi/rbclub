@@ -5,7 +5,6 @@ const express = require('express');
 const sqlite = require('better-sqlite3');
 const session = require('express-session')
 const SQLiteStore = require('connect-sqlite3')(session);
-// const SqliteStore = require('better-sqlite3-session-store')(session);
 const bcrypt = require('bcrypt');
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
