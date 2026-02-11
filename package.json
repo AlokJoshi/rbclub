@@ -1,12 +1,20 @@
 {
   "name": "rbc",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Bridge Club Management System",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "rebuild": "npm rebuild bcrypt better-sqlite3",
+    "prepare:production": "npm run rebuild",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": ["bridge", "club", "management"],
   "author": "",
   "license": "ISC",
   "dependencies": {
