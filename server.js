@@ -37,7 +37,7 @@ const { userExists, addUser, login, changePassword,
 const db = new sqlite('mydb.sqlite', { verbose: console.log });
 
 // Optional: Enable WAL mode for better performance
-db.pragma('journal_mode = WAL');
+// db.pragma('journal_mode = WAL');
 
 // 2. Configure session middleware
 app.use(session({
