@@ -39,6 +39,43 @@ const db = new sqlite('mydb.sqlite', { verbose: console.log });
 // Optional: Enable WAL mode for better performance
 // db.pragma('journal_mode = WAL');
 
+function quoteIdent(identifier) {
+    return `"${String(identifier).replace(/"/g, '""')}"`;
+}
+
+function normalizeSessionsSchema() {
+    const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get('sessions');
+
+    if (!tableExists) {
+        db.exec('CREATE TABLE IF NOT EXISTS sessions (sid PRIMARY KEY, expired, sess)');
+        return;
+    }
+
+    const columns = db.prepare('PRAGMA table_info(sessions)').all();
+    const names = new Set(columns.map((c) => c.name));
+
+    if (!names.has('expired')) {
+        const sourceExpirationColumn = columns.find((column) => ['expire', 'expires', 'expired'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
+        db.exec('ALTER TABLE sessions ADD COLUMN expired');
+        if (sourceExpirationColumn) {
+            db.exec(`UPDATE sessions SET expired = COALESCE(expired, ${quoteIdent(sourceExpirationColumn.name)})`);
+        }
+    }
+
+    if (!names.has('sess')) {
+        const sourceSessionColumn = columns.find((column) => ['data', 'session', 'sess'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
+        db.exec('ALTER TABLE sessions ADD COLUMN sess');
+        if (sourceSessionColumn) {
+            db.exec(`UPDATE sessions SET sess = COALESCE(sess, ${quoteIdent(sourceSessionColumn.name)})`);
+        }
+    }
+
+    const normalizedColumns = db.prepare('PRAGMA table_info(sessions)').all().map((column) => column.name);
+    console.log('Sessions table columns:', normalizedColumns.join(', '));
+}
+
+normalizeSessionsSchema();
+
 // 2. Configure session middleware
 app.use(session({
     store: new SQLiteStore({
