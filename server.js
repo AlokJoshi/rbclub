@@ -83,10 +83,10 @@ app.use(session({
         db: 'mydb.sqlite',
         dir: './',
         table: 'sessions',
-        // expired: {
-        //     clear: true, // Automatically clear expired sessions
-        //     intervalMs: 900000 // Interval in milliseconds (15 minutes) for the cleanup check
-        // }
+        expired: {
+            clear: false, // Automatically clear expired sessions
+            intervalMs: 900000000 // Interval in milliseconds (e.g., 10 days) for the cleanup check
+        }
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
