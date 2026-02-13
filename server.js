@@ -76,6 +76,9 @@ function normalizeSessionsSchema() {
 
 normalizeSessionsSchema();
 
+// Close the better-sqlite3 connection to avoid conflicts
+db.close();
+
 // 2. Configure session middleware
 app.use(session({
     store: new SQLiteStore({
