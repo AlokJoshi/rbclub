@@ -1,4 +1,9 @@
-require('dotenv').config({ quiet: true });
+// require('dotenv').config({ quiet: true });
+try {
+    require('dotenv').config({ quiet: true });
+} catch (e) {
+    console.log('dotenv not found, using environment variables');
+}
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const express = require('express');
