@@ -58,7 +58,8 @@ function normalizeSessionsSchema() {
         const sourceExpirationColumn = columns.find((column) => ['expire', 'expires', 'expired'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
         db.exec('ALTER TABLE sessions ADD COLUMN expired');
         if (sourceExpirationColumn) {
-            db.exec(`UPDATE sessions SET expired = COALESCE(expired, ${quoteIdent(sourceExpirationColumn.name)})`);
+            // Fix: Just copy from source column, don't use COALESCE with the new column
+            db.exec(`UPDATE sessions SET expired = ${quoteIdent(sourceExpirationColumn.name)}`);
         }
     }
 
@@ -66,7 +67,8 @@ function normalizeSessionsSchema() {
         const sourceSessionColumn = columns.find((column) => ['data', 'session', 'sess'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
         db.exec('ALTER TABLE sessions ADD COLUMN sess');
         if (sourceSessionColumn) {
-            db.exec(`UPDATE sessions SET sess = COALESCE(sess, ${quoteIdent(sourceSessionColumn.name)})`);
+            // Fix: Just copy from source column, don't use COALESCE with the new column
+            db.exec(`UPDATE sessions SET sess = ${quoteIdent(sourceSessionColumn.name)}`);
         }
     }
 
@@ -732,9 +734,9 @@ app.post('/api/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
 });
 app.post('/api/sendemail', async (req, res) => {
     const { mailinglistId, memberid, subject, text } = req.body;
-    const recipients = mailinglistId? getMailingListRecipients(mailinglistId).recipients : [];
+    const recipients = mailinglistId ? getMailingListRecipients(mailinglistId).recipients : [];
     const recipientEmails = recipients.map(r => r.email)
-    const filteredRecipientEmails = recipientEmails.filter(email => email!==null && email!==undefined && email.trim() !== ''); // Filter out null or undefined emails
+    const filteredRecipientEmails = recipientEmails.filter(email => email !== null && email !== undefined && email.trim() !== ''); // Filter out null or undefined emails
     const recipient = memberid ? db.prepare('SELECT email FROM player WHERE id = ?').get(memberid)?.email : null;
     const to = recipients.length > 0 ? filteredRecipientEmails.join(',') : recipient;
     try {
