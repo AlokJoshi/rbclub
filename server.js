@@ -4,6 +4,15 @@ try {
 } catch (e) {
     console.log('dotenv not found, using environment variables');
 }
+console.log('Environment variables:', {
+    EMAIL_HOST: process.env.EMAIL_HOST,
+    EMAIL_PORT: process.env.EMAIL_PORT,
+    EMAIL_USER: process.env.EMAIL_USER ? '***' : undefined,
+    EMAIL_PASSWORD: process.env.EMAIL_PASSWORD ? '***' : undefined,
+    SESSION_SECRET: process.env.SESSION_SECRET ? '***' : undefined,
+    NODE_ENV: process.env.NODE_ENV
+});
+
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const express = require('express');
