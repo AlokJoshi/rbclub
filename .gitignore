@@ -29,6 +29,7 @@ out/
 .env
 .env.local
 .env.*.local
+env.sh
 
 # Editor / OS files
 .DS_Store
