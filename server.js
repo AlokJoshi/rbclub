@@ -49,7 +49,7 @@ const { userExists, addUser, login, changePassword,
     deleteMailingList, createMailingList, existsMailingList,
     updateMailingList, getMailingListRecipients, isPlayer,
     saveGuestInquiry, getNonMailingListRecipients,
-    addRecipientToMailingList } = require('./credentials')
+    addRecipientToMailingList, formatDateToYYYYMMDD } = require('./credentials')
 
 
 
@@ -746,14 +746,42 @@ async function playerExists(first, last) {
 
 app.get('/api/announcements', (req, res) => {
     try {
+        const today = formatDateToYYYYMMDD(new Date()); // Get current date in YYYY-MM-DD format
         const stmt = db.prepare(`select a.*,p.image_path, concat(p.first, ' ', p.last) as fromname  from announcement a inner join player p on 
-            a.playerid=p.id where del=0 order by priority;`);
-        const announcements = stmt.all();
+            a.playerid=p.id where del=0 and displaytill >= ? order by priority;`);
+        const announcements = stmt.all(today);
         res.json({ success: true, announcements });
     } catch (err) {
         console.error('Error fetching announcements:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
+});
+
+app.post('/api/announcement', (req, res) => {
+    const { title, announcement, playerid, displaytill, priority } = req.body;
+    try {
+        const stmt = db.prepare('INSERT INTO announcement (title, announcement, playerid, displaytill, priority, del) VALUES (?, ?, ?, ?, ?, ?);');
+        stmt.run(title, announcement, playerid, displaytill, priority, 0);
+        res.json({ success: true, message: 'Announcement created successfully' });
+    } catch (err) {
+        console.error('Error creating announcement:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.delete('/api/announcement/:id', (req, res) => {
+    const announcementId = req.params.id;
+    try {
+        const stmt = db.prepare('UPDATE announcement SET del = 1 WHERE id = ?;');   
+        const result = stmt.run(announcementId);
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Announcement not found' });
+        }
+        res.json({ success: true, message: 'Announcement deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting announcement:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }   
 });
 
 app.listen(PORT, () => {

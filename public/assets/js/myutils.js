@@ -485,7 +485,7 @@ async function createPlayerTable() {
             td.classList.remove('col-hidden');
           }
         }
-        
+
         if (email_index == col_index && key == "email") {
           if (!show_email) {
             td.classList.add('col-hidden');
@@ -561,7 +561,7 @@ async function createPlayerTable() {
 }
 
 function displayaddannouncementform() {
-  const addannouncementform = document.getElementById('addupdateannouncements')  
+  const addannouncementform = document.getElementById('addupdateannouncements')
   addannouncementform.style.display = 'grid'
   //clear the form
   document.getElementById('announcementId').value = ''
@@ -1147,7 +1147,7 @@ async function populateNonEmailRecipients() {
 
 function CancelAnnouncement() {
   document.getElementById('addupdateannouncements').style.display = 'none';
-} 
+}
 
 async function PopulateAnnouncements(params) {
   try {
@@ -1210,19 +1210,87 @@ async function PopulateAnnouncements(params) {
       const deleteCell = document.createElement('td');
       const iDelete = document.createElement('i');
       iDelete.className = 'fas fa-trash';
+      iDelete.addEventListener('click', async () => {
+        if ((isAdmin && securelogin) || ((userid === announcement.playerid) && securelogin)) {
+          // User is authorized to delete this announcement
+        } else {
+          showCustomAlert('You must be securely logged in as Admin or as the creator of the announcement to delete this announcement.', 10);
+          return;
+        }
+        if (window.prompt(`Type DELETE to confirm deletion of announcement Title:${announcement.title},
+          Announcement:${announcement.announcement}`, '') === 'DELETE') {
+          const res = await fetch(`/api/announcement/${announcement.id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const result = await res.json();
+          if (result.success) {
+            showCustomAlert('Announcement deleted successfully.', 2);
+            PopulateAnnouncements();
+          } else {
+            showCustomAlert(`Error deleting announcement. ${result.message}`, 5);
+          }
+        }
+      });
       deleteCell.appendChild(iDelete);
       row.appendChild(deleteCell);
 
-      row.dataset.announcementid = announcement.id; // Store announcement ID for later use
-      row.dataset.playerid = announcement.playerid; // Store player ID for permission checks
-      row.dataset.displaytill = announcement.displaytill; // Store display till date for permission checks
-      row.dataset.priority = announcement.priority; // Store priority for sorting
+      // Store following values for later use in edit/update operations
+      row.dataset.announcementid = announcement.id; 
+      row.dataset.playerid = announcement.playerid; 
+      row.dataset.displaytill = announcement.displaytill; 
+      row.dataset.priority = announcement.priority; 
       container.appendChild(row);
     });
   } catch (err) {
     console.error('Error populating announcements:', err);
     showCustomAlert(`Error populating announcements. ${err}`, 5);
   }
+}
+
+async function addAnnouncement() {
+  const title = document.getElementById('announcementtitle').value.trim();
+  const text = document.getElementById('announcementtext').value.trim();
+  const displaytill = document.getElementById('displaytill').value;
+  const priority = document.getElementById('priority').value;
+  document.getElementById('announcementId').value = '';
+  if (!title && !text) {
+    showCustomAlert('Please enter a title or text for the announcement.', 5);
+    return;
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(displaytill)) {
+    showCustomAlert('Invalid date format. Please use correct date format.', 5);
+    return;
+  }
+  const announcementData = {
+    title,
+    announcement: text,
+    displaytill,
+    priority,
+    playerid: userid
+  };
+
+  // Send the announcement data using fetch or any other method
+  fetch('/api/announcement', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(announcementData)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  })
+  .then(result => {
+    if (result.success) {
+      showCustomAlert('Announcement added successfully.', 2);
+      document.getElementById('addupdateannouncements').style.display = 'none';
+      PopulateAnnouncements();
+    } else {
+      showCustomAlert(`Error adding announcement. ${result.message}`, 5);
+    }
+  })
+  .catch(err => {
+    console.error('Error adding announcement:', err);
+    showCustomAlert(`Error adding announcement. ${err}`, 5);
+  });
 }
 
 function sendEmail() {
@@ -1278,6 +1346,7 @@ function sendEmail() {
     });
 
 }
+
 document.addEventListener('DOMContentLoaded', PopulateDirectosTable);
 document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
 document.addEventListener('DOMContentLoaded', PopulateEmailList);

@@ -63,7 +63,7 @@
 						<div class="field half">
 							<label for="displaytill">Display Till Date</label>
 							<input type="date" id="displaytill" name="displaytill"
-								placeholder="Display Till Date (0 for no expiration)" required>
+								placeholder="Display Till Date" required>
 						</div>
 						<div class="field half">
 							<label for="priority">Priority</label>
@@ -71,11 +71,11 @@
 						</div>
 						<div class="field half wrap">
 							<div id="btnNewContainer" style="display:none">
-								<button id="submitNewAnnouncement" type="button" onclick="SubmitNewAnnouncement()"
+								<button type="button" onclick="addAnnouncement()"
 								class="button primary">Add Announcement</button>
 							</div>
 							<div id="btnUpdateContainer" style="display:none">
-								<button id="updateAnnouncement" type="button" onclick="SubmitUpdateAnnouncement()"
+								<button type="button" onclick="updateAnnouncement()"
 								class="button primary">Update Announcement</button>
 							</div>
 						</div>
