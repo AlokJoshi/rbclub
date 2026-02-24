@@ -4,14 +4,21 @@ try {
 } catch (e) {
     console.log('dotenv not found, using environment variables');
 }
-console.log('Environment variables:', {
-    // EMAIL_HOST: process.env.EMAIL_HOST,
-    // EMAIL_PORT: process.env.EMAIL_PORT,
-    EMAIL_USER: process.env.EMAIL_USER ? '***' : undefined,
-    // EMAIL_PASSWORD: process.env.EMAIL_PASSWORD ? '***' : undefined,
-    // SESSION_SECRET: process.env.SESSION_SECRET ? '***' : undefined,
-    // NODE_ENV: process.env.NODE_ENV
-});
+
+const { sendTestSMS } = require('./infobip');
+const { sendSimpleEmail } = require('./mailgun');
+// sendTestSMS();
+// sendSimpleEmail();
+
+
+// console.log('Environment variables:', {
+//     EMAIL_HOST: process.env.EMAIL_HOST,
+//     EMAIL_PORT: process.env.EMAIL_PORT,
+//     EMAIL_USER: process.env.EMAIL_USER ? '***' : undefined,
+//     EMAIL_PASSWORD: process.env.EMAIL_PASSWORD ? '***' : undefined,
+//     SESSION_SECRET: process.env.SESSION_SECRET ? '***' : undefined,
+//     NODE_ENV: process.env.NODE_ENV
+// });
 
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -48,7 +55,8 @@ const { userExists, addUser, login, changePassword,
 
 // 1. Initialize the SQLite database
 // connects to the existing SQLite database
-const db = new sqlite('mydb.sqlite', { verbose: console.log });
+// const db = new sqlite('mydb.sqlite', { verbose: console.log });
+const db = new sqlite('mydb.sqlite',);
 
 // Optional: Enable WAL mode for better performance
 // db.pragma('journal_mode = WAL');
@@ -68,14 +76,14 @@ function normalizeSessionsSchema() {
     const columns = db.prepare('PRAGMA table_info(sessions)').all();
     const names = new Set(columns.map((c) => c.name));
 
-    if (!names.has('expired')) {
-        const sourceExpirationColumn = columns.find((column) => ['expire', 'expires', 'expired'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
-        db.exec('ALTER TABLE sessions ADD COLUMN expired');
-        if (sourceExpirationColumn) {
-            // Fix: Just copy from source column, don't use COALESCE with the new column
-            db.exec(`UPDATE sessions SET expired = ${quoteIdent(sourceExpirationColumn.name)}`);
-        }
-    }
+    // if (!names.has('expired')) {
+    //     const sourceExpirationColumn = columns.find((column) => ['expire', 'expires', 'expired'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
+    //     db.exec('ALTER TABLE sessions ADD COLUMN expired');
+    //     if (sourceExpirationColumn) {
+    //         // Fix: Just copy from source column, don't use COALESCE with the new column
+    //         db.exec(`UPDATE sessions SET expired = ${quoteIdent(sourceExpirationColumn.name)}`);
+    //     }
+    // }
 
     if (!names.has('sess')) {
         const sourceSessionColumn = columns.find((column) => ['data', 'session', 'sess'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
@@ -86,14 +94,14 @@ function normalizeSessionsSchema() {
         }
     }
 
-    const normalizedColumns = db.prepare('PRAGMA table_info(sessions)').all().map((column) => column.name);
-    console.log('Sessions table columns:', normalizedColumns.join(', '));
+    // const normalizedColumns = db.prepare('PRAGMA table_info(sessions)').all().map((column) => column.name);
+    // console.log('Sessions table columns:', normalizedColumns.join(', '));
 }
 
 normalizeSessionsSchema();
 
 // Close the better-sqlite3 connection to avoid conflicts
-db.close();
+// db.close();
 
 // 2. Configure session middleware
 app.use(session({
@@ -125,22 +133,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // increase limits to allow larger multipart/form-data handling if necessary
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-// Old
-// app.get('/', (req, res) => {
-//     try {
-//         req.session.insecurelogin = req.session.insecurelogin || false;
-//         req.session.securelogin = req.session.securelogin || false;
-//         req.session.username = req.session.username || '';
-//         req.session.userid = req.session.userid || 0;
-//         req.session.isAdmin = req.session.isAdmin || false;
-//         req.session.casuallogin = req.session.casuallogin || false;
-//         res.sendFile(path.join(__dirname, 'public', 'index.html'));
-//     }
-//     catch (err) {
-//         console.error('Error in root route:', err);
-//     }
-// });
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'landing.html'));
@@ -335,8 +327,27 @@ app.get('/api/officersdata', (req, res) => {
 });
 
 app.get('/api/playerdata', (req, res) => {
+    
     try {
-        const stmt = db.prepare('SELECT id,image_path,first,last,email,phone,dob_month,ice_phone,ice_relation FROM player order by last;');
+        const stmt = db.prepare(
+            `SELECT id,image_path,first,last,email,phone,
+            Concat(
+            CASE When dob_month=1 Then 'Jan.'
+            When dob_month=2 Then 'Feb.'
+            When dob_month=3 Then 'Mar.'
+            When dob_month=4 Then 'Apr.'
+            When dob_month=5 Then 'May'
+            When dob_month=6 Then 'Jun.'
+            When dob_month=7 Then 'Jul.'
+            When dob_month=8 Then 'Aug.'
+            When dob_month=9 Then 'Sep.'
+            When dob_month=10 Then 'Oct.'
+            When dob_month=11 Then 'Nov.'
+            When dob_month=12 Then 'Dec.'
+            Else '' End, ' ', dob_date) AS dob,
+            Case concat(ice_relation, ice_phone) when '' then '' else Concat(ice_relation,'(', ice_phone, ')') end AS ice
+            FROM player order by last;`
+        );
         //order by last
         const result = stmt.all();
         res.json(result);
@@ -387,62 +398,15 @@ app.put('/getdefaultlogincredentials', async (req, res) => {
     }
 });
 
-// POST route for creating a new player (accepts JSON or urlencoded)
-// Accept multipart/form-data with optional file field 'playerImage'
-// app.post('/api/playerdata', upload.single('playerImage'), async (req, res) => {
-//     const data = req.body;
-//     const alreadyExists = await playerExists(data.first, data.last);
-//     if (alreadyExists) {
-//         return res.status(400).json({ error: 'Player with the same first and last name already exists' });
-//     }
-//     // console.log('Adding new player (playerdata):', { body: data, file: req.file && req.file.filename });
-//     try {
-//         const pool = globalPool;
-//         const client = await pool.connect();
-//         const result = await client.query('INSERT INTO player (first, last, email, phone, dob_month, acblNumber, ice_phone, ice_relation, m1, t1, f1, ug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);', [
-//             data.first,
-//             data.last,
-//             data.email,
-//             data.phone,
-//             data.dob_month,
-//             data.acblNumber,
-//             data.ice_phone,
-//             data.ice_relation,
-//             (data.m1 === true || data.m1 === 'true' || data.m1 === 'on'),
-//             (data.t1 === true || data.t1 === 'true' || data.t1 === 'on'),
-//             (data.f1 === true || data.f1 === 'true' || data.f1 === 'on'),
-//             (data.ug === true || data.ug === 'true' || data.ug === 'on')
-//         ]);
-
-//         // If a file was uploaded, try to update the row with an image_path.
-//         if (req.file) {
-//             console.log('New file uploaded:', req.newFileName);
-//             const imagePath = req.newFileName;
-//             try {
-//                 await client.query('UPDATE player SET image_path = $1 WHERE id = $2;', [imagePath, result.rows[0].id]);
-//                 result.rows[0].image_path = imagePath;
-//             } catch (e) {
-//                 console.warn('Could not persist image_path to DB (column may not exist):', e.message);
-//             }
-//         }
-
-//         client.release();
-//         res.json(result.rows[0]);
-//     } catch (err) {
-//         console.error('Error adding player (playerdata):', err);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
-
 // Accept multipart/form-data with optional file field 'playerImage' for updates
 app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) => {
     const playerId = req.params.id;
     const data = req.body;
-    console.log('Updating player:', playerId, { body: data, file: req.file && req.file.filename });
+    console.log('Updating player:', playerId, { body: data, file: req.file?.filename });
     const filename = req.newFileName
     try {
 
-        const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, 
+        const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, dob_date=?, 
                                  acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, 
                                  image_path=?, director=?, position=? WHERE id = ?;`);
 
@@ -451,6 +415,7 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
             data.email,
             data.phone,
             data.dob_month == '' || data.dob_month === null ? 0 : data.dob_month,
+            data.dob_date == '' || data.dob_date === null ? 0 : data.dob_date,
             data.acblNumber,
             data.ice_phone,
             data.ice_relation,
@@ -778,6 +743,18 @@ async function playerExists(first, last) {
         return false;
     }
 }
+
+app.get('/api/announcements', (req, res) => {
+    try {
+        const stmt = db.prepare(`select a.*,p.image_path, concat(p.first, ' ', p.last) as fromname  from announcement a inner join player p on 
+            a.playerid=p.id where del=0 order by priority;`);
+        const announcements = stmt.all();
+        res.json({ success: true, announcements });
+    } catch (err) {
+        console.error('Error fetching announcements:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

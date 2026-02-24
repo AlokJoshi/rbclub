@@ -17,6 +17,77 @@
 	<!-- Wrapper -->
 	<div id="wrapper">
 
+		<!-- Announcements -->
+		<section class="announcements">
+			<header>
+				<h1>Announcements</h1>
+			</header>
+			<div class="content">
+				<h2 id="listofannouncements">Announcements:</h2>
+				<h2 style="color:blue" cursor="pointer" onclick="displayaddannouncementform()">Add</h2>
+				<table id="announcementtable">
+					<thead>
+						<tr>
+							<th>Picture</th>
+							<th>From</th>
+							<th>Announcement</th>
+							<th>Edit?</th>
+							<th>Delete?</th>
+						</tr>
+					</thead>
+					<tbody id="announcementTableBody">
+
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Add/Update Announcements -->
+		<section id="addupdateannouncements" style="display:none">
+			<header>
+				<h1>Add/Update Announcement</h1>
+			</header>
+			<div class="content">
+				<h3>Announcement:</h3>
+				<form action="" id="editAnnouncement">
+					<input type="hidden" id="announcementId" name="announcementId" value="">
+					<div class="fields">
+						<div class="field half">
+							<label for="announcementtitle">Announcement Title</label>
+							<input name="announcementtitle" id="announcementtitle" placeholder="Announcement Title" required></input>
+						</div>
+						<div class="field half">
+							<label for="announcementtext">Announcement Text</label>
+							<textarea name="announcementtext" id="announcementtext" placeholder="Announcement" required></textarea>
+						</div>
+						<div class="field half">
+							<label for="displaytill">Display Till Date</label>
+							<input type="date" id="displaytill" name="displaytill"
+								placeholder="Display Till Date (0 for no expiration)" required>
+						</div>
+						<div class="field half">
+							<label for="priority">Priority</label>
+							<input type="number" id="priority" name="priority" value="">
+						</div>
+						<div class="field half wrap">
+							<div id="btnNewContainer" style="display:none">
+								<button id="submitNewAnnouncement" type="button" onclick="SubmitNewAnnouncement()"
+								class="button primary">Add Announcement</button>
+							</div>
+							<div id="btnUpdateContainer" style="display:none">
+								<button id="updateAnnouncement" type="button" onclick="SubmitUpdateAnnouncement()"
+								class="button primary">Update Announcement</button>
+							</div>
+						</div>
+						<div class="field half wrap">
+							<button id="cancelAnnouncement" type="button" onclick="CancelAnnouncement()"
+							class="button primary">Cancel</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</section>
+
 		<!-- Intro -->
 		<section class="intro">
 			<header>
@@ -34,13 +105,9 @@
 			</header>
 			<div class="content">
 				<h2 id="listofplayers">List of players:</h2>
-				<input type="checkbox" id="DOB_Month" onclick="toggleColumn('#playertable', 6);"><label
-					for="DOB_Month">DOB(Month)</label>
 				<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 4);"><label for="Email">Email</label>
-				<input type="checkbox" id="Ice_phone" onclick="toggleColumn('#playertable', 7);"><label
-					for="Ice_phone">ICE_Phone</label>
-				<input type="checkbox" id="ICE_Relation" onclick="toggleColumn('#playertable', 8);"><label
-					for="ICE_Relation">ICE_Relation</label>
+				<input type="checkbox" id="DOB" onclick="toggleColumn('#playertable', 6);"><label for="DOB">DOB</label>
+				<input type="checkbox" id="ICE" onclick="toggleColumn('#playertable', 7);"><label for="ICE">ICE</label>
 				<!-- <span class="image fill" data-position="center"><img src="images/pic01.jpg" alt="" /></span> -->
 				<table id="playertable">
 					<thead>
@@ -51,9 +118,8 @@
 							<th>Last</th>
 							<th class="col-hidden">Email</th>
 							<th>Phone</th>
-							<th class="col-hidden">DOB_Month</th>
-							<th class="col-hidden">ICE_Phone</th>
-							<th class="col-hidden">ICE_Relation</th>
+							<th class="col-hidden">DOB</th>
+							<th class="col-hidden">ICE</th>
 							<th>Edit?</th>
 							<th>Delete?</th>
 						</tr>
@@ -73,7 +139,7 @@
 			<div class="content">
 
 				<h3>Update or Edit Players</h3>
-				<form id="addEditPlayerForm">
+				<form action="" id="addEditPlayerForm">
 					<input type="hidden" id="playerId" name="playerId" value="">
 					<div class="fields">
 						<div class="field half">
@@ -104,19 +170,23 @@
 							<label for="phone">Phone</label>
 							<input type="text" name="phone" id="phone" placeholder="Phone" required />
 						</div>
-						<div class="field quarter">
+						<div class="field third">
 							<label for="dobMonth">DOB (Month)</label>
 							<input type="text" name="dobMonth" id="dobMonth" placeholder="DOB (Month)" />
 						</div>
-						<div class="field quarter">
+						<div class="field third">
+							<label for="dobDate">DOB (Date)</label>
+							<input type="text" name="dobDate" id="dobDate" placeholder="DOB (Date)" />
+						</div>
+						<div class="field third">
 							<label for="acblnumber">ACBL#</label>
 							<input type="text" name="acblnumber" id="acblnumber" placeholder="ACBL#" />
 						</div>
-						<div class="field quarter">
+						<div class="field half">
 							<label for="icePhone">ICE Phone</label>
 							<input type="text" name="icePhone" id="ice_phone" placeholder="ICE Phone" />
 						</div>
-						<div class="field quarter">
+						<div class="field half">
 							<label for="iceRelation">ICE Relation</label>
 							<input type="text" name="iceRelation" id="ice_relation" placeholder="ICE Relation" />
 						</div>
@@ -347,34 +417,35 @@
 			<div class="content">
 				<p>This is another section for future use.</p>
 				<form action="">
-						<div id="toEmailIndividual" class="field full">
-							<label for="toEmailIndividual">Email To:</label>
-							<select name= "toEmailIndividual" id="toEmailIndividual" placeholder="To Email" required >
-								<option value="">Select Recipient</option>
-							</select>
-						</div>
-						<div id="toEmailGroup" class="field full">
-							<label for="toEmailGroup">Email To:</label>
-							<select name= "toEmailGroup" id="toEmailGroup" placeholder="To Email" required >
-								<option value="">Select Group</option>
-							</select>
-						</div>
-						<div class="field full">
-							<label for="emailSubject">Email Subject</label>
-							<input type="text" name="emailSubject" id="emailSubject" placeholder="Email Subject" required />
-						</div>
-						<div class="field full">
-							<label for="emailBody">Email Text</label>
-							<textarea name="emailBody" id="emailBody" placeholder="Email Body" required></textarea>
-						</div>
-						<div class="field full wrap">
-							<button class="button primary" type="button" style="margin-top: 30px;" onclick="sendEmail()">
-								Send Email
-							</button>
-						</div>
+					<div id="toEmailIndividual" class="field full">
+						<label for="toEmailIndividual">Email To:</label>
+						<select name="toEmailIndividual" id="toEmailIndividual" placeholder="To Email" required>
+							<option value="">Select Recipient</option>
+						</select>
+					</div>
+					<div id="toEmailGroup" class="field full">
+						<label for="toEmailGroup">Email To:</label>
+						<select name="toEmailGroup" id="toEmailGroup" placeholder="To Email" required>
+							<option value="">Select Group</option>
+						</select>
+					</div>
+					<div class="field full">
+						<label for="emailSubject">Email Subject</label>
+						<input type="text" name="emailSubject" id="emailSubject" placeholder="Email Subject" required />
+					</div>
+					<div class="field full">
+						<label for="emailBody">Email Text</label>
+						<textarea name="emailBody" id="emailBody" placeholder="Email Body" required></textarea>
+					</div>
+					<div class="field full wrap">
+						<button class="button primary" type="button" style="margin-top: 30px;" onclick="sendEmail()">
+							Send Email
+						</button>
+					</div>
 				</form>
 			</div>
 		</section>
+
 		<!-- Copyright -->
 		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
 		</div>

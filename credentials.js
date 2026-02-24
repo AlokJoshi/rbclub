@@ -2,7 +2,8 @@ require('dotenv').config({ quiet: true });
 const bcrypt = require('bcrypt');
 const sqlite = require('better-sqlite3');
 // Initialize the sqlite database connection
-const db = new sqlite('mydb.sqlite', { verbose: console.log });
+// const db = new sqlite('mydb.sqlite', { verbose: console.log });
+const db = new sqlite('mydb.sqlite');
 
 
 const admin_ids = process.env.ADMIN_IDS ? JSON.parse(process.env.ADMIN_IDS) : [];
@@ -224,7 +225,7 @@ function getMailingListAddresses(listname) {
             mailinglistdetails.mailinglistid = mailinglist.id where mailinglist.name = ?
             and player.email IS NOT NULL and trim(player.email) != '';`);
         const result = stmt.all(listname);
-        console.log('Mailing list query result:', result);
+        // console.log('Mailing list query result:', result);
         return result.map(row => row.email).join(','); // return comma-separated string of email addresses
     } catch (err) {
         console.error('Error fetching mailing list addresses:', err);
@@ -236,7 +237,7 @@ function getMailingLists(listnme) {
     try {
         const stmt = db.prepare(`select * from mailinglist`);
         const result = stmt.all();
-        console.log('getMailingLists result:', result);
+        // console.log('getMailingLists result:', result);
         return result
     } catch (err) {
         console.error('Error fetching mailing lists:', err);

@@ -301,6 +301,7 @@ function ClearForm() {
   document.getElementById('email').value = '';
   document.getElementById('phone').value = '';
   document.getElementById('dobMonth').value = '';
+  document.getElementById('dobDate').value = '';
   document.getElementById('acblnumber').value = '';
   document.getElementById('ice_phone').value = '';
   document.getElementById('ice_relation').value = '';
@@ -328,6 +329,7 @@ async function SubmitChanges() {
   form.append('email', document.getElementById('email').value);
   form.append('phone', document.getElementById('phone').value);
   form.append('dob_month', document.getElementById('dobMonth').value);
+  form.append('dob_date', document.getElementById('dobDate').value);
   form.append('acblNumber', document.getElementById('acblnumber').value);
   form.append('ice_phone', document.getElementById('ice_phone').value);
   form.append('ice_relation', document.getElementById('ice_relation').value);
@@ -384,6 +386,7 @@ async function PopulateFormForEdit(playerId) {
     document.getElementById('email').value = result.email || '';
     document.getElementById('phone').value = result.phone || '';
     document.getElementById('dobMonth').value = result.dob_month || '';
+    document.getElementById('dobDate').value = result.dob_date || '';
     document.getElementById('acblnumber').value = result.acblNumber || '';
     document.getElementById('ice_phone').value = result.ice_phone || '';
     document.getElementById('ice_relation').value = result.ice_relation || '';
@@ -437,16 +440,14 @@ async function createPlayerTable() {
   try {
     const playerid_index = 0; // zero-based index of ID column
     const image_index = 1; // zero-based index of image column
-    const dob_month_index = 6; // zero-based index of DOB_Month column
+    const dob = 6; // zero-based index of DOB column
     const email_index = 4; // zero-based index of email column
-    const ice_phone_index = 7; // zero-based index of ice_phone column
-    const ice_relation_index = 8; // zero-based index of ice_relation column
+    const ice = 7; // zero-based index of ice column
 
     const show_playerid = false
-    const show_dob_month = document.getElementById('DOB_Month').checked;
+    const show_dob = document.getElementById('DOB').checked;
     const show_email = document.getElementById('Email').checked;
-    const show_ice_phone = document.getElementById('Ice_phone').checked;
-    const show_ice_relation = document.getElementById('ICE_Relation').checked;
+    const show_ice = document.getElementById('ICE').checked;
 
     var col_index = 0;
     const res = await fetch('/api/playerdata');
@@ -477,14 +478,14 @@ async function createPlayerTable() {
           }
         }
 
-        if (dob_month_index == col_index && key == "dob_month") {
-          if (!show_dob_month) {
+        if (dob == col_index && key == "dob") {
+          if (!show_dob) {
             td.classList.add('col-hidden');
           } else {
             td.classList.remove('col-hidden');
           }
         }
-
+        
         if (email_index == col_index && key == "email") {
           if (!show_email) {
             td.classList.add('col-hidden');
@@ -493,22 +494,13 @@ async function createPlayerTable() {
           }
         }
 
-        if (ice_phone_index == col_index && key == "ice_phone") {
-          if (!show_ice_phone) {
+        if (ice == col_index && key == "ice") {
+          if (!show_ice) {
             td.classList.add('col-hidden');
           } else {
             td.classList.remove('col-hidden');
           }
         }
-
-        if (ice_relation_index == col_index && key == "ice_relation") {
-          if (!show_ice_relation) {
-            td.classList.add('col-hidden');
-          } else {
-            td.classList.remove('col-hidden');
-          }
-        }
-
 
         if (image_index === col_index) {
           const img = document.createElement('img');
@@ -521,10 +513,10 @@ async function createPlayerTable() {
             img.width = 40;
             img.height = 40;
           }
-          img.borderRadius = 20;
+          img.style.borderRadius = '20px';
           td.appendChild(img);
         } else {
-          td.textContent = val == null ? '' : val;
+          td.textContent = val ?? '';
         }
         tr.appendChild(td);
         col_index++;
@@ -567,6 +559,20 @@ async function createPlayerTable() {
     console.error('API error:', err);
   }
 }
+
+function displayaddannouncementform() {
+  const addannouncementform = document.getElementById('addupdateannouncements')  
+  addannouncementform.style.display = 'grid'
+  //clear the form
+  document.getElementById('announcementId').value = ''
+  document.getElementById('announcementtitle').value = ''
+  document.getElementById('announcementtext').value = ''
+  document.getElementById('displaytill').value = ''
+  document.getElementById('priority').value = ''
+  document.getElementById('btnNewContainer').style.display = 'block'
+  document.getElementById('btnUpdateContainer').style.display = 'none'
+}
+
 
 document.addEventListener('DOMContentLoaded', createPlayerTable);
 document.addEventListener('DOMContentLoaded', ClearForm);
@@ -1139,6 +1145,86 @@ async function populateNonEmailRecipients() {
   }
 }
 
+function CancelAnnouncement() {
+  document.getElementById('addupdateannouncements').style.display = 'none';
+} 
+
+async function PopulateAnnouncements(params) {
+  try {
+    const res = await fetch('/api/announcements', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    const container = document.getElementById('announcementTableBody');
+    if (!container) return console.warn('Container #announcementTableBody not found');
+    container.innerHTML = '';
+    result.announcements.forEach(announcement => {
+      const row = document.createElement('tr');
+
+      const pictureCell = document.createElement('td');
+      const img = document.createElement('img');
+      img.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${announcement.image_path}`;
+      img.alt = announcement.name;
+      img.style.width = '50px';
+      img.style.height = '50px';
+      pictureCell.appendChild(img);
+      row.appendChild(pictureCell);
+
+      const fromCell = document.createElement('td');
+      fromCell.textContent = announcement.fromname;
+      row.appendChild(fromCell);
+
+      const contentCell = document.createElement('td');
+      const contentDiv = document.createElement('div');
+      contentDiv.style.maxHeight = '100px';
+      contentDiv.style.overflowY = 'auto';
+      const contentDivTitle = document.createElement('div');
+      contentDivTitle.textContent = announcement.title;
+      contentDivTitle.style.fontWeight = 'bold';
+      contentDiv.appendChild(contentDivTitle);
+
+      const contentDivContent = document.createElement('div');
+      contentDivContent.textContent = announcement.announcement;
+      contentDiv.appendChild(contentDivContent);
+      contentCell.appendChild(contentDiv);
+      row.appendChild(contentCell);
+
+      const editCell = document.createElement('td');
+      const iEdit = document.createElement('i');
+      iEdit.className = 'fas fa-edit';
+      iEdit.addEventListener('click', () => {
+        // Copy the data to the addAnnouncement form and enable the update button
+        document.getElementById('addupdateannouncements').style.display = 'grid';
+        document.getElementById('announcementId').value = announcement.id;
+        document.getElementById('announcementtitle').value = announcement.title || '';
+        document.getElementById('announcementtext').value = announcement.announcement || '';
+        document.getElementById('displaytill').value = announcement.displaytill;
+        document.getElementById('priority').value = announcement.priority;
+        document.getElementById('btnNewContainer').style.display = 'none';
+        document.getElementById('btnUpdateContainer').style.display = 'block';
+      });
+      editCell.appendChild(iEdit);
+      row.appendChild(editCell);
+
+      const deleteCell = document.createElement('td');
+      const iDelete = document.createElement('i');
+      iDelete.className = 'fas fa-trash';
+      deleteCell.appendChild(iDelete);
+      row.appendChild(deleteCell);
+
+      row.dataset.announcementid = announcement.id; // Store announcement ID for later use
+      row.dataset.playerid = announcement.playerid; // Store player ID for permission checks
+      row.dataset.displaytill = announcement.displaytill; // Store display till date for permission checks
+      row.dataset.priority = announcement.priority; // Store priority for sorting
+      container.appendChild(row);
+    });
+  } catch (err) {
+    console.error('Error populating announcements:', err);
+    showCustomAlert(`Error populating announcements. ${err}`, 5);
+  }
+}
+
 function sendEmail() {
   if (isAdmin) {
     const mailinglistId = document.getElementById('toEmailGroup').value;
@@ -1196,6 +1282,7 @@ document.addEventListener('DOMContentLoaded', PopulateDirectosTable);
 document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
 document.addEventListener('DOMContentLoaded', PopulateEmailList);
 document.addEventListener('DOMContentLoaded', PopulateMailingLists);
+document.addEventListener('DOMContentLoaded', PopulateAnnouncements);
 
 function SetupForAdmin(isAdmin) {
   const toEmailIndividual = document.getElementById('toEmailIndividual');
@@ -1226,7 +1313,7 @@ async function decide() {
     showCustomAlert(`Note that you are logged in as ${username} but you are a casual visitor. You can only view the data.`, 10)
   } else if (sessionId && insecurelogin) {
     showCustomAlert(`Note that you are logged in as ${username} but you are using a password that is not secure. You can only view the data.`, 10)
-  } else if (sessionId && securelogin) {
+  } else if (sessionId && securelogin && !isAdmin) {
     showCustomAlert(`Note that you are securely logged in as ${username} and you can view data as well as edit your own data.`, 10)
   } else if (sessionId && securelogin && isAdmin) {
     showCustomAlert(`Note that you are logged in as ${username}, an Admin, and can view and edit all data.`, 10)
