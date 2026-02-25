@@ -756,6 +756,21 @@ app.get('/api/announcements', (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+app.put('/api/announcement/:id', (req, res) => {
+    const announcementId = req.params.id;
+    const { title, announcement, playerid, displaytill, priority } = req.body;  
+    try {
+        const stmt = db.prepare('UPDATE announcement SET title = ?, announcement = ?, playerid = ?, displaytill = ?, priority = ? WHERE id = ?;');
+        const result = stmt.run(title, announcement, playerid, displaytill, priority, announcementId);
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Announcement not found' });
+        }
+        res.json({ success: true, message: 'Announcement updated successfully' });
+    } catch (err) {
+        console.error('Error updating announcement:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
 
 app.post('/api/announcement', (req, res) => {
     const { title, announcement, playerid, displaytill, priority } = req.body;

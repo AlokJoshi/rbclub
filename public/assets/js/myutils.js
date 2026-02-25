@@ -349,9 +349,13 @@ async function SubmitChanges() {
     method: 'PUT',
     body: form
   });
+
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Update failed: ${res.status} ${err}`);
+  } else {
+    showCustomAlert('Player updated successfully', 5);
+    document.getElementById("addoreditplayer").style.display = "none";
   }
 
   createPlayerTable(); // refresh the table display
@@ -366,7 +370,9 @@ async function SubmitChanges() {
 
   return res.json(); // updated resource (if returned)  
 }
-
+function CancelChanges() {
+  document.getElementById("addoreditplayer").style.display = "none";  
+}
 async function PopulateFormForEdit(playerId) {
   // Placeholder function to populate form for editing a player
   console.log(`Populate form for editing player with ID: ${playerId}`);
@@ -411,6 +417,7 @@ async function PopulateFormForEdit(playerId) {
 
     // Focus on the first name field for convenience
     const el = document.getElementById('addoreditplayer');
+    el.style.display = 'grid';
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     el.setAttribute('tabindex', '-1');
     el.focus();
@@ -1163,24 +1170,34 @@ async function PopulateAnnouncements(params) {
       const row = document.createElement('tr');
 
       const pictureCell = document.createElement('td');
+      pictureCell.style.display = 'flex';
+      pictureCell.style.justifyContent = 'center';
+      pictureCell.style.alignItems = 'center';
+      pictureCell.style.width = '100px';
+      pictureCell.style.height = '100px';
+      // pictureCell.style.borderRadius = '50%';
       const img = document.createElement('img');
       img.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${announcement.image_path}`;
       img.alt = announcement.name;
-      img.style.width = '50px';
-      img.style.height = '50px';
+      img.style.width = '100px';
+      img.style.height = '100px';
+      img.style.borderRadius = '50%';
       pictureCell.appendChild(img);
       row.appendChild(pictureCell);
 
-      const fromCell = document.createElement('td');
-      fromCell.textContent = announcement.fromname;
-      row.appendChild(fromCell);
-
       const contentCell = document.createElement('td');
+
       const contentDiv = document.createElement('div');
-      contentDiv.style.maxHeight = '100px';
+      contentDiv.style.maxHeight = '200px';
       contentDiv.style.overflowY = 'auto';
+
+      // const contentDivFrom = document.createElement('div');
+      // contentDivFrom.textContent = `From: ${announcement.fromname}`;
+      // contentDivFrom.style.fontStyle = 'italic';
+      // contentDiv.appendChild(contentDivFrom);
+
       const contentDivTitle = document.createElement('div');
-      contentDivTitle.textContent = announcement.title;
+      contentDivTitle.textContent = `${announcement.title} - ${announcement.fromname}`;
       contentDivTitle.style.fontWeight = 'bold';
       contentDiv.appendChild(contentDivTitle);
 
@@ -1193,7 +1210,16 @@ async function PopulateAnnouncements(params) {
       const editCell = document.createElement('td');
       const iEdit = document.createElement('i');
       iEdit.className = 'fas fa-edit';
+      iEdit.style.cursor = 'pointer';
+      iEdit.style.margin = '0 5px';
+
       iEdit.addEventListener('click', () => {
+        if ((isAdmin && securelogin) || ((userid === announcement.playerid) && securelogin)) {
+          // User is authorized to edit this announcement
+        } else {
+          showCustomAlert('You must be securely logged in as Admin or as the creator of the announcement to update this announcement.', 10);
+          return;
+        }
         // Copy the data to the addAnnouncement form and enable the update button
         document.getElementById('addupdateannouncements').style.display = 'grid';
         document.getElementById('announcementId').value = announcement.id;
@@ -1205,11 +1231,12 @@ async function PopulateAnnouncements(params) {
         document.getElementById('btnUpdateContainer').style.display = 'block';
       });
       editCell.appendChild(iEdit);
-      row.appendChild(editCell);
+      // row.appendChild(editCell);
 
-      const deleteCell = document.createElement('td');
+      // const deleteCell = document.createElement('td');
       const iDelete = document.createElement('i');
       iDelete.className = 'fas fa-trash';
+      iDelete.style.cursor = 'pointer';
       iDelete.addEventListener('click', async () => {
         if ((isAdmin && securelogin) || ((userid === announcement.playerid) && securelogin)) {
           // User is authorized to delete this announcement
@@ -1230,20 +1257,66 @@ async function PopulateAnnouncements(params) {
           }
         }
       });
-      deleteCell.appendChild(iDelete);
-      row.appendChild(deleteCell);
+      editCell.appendChild(iDelete);
+      // deleteCell.appendChild(iDelete);
+      row.appendChild(editCell);
 
       // Store following values for later use in edit/update operations
-      row.dataset.announcementid = announcement.id; 
-      row.dataset.playerid = announcement.playerid; 
-      row.dataset.displaytill = announcement.displaytill; 
-      row.dataset.priority = announcement.priority; 
+      row.dataset.announcementid = announcement.id;
+      row.dataset.playerid = announcement.playerid;
+      row.dataset.displaytill = announcement.displaytill;
+      row.dataset.priority = announcement.priority;
       container.appendChild(row);
     });
   } catch (err) {
     console.error('Error populating announcements:', err);
     showCustomAlert(`Error populating announcements. ${err}`, 5);
   }
+}
+
+async function updateAnnouncement() {
+  const announcementId = document.getElementById('announcementId').value;
+  const title = document.getElementById('announcementtitle').value.trim();
+  const text = document.getElementById('announcementtext').value.trim();
+  const displaytill = document.getElementById('displaytill').value;
+  const priority = document.getElementById('priority').value;
+  if (!title && !text) {
+    showCustomAlert('Please enter a title or text for the announcement.', 5);
+    return;
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(displaytill)) {
+    showCustomAlert('Invalid date format. Please use correct date format.', 5);
+    return;
+  }
+  const announcementData = {
+    title,
+    announcement: text,
+    displaytill,
+    priority,
+    playerid: userid
+  };
+  fetch(`/api/announcement/${announcementId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(announcementData)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(result => {
+      if (result.success) {
+        showCustomAlert('Announcement updated successfully.', 2);
+        document.getElementById('addupdateannouncements').style.display = 'none';
+        PopulateAnnouncements();
+      } else {
+        showCustomAlert(`Error updating announcement. ${result.message}`, 5);
+      }
+    })
+    .catch(err => {
+      console.error('Error updating announcement:', err);
+      showCustomAlert(`Error updating announcement. ${err}`, 5);
+    });
 }
 
 async function addAnnouncement() {
@@ -1274,23 +1347,23 @@ async function addAnnouncement() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(announcementData)
   })
-  .then(res => {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  })
-  .then(result => {
-    if (result.success) {
-      showCustomAlert('Announcement added successfully.', 2);
-      document.getElementById('addupdateannouncements').style.display = 'none';
-      PopulateAnnouncements();
-    } else {
-      showCustomAlert(`Error adding announcement. ${result.message}`, 5);
-    }
-  })
-  .catch(err => {
-    console.error('Error adding announcement:', err);
-    showCustomAlert(`Error adding announcement. ${err}`, 5);
-  });
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(result => {
+      if (result.success) {
+        showCustomAlert('Announcement added successfully.', 2);
+        document.getElementById('addupdateannouncements').style.display = 'none';
+        PopulateAnnouncements();
+      } else {
+        showCustomAlert(`Error adding announcement. ${result.message}`, 5);
+      }
+    })
+    .catch(err => {
+      console.error('Error adding announcement:', err);
+      showCustomAlert(`Error adding announcement. ${err}`, 5);
+    });
 }
 
 function sendEmail() {

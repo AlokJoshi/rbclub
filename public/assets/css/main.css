@@ -4170,6 +4170,37 @@ div#emaillist {
 		border-radius: 5px;
 }
 
+.announcement-icon {
+  font-size: 12rem;   /* adjust as needed */
+	color:maroon;
+  margin-right: auto;
+  vertical-align: middle;
+}
+
+.parent {
+  display: grid;
+  place-items: center; /* both axes */
+}
+
+i.fas.fa-bullhorn.announcement-icon {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;    /* Centers vertically */
+  /* You might want to remove existing text-align, line-height, etc. that could interfere */
+  text-align: initial; /* Or remove this property if not needed */
+  line-height: initial; /* Or remove this property if not needed */
+}
+
+i.fas.fa-bullhorn.announcement-icon::before {
+  /* No specific changes needed here for centering, but ensure it's not overriding flex behavior */
+  /* Remove text-align, line-height if they are not explicitly setting icon size */
+  text-align: initial;
+  line-height: initial;
+}
+
+td {
+	vertical-align: top;
+}
 
 /* added by alok */
 

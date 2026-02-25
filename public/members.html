@@ -19,20 +19,20 @@
 
 		<!-- Announcements -->
 		<section class="announcements">
-			<header>
-				<h1>Announcements</h1>
+			<header class="parent">
+				<div>
+					<i class="fas fa-bullhorn announcement-icon"  aria-hidden="true"></i>
+					<h2>Announcements</h2>
+				</div>
 			</header>
 			<div class="content">
-				<h2 id="listofannouncements">Announcements:</h2>
 				<h2 style="color:blue" cursor="pointer" onclick="displayaddannouncementform()">Add</h2>
 				<table id="announcementtable">
 					<thead>
 						<tr>
 							<th>Picture</th>
-							<th>From</th>
 							<th>Announcement</th>
-							<th>Edit?</th>
-							<th>Delete?</th>
+							<th>?</th>
 						</tr>
 					</thead>
 					<tbody id="announcementTableBody">
@@ -132,7 +132,7 @@
 		</section>
 
 		<!-- Section -->
-		<section id="addoreditplayer">
+		<section id="addoreditplayer" style="display:none">
 			<header>
 				<h2>Update or Edit Players</h2>
 			</header>
@@ -222,9 +222,13 @@
 								<option value="Treasurer">Treasurer</option>
 							</select>
 						</div>
-						<div class="field full wrap">
+						<div class="field half wrap">
 							<button id="submitPlayerChangesButton" disabled="true" type="button" onclick="SubmitChanges()"
 								class="button primary">Submit Changes</button>
+						</div>
+						<div class="field half wrap">
+							<button id="cancelPlayerChangesButton" type="button" onclick="CancelChanges()"
+								class="button primary">Cancel</button>
 						</div>
 						<!-- <button type="button" onclick="AddPlayer()" class="button half primary">Add Player</button> -->
 						<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
