@@ -1,5 +1,5 @@
 //global
-let sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin
+let sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname;
 
 function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
@@ -123,7 +123,7 @@ async function SubmitNewPlayer() {
       showCustomAlert(`Adding new player failed: ${result.message}`, 5);
       await createPlayerTable(); // refresh the table display
     } else {
-      showCustomAlert(result.message, 20);
+      showCustomAlert(result.message, 5);
     }
   } catch (err) {
     console.error('Error adding new player:', err);
@@ -147,20 +147,6 @@ async function logout() {
     console.error('Logout error:', err);
     showCustomAlert('Error during logout.' + err.message, 5);
   }
-}
-
-async function nonmemberschanged() {
-  //check if the number of selection is other than 2
-  const selectElement = document.getElementById('nonmembersselect');
-
-  const message = selectElement.selectedOptions.length == 2 ? "" : "Please select 2 and only 2 from the above list."
-
-  const errorEl = document.getElementById("nonmemberserror")
-
-  errorEl.innerText = message
-
-  console.log(message)
-
 }
 
 function closeLoginModal() {
@@ -204,6 +190,9 @@ async function login() {
       showCustomAlert(`Login failed: ${result.message}`, 5);
       return;
     } else {
+      console.log('Login successful for user:', user_name,
+        'User ID:', result.userId, 'Is Admin:', result.isAdmin, 'Full Name:', result.fullname,
+        'Secure Login:', result.securelogin, 'Insecure Login:', result.insecurelogin, 'Casual Login:', result.casuallogin);
       console.log(result);
       username = user_name;
       userid = result.userId;
@@ -211,13 +200,8 @@ async function login() {
       securelogin = result.securelogin
       insecurelogin = result.insecurelogin
       casuallogin = result.casuallogin
-      // if (isAdmin && securelogin) {
-      // showCustomAlert('Successfully and securely logged in ' + username + (isAdmin ? ' (Admin)' : ''),5);
-      // }else if (isAdmin && insecurelogin) {
-      //   showCustomAlert('Successfully but insecurely logged in ' + username + (isAdmin ? ' (Admin)' : '') + '. Please change your password.',5); 
-      // }else if (insecurelogin) {
-      //   showCustomAlert('Successfully logged in ' + username + '. Please change your password. You will not be able to change your data till you are securely logged in',10);
-      // } 
+      fullname = result.fullname
+
       decide();
     }
   } catch (err) {
@@ -371,7 +355,7 @@ async function SubmitChanges() {
   return res.json(); // updated resource (if returned)  
 }
 function CancelChanges() {
-  document.getElementById("addoreditplayer").style.display = "none";  
+  document.getElementById("addoreditplayer").style.display = "none";
 }
 async function PopulateFormForEdit(playerId) {
   // Placeholder function to populate form for editing a player
@@ -598,6 +582,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('No reset token found in URL.');
   }
 });
+
 function displayResetPasswordModal(token) {
   // Hide any other modals that might be open
   closeLoginModal();
@@ -830,14 +815,23 @@ async function getSessionDetails() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const result = await res.json()
-    return [result.sessionId, result.securelogin, result.insecurelogin, result.username, result.userid, result.isAdmin, result.casuallogin];
+    sessionId = result.sessionId;
+    securelogin = result.securelogin;
+    insecurelogin = result.insecurelogin;
+    username = result.username;
+    userid = result.userid;
+    isAdmin = result.isAdmin;
+    casuallogin = result.casuallogin;
+    fullname = result.fullname;
+
+    return [result.sessionId, result.securelogin, result.insecurelogin, result.username, result.userid, result.isAdmin, result.casuallogin, result.fullname];
 
   } catch (err) {
 
     console.error('API error:', err);
   }
 }
-async function PopulateDirectosTable() {
+async function PopulateDirectorsTable() {
   try {
     const res = await fetch('api/directorsdata', {
       method: 'GET'
@@ -1420,11 +1414,88 @@ function sendEmail() {
 
 }
 
-document.addEventListener('DOMContentLoaded', PopulateDirectosTable);
+document.addEventListener('DOMContentLoaded', PopulateDirectorsTable);
 document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
 document.addEventListener('DOMContentLoaded', PopulateEmailList);
 document.addEventListener('DOMContentLoaded', PopulateMailingLists);
 document.addEventListener('DOMContentLoaded', PopulateAnnouncements);
+document.addEventListener('DOMContentLoaded', PopulatePOTMContenders);
+
+async function PopulatePOTMContenders() {
+  try {
+    const res = await fetch('/api/registeredusers', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    // Process the data and populate the POTM modal
+    const selectPOTM = document.getElementById('potm');
+    if (!selectPOTM) return console.warn('Select element #potm not found');
+    let innerHTML = '<option value="">None</option>';
+    data.users.forEach(user => {
+      if(user.username !== username){ // Exclude current user from the list to prevent self-selection as POTM
+        innerHTML += `<option value="${user.id}">${user.first} ${user.last}</option>`;
+      }
+    });
+    selectPOTM.innerHTML = innerHTML;
+
+  } catch (err) {
+    console.error('Error fetching POTM data:', err);
+    showCustomAlert(`Error fetching POTM data. ${err}`, 5);
+  }
+}
+
+async function updatePOTM() {
+  const potmSelect = document.getElementById('potm');
+  if (!potmSelect) return;
+  const potmplayerid = potmSelect.value;
+  const potmmonth = new Date().getMonth() + 1; // Current month
+  const potmyear = new Date().getFullYear(); // Current year
+  try {
+    const res = await fetch('/api/updatepotm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ potmmonth, potmyear, playerid:userid, potmplayerid })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.success) {
+      showCustomAlert('Player of the Month updated successfully.', 2);
+      displayPOTM();
+    } else {
+      showCustomAlert(`Error updating Player of the Month. ${result.message}`, 5);
+    }
+  } catch (err) {
+    console.error('Error updating POTM:', err);
+    showCustomAlert(`Error updating Player of the Month. ${err}`, 5);
+  }
+}
+
+async function displayPOTM() {
+  const potmmonth = new Date().getMonth() + 1; // Current month
+  const potmyear = new Date().getFullYear(); // Current year
+  try {
+    const res = await fetch(`/api/getpotm/${potmmonth}/${potmyear}`, {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    // The data displays an array of 0 to 3 players
+    // each object in that array has first, last, and image_path properties
+    let index = 1;
+    data.potm.forEach(player => {
+      const potmImage = document.getElementById(`potmImage${index}`);
+      if (potmImage) {
+        potmImage.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${player.image_path}`; 
+        potmImage.alt = `${player.first} ${player.last}`;
+      }
+      index++
+    });
+  } catch (err) {
+    console.error('Error fetching POTM data:', err);
+    showCustomAlert(`Error fetching POTM data. ${err}`, 5);
+  }
+}
 
 function SetupForAdmin(isAdmin) {
   const toEmailIndividual = document.getElementById('toEmailIndividual');
@@ -1434,9 +1505,9 @@ function SetupForAdmin(isAdmin) {
 }
 
 async function decide() {
-  [sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin] = await getSessionDetails()
+  [sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname] = await getSessionDetails()
   // Base the decision on global variables set during login or checks
-  console.log(sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin)
+  console.log(sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname)
   // Check if the session exists
   // const [sessionid,securelogin]= await isUserLoggedIn()
 
@@ -1451,22 +1522,141 @@ async function decide() {
     }
   }
 
+  let logindetails = ''
+  let logindetails2 = ``
   if (sessionId && casuallogin) {
-    showCustomAlert(`Note that you are logged in as ${username} but you are a casual visitor. You can only view the data.`, 10)
+    logindetails = `You are logged in as ${username} but you are a casual visitor. You can only view the data.`
+    logindetails2 = `${fullname} : As a casual visitor, you can only view the data.`
+    showCustomAlert(logindetails, 7)
   } else if (sessionId && insecurelogin) {
-    showCustomAlert(`Note that you are logged in as ${username} but you are using a password that is not secure. You can only view the data.`, 10)
+    logindetails = `You are logged in as ${username} but you are using a password that is not secure. You can only view the data.`
+    logindetails2 = `${fullname} : You are using a password that is not secure. You can only view the data.`
+    showCustomAlert(logindetails, 7)
   } else if (sessionId && securelogin && !isAdmin) {
-    showCustomAlert(`Note that you are securely logged in as ${username} and you can view data as well as edit your own data.`, 10)
+    logindetails = `Note that you are securely logged in as ${username} and you can view data as well as edit your own data.`
+    logindetails2 = `${fullname} : You are securely logged in and can view data as well as edit your own data.`
+    showCustomAlert(logindetails, 7)
   } else if (sessionId && securelogin && isAdmin) {
-    showCustomAlert(`Note that you are logged in as ${username}, an Admin, and can view and edit all data.`, 10)
+    logindetails = `Note that you are logged in as ${username}, an Admin, and can view and edit all data.`
+    logindetails2 = `${fullname} : You are logged in as an Admin and can view and edit all data.`
+    showCustomAlert(logindetails, 7)
   } else {
+    logindetails = `Note that you are not logged in. You must log in with the log-in details 
+    sent to you. Alternatively, you can log in by using your full name and phone number. 
+    If you are a member and have not received login details, please contact the club.`
+    logindetails2=logindetails
+    showCustomAlert(logindetails, 7)
     console.log("User is not logged in.");
   }
+  document.getElementById('loginresult').textContent = logindetails2;
 
 
   SetupForAdmin(isAdmin)
 
 }
 
+async function playing(day) {
+  const checkbox = document.getElementById(`playing${day}`);
+  const isChecked = checkbox.checked;
+  // Here you can send the isChecked value to the server or handle it as needed
+  try {
+    const res = await fetch('/api/setplayingintentions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ playerId:userid, day, intention: isChecked ? 1 : 0 })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log('Set playing intentions result:', result);
+    
+    //the following can cause a loop condition.
+    //await setPlayingIntentions() // Refresh the intentions from the server to ensure the UI is in sync with the server state
+  } catch (error) {
+    console.error('Error setting playing intentions:', error);
+  }
+}
+
+function closeplayingModal() {
+  const playingModal = document.getElementById('playingModal');
+  if (playingModal) {
+    playingModal.style.display = 'none';
+  }
+}
+
+function closestComingMonday(date) {
+  const day = date.getDay();
+  const diff = 7 - day;
+  return new Date(date.setDate(date.getDate() + diff));
+}
+
+function closestComingTuesday(date) {
+  const day = date.getDay();
+  const diff = 8 - day;
+  return new Date(date.setDate(date.getDate() + diff));
+}
+
+function closestComingFriday(date) {
+  const day = date.getDay();
+  const diff = 11 - day;
+  return new Date(date.setDate(date.getDate() + diff));
+}
+
+function closestComing4thSundayOfMonth(date) {
+  //based on current schedule of the unit game
+  const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  let firstSunday = new Date(firstDayOfMonth);
+  firstSunday.setDate(firstDayOfMonth.getDate() + ((7 - firstDayOfMonth.getDay()) % 7));
+  let fourthSunday = new Date(firstSunday);
+  fourthSunday.setDate(firstSunday.getDate() + 21);
+  if (fourthSunday < date) {
+    const firstDayOfNextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    firstSunday = new Date(firstDayOfNextMonth);
+    firstSunday.setDate(firstDayOfNextMonth.getDate() + ((7 - firstDayOfNextMonth.getDay()) % 7));
+    fourthSunday = new Date(firstSunday);
+    fourthSunday.setDate(firstSunday.getDate() + 21);
+  }
+  return fourthSunday;
+}
+
+async function displayPlayIntentions() {
+
+  const sessiondetails = await getSessionDetails() // Ensure we have the latest session details before proceeding
+
+  if (userid > 0) {
+    // Show playing intentions modal
+    const playingModal = document.getElementById('playingModal');
+    if (playingModal) {
+      playingModal.style.display = 'block';
+      const lblplayingm1 = document.getElementById('lblplayingm1');
+      lblplayingm1.innerText = `Mon. (${closestComingMonday(new Date()).toLocaleDateString()})`;
+      const lblplayingt1 = document.getElementById('lblplayingt1');
+      lblplayingt1.innerText = `Tue. (${closestComingTuesday(new Date()).toLocaleDateString()})`;
+      const lblplayingf1 = document.getElementById('lblplayingf1');
+      lblplayingf1.innerText = `Fri. (${closestComingFriday(new Date()).toLocaleDateString()})`;
+      const lblplayingug = document.getElementById('lblplayingug');
+      lblplayingug.innerText = `Sun. (${closestComing4thSundayOfMonth(new Date()).toLocaleDateString()})`;
+
+      await setPlayingIntentions() // Set the current value of the checkboxes based on the user's current intentions for those days
+    }
+  }
+}
+
+async function setPlayingIntentions() {
+  // we need to set the current value of the checkboxes based on the user's current intentions for those days, which we can get from the server
+  const res = await fetch(`/api/getplayingintentions/${userid}`, {
+    method: 'GET'
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const result = await res.json();
+  const intentions = result.intentions;
+  document.getElementById('playingm1').checked = (intentions.m1 == 1);
+  document.getElementById('playingt1').checked = (intentions.t1 == 1);
+  document.getElementById('playingf1').checked = (intentions.f1 == 1);
+  document.getElementById('playingug').checked = (intentions.ug == 1);
+}
+
 decide()
 
+displayPlayIntentions()

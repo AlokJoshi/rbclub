@@ -221,7 +221,8 @@ app.post('/login', async (req, res) => {
     req.session.username = username
     req.session.userid = userId
     req.session.isAdmin = admin
-    res.json({ userId, casuallogin: result.casuallogin, securelogin: result.securelogin, insecurelogin: !result.securelogin, isAdmin: admin, valid: true, message: result.message });
+    req.session.fullname = result.fullname
+    res.json({ userId, casuallogin: result.casuallogin, fullname: result.fullname, securelogin: result.securelogin, insecurelogin: !result.securelogin, isAdmin: admin, valid: true, message: result.message });
 });
 
 app.post('/addnewplayer', async (req, res) => {
@@ -489,8 +490,9 @@ app.get('/get-session-id', (req, res) => {
         const userid = req.session.userid;
         const isAdmin = req.session.isAdmin;
         const casuallogin = req.session.casuallogin;
-        console.log('Session ID:', sessionId);
-        res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin });
+        const full_name = req.session.fullname;
+        console.log('Session ID:', sessionId,securelogin,insecurelogin,username,userid,isAdmin,casuallogin,full_name);
+        res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname:full_name });
     } else {
         res.json({ message: 'No session found' });
     }
@@ -798,6 +800,66 @@ app.delete('/api/announcement/:id', (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }   
 });
+
+app.get('/api/getplayingintentions/:playerid', (req, res) => {
+    const playerId = req.params.playerid;
+    try {
+        const stmt = db.prepare('SELECT m1, t1, f1, ug FROM player WHERE id = ?;');
+        const result = stmt.get(playerId);
+        console.log('Playing intentions for player', playerId, result);
+        res.json({ success: true, intentions: result });
+    } catch (err) {
+        console.error('Error fetching playing intentions:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.post('/api/setplayingintentions', (req, res) => {
+    const { playerId, day, intention} = req.body;    
+    try {
+        const sql = `UPDATE player SET ${day} = ? WHERE id = ?;`;
+        const stmt = db.prepare(sql);
+        const result = stmt.run( intention, playerId);
+            
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Player not found' });
+        }
+        res.json({ success: true, message: 'Playing intentions updated successfully' });
+    } catch (err) {
+        console.error('Error updating playing intentions:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+app.post('/api/updatepotm', (req, res) => {
+    const { potmmonth,potmyear,playerid,potmplayerid } = req.body;
+    const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid) values(
+    ?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid =  ? 
+    where potmmonth = ? and potmyear =? and playerid = ?;`
+    try {
+        const stmt = db.prepare(sql);
+        stmt.run(potmmonth,potmyear,playerid,potmplayerid,potmplayerid,potmmonth,potmyear,playerid);
+        res.json({ success: true, message: 'Player of the Month updated successfully' });
+    } catch (err) {
+        console.error('Error updating Player of the Month:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}); 
+
+app.get('/api/getpotm/:potmmonth/:potmyear', (req, res) => {
+    const { potmmonth, potmyear } = req.params;
+    try {
+        const stmt = db.prepare(`SELECT player.id, player.first, player.last, player.image_path, 
+            count(player.id) as votes FROM player inner join potm on 
+            player.id = potm.potmplayerid WHERE potmmonth = ? AND potmyear = ? 
+            group by player.id, player.first, player.last, player.image_path order by votes desc LIMIT 3;`);
+        const potm = stmt.all(potmmonth, potmyear);
+        res.json({ success: true, potm });
+    } catch (err) {
+        console.error('Error fetching Player of the Month:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}); 
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

@@ -57,7 +57,7 @@ async function login(username, password) {
     const result = await bcrypt.compare(password, row.password);
     if (result) {
         console.log('Login successful! Passwords match.');
-        return { valid: true, id: row.id, securelogin, message: 'Login successful!' };
+        return { valid: true, id: row.id, securelogin, fullname: `${row.first} ${row.last}`, message: 'Login successful!' };
     } else {
         console.log('Invalid credentials. Passwords do not match.');
         return { valid: false, message: 'Invalid credentials' };
@@ -128,31 +128,10 @@ const register = (first, last, username) => {
 
 const registeredUsers = () => {
     try {
-        const stmt = db.prepare('SELECT first, last, username FROM player WHERE username IS NOT NULL;');
+        const stmt = db.prepare('SELECT id, first, last, username FROM player WHERE username IS NOT NULL order by last, first;');
         return stmt.all();
     } catch (err) {
         console.error('Error fetching registered users:', err);
-        return [];
-    }
-}
-
-async function getTwoNonPlayer() {
-    try {
-        // const pool = new Pool({ 
-        //     user: process.env.PG_USER,
-        //     host: process.env.PG_HOST,
-        //     database: process.env.PG_DATABASE,
-        //     password: process.env.PG_PASSWORD,
-        //     port: Number(process.env.PG_PORT) || 5432,
-        //     ssl: { rejectUnauthorized: false } // try if cloud requires SSL
-        // });
-        const pool = globalPool
-        const client = await pool.connect();
-        const result = await client.query(`SELECT first FROM nonplayer ORDER BY RANDOM() LIMIT 2;`);
-        client.release();
-        return result.rows;
-    } catch (err) {
-        console.error('Error fetching non-player users:', err);
         return [];
     }
 }
