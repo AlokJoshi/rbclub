@@ -21,7 +21,7 @@
 		<section class="announcements">
 			<header class="parent">
 				<div>
-					<i class="fas fa-bullhorn announcement-icon"  aria-hidden="true"></i>
+					<i class="fas fa-bullhorn announcement-icon" aria-hidden="true"></i>
 					<h2>Announcements</h2>
 				</div>
 				<div id="loginresult"></div>
@@ -63,8 +63,7 @@
 						</div>
 						<div class="field half">
 							<label for="displaytill">Display Till Date</label>
-							<input type="date" id="displaytill" name="displaytill"
-								placeholder="Display Till Date" required>
+							<input type="date" id="displaytill" name="displaytill" placeholder="Display Till Date" required>
 						</div>
 						<div class="field half">
 							<label for="priority">Priority</label>
@@ -72,17 +71,15 @@
 						</div>
 						<div class="field half wrap">
 							<div id="btnNewContainer" style="display:none">
-								<button type="button" onclick="addAnnouncement()"
-								class="button primary">Add Announcement</button>
+								<button type="button" onclick="addAnnouncement()" class="button primary">Add Announcement</button>
 							</div>
 							<div id="btnUpdateContainer" style="display:none">
-								<button type="button" onclick="updateAnnouncement()"
-								class="button primary">Update Announcement</button>
+								<button type="button" onclick="updateAnnouncement()" class="button primary">Update Announcement</button>
 							</div>
 						</div>
 						<div class="field half wrap">
 							<button id="cancelAnnouncement" type="button" onclick="CancelAnnouncement()"
-							class="button primary">Cancel</button>
+								class="button primary">Cancel</button>
 						</div>
 					</div>
 				</form>
@@ -456,39 +453,75 @@
 				<h2>Player of the Month</h2>
 			</header>
 			<div class="content">
-				<p>Vote for Player of the Month:</p>
 				<form action="">
 					<div class="fields">
-						<div class="field half">
-							<label for="potm">My vote for player of the Month:</label>
+						<div class="field full">
+							<label id="potmlabel" for="potm">My vote for player of the Month goes to:</label>
 							<select name="potm" id="potm" onchange="updatePOTM()">
 							</select>
 						</div>
-						<div class="field half">
-							<label for="commentonpotm"></label>
-							<textarea name="commentonpotm" id="commentonpotm" placeholder="Comment on your choice for Player of the Month"></textarea>
-						</div>
-						<h2>Top 3 Players</h2>
 						<div class="field full">
-							<div>
-								<img id="potmImage1" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
+							<label for="commentonpotm">Comment on your choice for Player of the Month</label>
+							<div id="commentonpotm">
+
 							</div>
-							<div>
-								<img id="potmImage2" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
-							</div>
-							<div>
-								<img id="potmImage3" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
+							<div style="display:grid;place-items:center;margin-top: 20px;">
+								<button class="button primary" type="button" style="margin-top: 30px;" onclick="clearAllPOTMCommentsInDatabase()">
+									Clear All Comments
+								</button>
 							</div>
 						</div>
-					</form>
-				</div>
-			
-			</div> <!-- content -->
-		</section>
+						<br>
+						<h2 id="potmheading" style="margin-top: 20px;">Players of the month</h2>
+						<div class="field full">
+							<div style = "border:5px solid #f0f0f0; padding: 10px;">
+								<h2 id="potmName1"></h2>
+								<img id="potmImage1" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
+								<h3 id="potmComment1"></h3>
+							</div>
+							<div style = "border:5px solid #f0f0f0; padding: 10px;">
+								<h2 id="potmName2"></h2>
+								<img id="potmImage2" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
+								<h3 id="potmComment2"></h3>
+							</div>
+							<div style = "border:5px solid #f0f0f0; padding: 10px;">
+								<h2 id="potmName3"></h2>
+								<img id="potmImage3" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
+								<h3 id="potmComment3"></h3>
+							</div>
+						</div>
+				</form>
+			</div>
 
-		<!-- Copyright -->
-		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
+	</div> <!-- content -->
+	</section>
+
+	<section>
+		<header>
+			<h2>Celebrations</h2>
+			<h3>Here we will display pictures of the members' birthdays and any other celebrations.</h3>
+		</header>
+		<div class="content">
+			<form action="">
+				<div class="fields">
+					<div class="field full">
+						<label for="celbrationname">Create a new celebration</label>
+						<input type="text" id="celbrationname" name="celbrationname" placeholder="Enter celebration name(e.g) January Birthdays, Christmas Party etc">
+					</div>
+					<div class="field full">
+						<button type="button" id="addcelebration" name="addcelebration" onclick="addCelebration()">
+							Add Celebration
+						</button>
+					</div>
+				</div>
+			</form>
+			<p>Details about upcoming events will be displayed here.</p>
 		</div>
+	</section>
+
+	<!-- Copyright -->
+	<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
+	</div>
 
 	</div>
 
@@ -704,30 +737,30 @@
 			<h2>Planning to Play?</h2>
 			<div class="fields">
 				<div class="field fourth">
-						<input type="checkbox" id="playingm1" onchange="playing('m1')">
-						<label id="lblplayingm1" for="playingm1">Monday</label>
+					<input type="checkbox" id="playingm1" onchange="playing('m1')">
+					<label id="lblplayingm1" for="playingm1">Monday</label>
 				</div>
 				<div class="field fourth">
-						<input type="checkbox" id="playingt1" onchange="playing('t1')">
-						<label id="lblplayingt1" for="playingt1">Tuesday</label>
+					<input type="checkbox" id="playingt1" onchange="playing('t1')">
+					<label id="lblplayingt1" for="playingt1">Tuesday</label>
 				</div>
 				<div class="field fourth">
-						<input type="checkbox" id="playingf1" onchange="playing('f1')">
-						<label id="lblplayingf1" for="playingf1">Friday</label>
+					<input type="checkbox" id="playingf1" onchange="playing('f1')">
+					<label id="lblplayingf1" for="playingf1">Friday</label>
 				</div>
 				<div class="field fourth">
-						<input type="checkbox" id="playingug" onchange="playing('ug')">
-						<label id="lblplayingug" for="playingug">Sunday</label>
+					<input type="checkbox" id="playingug" onchange="playing('ug')">
+					<label id="lblplayingug" for="playingug">Sunday</label>
 				</div>
 				<div class="field fourth">
-						<button id="closePlayingModalBtn" type="button" onclick="closePlayingModal()"
-							class="button primary">Close</button>
+					<button id="closePlayingModalBtn" type="button" onclick="closePlayingModal()"
+						class="button primary">Close</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	
+
 
 	<!-- The custom alert box container -->
 	<div id="customAlert" class="alert-container">

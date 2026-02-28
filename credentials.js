@@ -310,6 +310,15 @@ function addRecipientToMailingList(listId, playerId) {
         return {success: false, message: 'Error adding recipient'};
     }
 }
+function getPOTMWords() {
+    try {
+        const words = process.env.POTM_WORDS.split(',').map(word => word.trim());
+        return {success: true, words: words, message: 'POTM words fetched successfully'};
+    } catch (err) {
+        console.error('Error fetching POTM words:', err);
+        return {success: false, words: [], message: 'Error fetching POTM words'};
+    }
+}
 
 module.exports = {
     userExists,
@@ -332,5 +341,6 @@ module.exports = {
     getMailingListRecipients,
     getNonMailingListRecipients,
     addRecipientToMailingList,
-    formatDateToYYYYMMDD
+    formatDateToYYYYMMDD,
+    getPOTMWords
 }

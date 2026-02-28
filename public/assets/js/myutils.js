@@ -1419,9 +1419,41 @@ document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
 document.addEventListener('DOMContentLoaded', PopulateEmailList);
 document.addEventListener('DOMContentLoaded', PopulateMailingLists);
 document.addEventListener('DOMContentLoaded', PopulateAnnouncements);
-document.addEventListener('DOMContentLoaded', PopulatePOTMContenders);
+document.addEventListener('DOMContentLoaded', PopulatePOTMForm);      //needs to be only once
+document.addEventListener('DOMContentLoaded', displayPOTM);
 
-async function PopulatePOTMContenders() {
+async function clearAllPOTMCommentsInDatabase() {
+  const potmmonth = new Date().getMonth()+1; // Current month
+  const potmyear = new Date().getFullYear(); // Current year
+  const playerid = userid;
+
+  try {
+    const res = await fetch(`/api/clearpotmcomments/${potmmonth}/${potmyear}/${playerid}`, {
+      method: 'POST',
+    });
+    console.log('All POTM comments cleared from the database.');
+  } catch (err) {
+    console.error('Error clearing POTM comments:', err);
+  }
+
+  resetPhraseBackgrounds()
+}
+
+function resetPhraseBackgrounds() {
+  document.querySelectorAll('.phrase').forEach(phraseDiv => {
+    phraseDiv.style.backgroundColor = ''; // Reset background color
+  });
+}
+
+
+async function PopulatePOTMForm() {
+  const potm_month = new Date().getMonth(); // Current month
+  const potmmonth = new Date(new Date().getFullYear(), potm_month, 1).toLocaleString('default', { month: 'long' });
+  const potmyear = new Date().getFullYear(); // Current year
+  const potmlabel = document.getElementById('potmlabel');
+  if(potmlabel){
+    potmlabel.textContent = `My vote for Player of the Month for ${potmmonth} ${potmyear} goes to:`;
+  }
   try {
     const res = await fetch('/api/registeredusers', {
       method: 'GET'
@@ -1433,12 +1465,49 @@ async function PopulatePOTMContenders() {
     if (!selectPOTM) return console.warn('Select element #potm not found');
     let innerHTML = '<option value="">None</option>';
     data.users.forEach(user => {
-      if(user.username !== username){ // Exclude current user from the list to prevent self-selection as POTM
+      if (user.username !== username) { // Exclude current user from the list to prevent self-selection as POTM
         innerHTML += `<option value="${user.id}">${user.first} ${user.last}</option>`;
       }
     });
     selectPOTM.innerHTML = innerHTML;
 
+    const commentPOTM = document.getElementById('commentonpotm');
+    if (!commentPOTM) return console.warn('Div element #commentonpotm not found');
+    commentPOTM.innerHTML = '';
+    const resWords = await fetch('/api/getpotmwords', {
+      method: 'GET'
+    });
+    if (!resWords.ok) throw new Error(`HTTP ${resWords.status}`);
+    const dataWords = await resWords.json();
+    // Process the data and populate the POTM modal
+    const words = dataWords.words;
+    words.forEach(word => {
+      const phraseDiv = document.createElement('div');
+      phraseDiv.className = 'phrase';
+      phraseDiv.textContent = word;
+      phraseDiv.onclick = async (event) => {
+        phraseDiv.style.backgroundColor = '#d3d3d3'; // Highlight the selected phrase
+        const phrase = event.target.textContent.trim();
+        console.log(`Clicked phrase: ${phrase}`);
+        // send this to a backend
+        const potmplayerid = document.getElementById('potm').value;
+        if (!potmplayerid) {
+          showCustomAlert('Please first select a player for Player of the Month.', 5);
+          return;
+        }
+        const potmmonth = new Date().getMonth() + 1; // Current month
+        const potmyear = new Date().getFullYear(); // Current year
+        await fetch('/api/savephrase', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ playerid:userid, potmplayerid, potmmonth, potmyear, potmphrase: phrase }),
+        });
+        console.log(`Phrase \'${phrase}\' saved to database!`);
+      };
+      commentPOTM.appendChild(phraseDiv);
+    });
   } catch (err) {
     console.error('Error fetching POTM data:', err);
     showCustomAlert(`Error fetching POTM data. ${err}`, 5);
@@ -1455,7 +1524,7 @@ async function updatePOTM() {
     const res = await fetch('/api/updatepotm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ potmmonth, potmyear, playerid:userid, potmplayerid })
+      body: JSON.stringify({ potmmonth, potmyear, playerid: userid, potmplayerid })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
@@ -1482,12 +1551,24 @@ async function displayPOTM() {
     const data = await res.json();
     // The data displays an array of 0 to 3 players
     // each object in that array has first, last, and image_path properties
+    const potmheading = document.getElementById('potmheading');
+    if (potmheading) {
+      potmheading.textContent = `Players of the Month for ${potmmonth}/${potmyear}`;
+    }
     let index = 1;
     data.potm.forEach(player => {
+      const potmName = document.getElementById(`potmName${index}`);
+      if (potmName) {
+        potmName.textContent = `${player.first} ${player.last}`;
+      } 
       const potmImage = document.getElementById(`potmImage${index}`);
       if (potmImage) {
-        potmImage.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${player.image_path}`; 
+        potmImage.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${player.image_path}`;
         potmImage.alt = `${player.first} ${player.last}`;
+      }
+      const potmComment = document.getElementById(`potmComment${index}`);
+      if (potmComment) {
+        potmComment.textContent = player.comments_concat;
       }
       index++
     });
@@ -1544,7 +1625,7 @@ async function decide() {
     logindetails = `Note that you are not logged in. You must log in with the log-in details 
     sent to you. Alternatively, you can log in by using your full name and phone number. 
     If you are a member and have not received login details, please contact the club.`
-    logindetails2=logindetails
+    logindetails2 = logindetails
     showCustomAlert(logindetails, 7)
     console.log("User is not logged in.");
   }
@@ -1565,12 +1646,12 @@ async function playing(day) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ playerId:userid, day, intention: isChecked ? 1 : 0 })
+      body: JSON.stringify({ playerId: userid, day, intention: isChecked ? 1 : 0 })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log('Set playing intentions result:', result);
-    
+
     //the following can cause a loop condition.
     //await setPlayingIntentions() // Refresh the intentions from the server to ensure the UI is in sync with the server state
   } catch (error) {

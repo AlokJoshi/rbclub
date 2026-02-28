@@ -10,16 +10,6 @@ const { sendSimpleEmail } = require('./mailgun');
 // sendTestSMS();
 // sendSimpleEmail();
 
-
-// console.log('Environment variables:', {
-//     EMAIL_HOST: process.env.EMAIL_HOST,
-//     EMAIL_PORT: process.env.EMAIL_PORT,
-//     EMAIL_USER: process.env.EMAIL_USER ? '***' : undefined,
-//     EMAIL_PASSWORD: process.env.EMAIL_PASSWORD ? '***' : undefined,
-//     SESSION_SECRET: process.env.SESSION_SECRET ? '***' : undefined,
-//     NODE_ENV: process.env.NODE_ENV
-// });
-
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const express = require('express');
@@ -49,7 +39,8 @@ const { userExists, addUser, login, changePassword,
     deleteMailingList, createMailingList, existsMailingList,
     updateMailingList, getMailingListRecipients, isPlayer,
     saveGuestInquiry, getNonMailingListRecipients,
-    addRecipientToMailingList, formatDateToYYYYMMDD } = require('./credentials')
+    addRecipientToMailingList, formatDateToYYYYMMDD,
+    getPOTMWords } = require('./credentials')
 
 
 
@@ -830,11 +821,12 @@ app.post('/api/setplayingintentions', (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+
 app.post('/api/updatepotm', (req, res) => {
     const { potmmonth,potmyear,playerid,potmplayerid } = req.body;
     const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid) values(
-    ?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid =  ? 
-    where potmmonth = ? and potmyear =? and playerid = ?;`
+    ?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid = ?,
+    comment = '' where potmmonth = ? and potmyear =? and playerid = ?;`
     try {
         const stmt = db.prepare(sql);
         stmt.run(potmmonth,potmyear,playerid,potmplayerid,potmplayerid,potmmonth,potmyear,playerid);
@@ -848,8 +840,16 @@ app.post('/api/updatepotm', (req, res) => {
 app.get('/api/getpotm/:potmmonth/:potmyear', (req, res) => {
     const { potmmonth, potmyear } = req.params;
     try {
+        // const stmt = db.prepare(`SELECT player.id, player.first, player.last, player.image_path, 
+            // count(player.id) as votes, 
+            // json_group_array(potm.comment) AS comments_json
+            // FROM player inner join potm on 
+            // player.id = potm.potmplayerid WHERE potmmonth = ? AND potmyear = ? 
+            // group by player.id, player.first, player.last, player.image_path order by votes desc LIMIT 3;`);
         const stmt = db.prepare(`SELECT player.id, player.first, player.last, player.image_path, 
-            count(player.id) as votes FROM player inner join potm on 
+            count(player.id) as votes, 
+            group_concat(potm.comment, ' | ') AS comments_concat
+            FROM player inner join potm on 
             player.id = potm.potmplayerid WHERE potmmonth = ? AND potmyear = ? 
             group by player.id, player.first, player.last, player.image_path order by votes desc LIMIT 3;`);
         const potm = stmt.all(potmmonth, potmyear);
@@ -860,6 +860,47 @@ app.get('/api/getpotm/:potmmonth/:potmyear', (req, res) => {
     }
 }); 
 
+app.get('/api/getpotmwords', (req, res) => {
+    try {
+        const result = getPOTMWords();
+        res.json(result);
+    } catch (err) {
+        console.error('Error fetching POTM words:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.post('/api/savephrase', (req, res) => {
+    const { playerid, potmplayerid, potmmonth, potmyear, potmphrase } = req.body;
+    try {
+        const stmt1 = db.prepare('SELECT comment FROM potm WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
+        const existing = stmt1.get(playerid, potmplayerid, potmmonth, potmyear);
+        if (existing) {
+            const updatedPhrase = (existing.comment === ''|| existing.comment == null) ? potmphrase : `${existing.comment},${potmphrase}`;
+            const stmt = db.prepare('UPDATE potm SET comment = ? WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
+            stmt.run(updatedPhrase, playerid, potmplayerid, potmmonth, potmyear);
+        } else {
+            const stmt = db.prepare('INSERT INTO potm (playerid, potmplayerid, potmmonth, potmyear, comment) VALUES (?, ?, ?, ?, ?)');
+            stmt.run(playerid, potmplayerid, potmmonth, potmyear, potmphrase);
+        }
+        res.json({ success: true, message: 'Phrase saved successfully' });
+    } catch (err) {
+        console.error('Error saving phrase:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.post('/api/clearpotmcomments/:potmmonth/:potmyear/:playerid', (req, res) => {
+    const { potmmonth, potmyear, playerid } = req.params;
+    try {
+        const stmt = db.prepare('UPDATE potm SET comment = \'\' WHERE playerid = ? AND potmmonth = ? AND potmyear = ?');
+        stmt.run(playerid, potmmonth, potmyear);
+        res.json({ success: true, message: 'POTM comments cleared successfully' });
+    } catch (err) {
+        console.error('Error clearing POTM comments:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
