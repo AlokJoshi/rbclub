@@ -303,7 +303,95 @@ function DisableSubmitButton(disable) {
   const btn = document.getElementById('submitPlayerChangesButton');
   if (btn) btn.disabled = disable;
 }
+async function addCelebration() {
+  const cn = document.getElementById('celebrationname');
+  if (!cn?.value?.trim()) {
+    alert('Please enter a celebration name');
+    return;
+  }
+  const cdate = document.getElementById('celebrationdate');
+  if (!cdate?.value) {
+    alert('Please enter a celebration date');
+    return;
+  }
+  const cd = document.getElementById('celebrationdescription');
+  if (!cd) {
+    alert('Celebration description element not found');
+    return;
+  }
+  const res = await fetch('/api/celebration', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(
+      {
+        createdByPlayerId: userid,
+        celebrationDate: cdate.value,
+        celebrationName: cn.value,
+        celebrationDescription: cd.value
+      }
+    )
+  });
+  if (!res.ok) {
+    const result = await res.json();
+    showCustomAlert(`Failed to add celebration: ${result.message}`, 5);
+  } else {
+    //res returns the celebration id
+    const result = await res.json();
+    if (result.success) {
+      const celebrationid = result.celebrationid;
+      const imageForm = document.getElementById('celebrationImageForm');
+      imageForm.dataset.celebrationid = celebrationid;
+      showCustomAlert('Celebration added successfully. Now add pictures one at a time', 5);
+    } else {
+      showCustomAlert('Failed to add celebration: ' + result.message, 5);
+    }
+  }
+}
 
+// async function uploadCelebrationImage() {
+//   const form = document.getElementById('celebrationImageForm');
+//   const fileInput = document.getElementById('celebrationImageInput');
+//   const celebrationid = form.dataset.celebrationid;
+//   const formData = new FormData(form);
+//   formData.append('celebrationid', celebrationid);
+//   formData.set('playerImage', fileInput.files[0]);
+//   const response = await fetch('/api/celebration/image', {
+//     method: 'POST',
+//     body: formData
+//   });
+//   if (response.ok) {
+//     showCustomAlert('Image uploaded successfully',3);
+//   } else {
+//     const result = await response.json().catch(() => ({}));
+//     showCustomAlert('Failed to upload image',3);
+//   }
+// }
+async function uploadCelebrationImage() {
+  const form = document.getElementById('celebrationImageForm');
+  const fileInput = document.getElementById('celebrationImageInput');
+  const celebrationid = form?.dataset?.celebrationid;
+
+  if (!celebrationid) return alert('Missing celebration id');
+  if (!fileInput?.files?.[0]) return alert('Select an image first');
+
+  const formData = new FormData();
+  formData.set('celebrationid', celebrationid);
+  formData.set('playerImage', fileInput.files[0]); // one file field only
+
+  const response = await fetch('/api/celebration/image', {
+    method: 'POST',
+    body: formData
+  });
+
+  if (response.ok) {
+    const result = await response.json();
+    console.log('Upload result:', result);
+    alert('Image uploaded successfully');
+  } else {
+    const result = await response.json().catch(() => ({}));
+    alert(result.message || 'Failed to upload image');
+  }
+}
 async function SubmitChanges() {
   const playerId = document.getElementById('playerId').value;
   // Build FormData for multipart upload (includes file if selected)
@@ -1423,7 +1511,7 @@ document.addEventListener('DOMContentLoaded', PopulatePOTMForm);      //needs to
 document.addEventListener('DOMContentLoaded', displayPOTM);
 
 async function clearAllPOTMCommentsInDatabase() {
-  const potmmonth = new Date().getMonth()+1; // Current month
+  const potmmonth = new Date().getMonth() + 1; // Current month
   const potmyear = new Date().getFullYear(); // Current year
   const playerid = userid;
 
@@ -1451,7 +1539,7 @@ async function PopulatePOTMForm() {
   const potmmonth = new Date(new Date().getFullYear(), potm_month, 1).toLocaleString('default', { month: 'long' });
   const potmyear = new Date().getFullYear(); // Current year
   const potmlabel = document.getElementById('potmlabel');
-  if(potmlabel){
+  if (potmlabel) {
     potmlabel.textContent = `My vote for Player of the Month for ${potmmonth} ${potmyear} goes to:`;
   }
   try {
@@ -1502,7 +1590,7 @@ async function PopulatePOTMForm() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ playerid:userid, potmplayerid, potmmonth, potmyear, potmphrase: phrase }),
+          body: JSON.stringify({ playerid: userid, potmplayerid, potmmonth, potmyear, potmphrase: phrase }),
         });
         console.log(`Phrase \'${phrase}\' saved to database!`);
       };
@@ -1560,7 +1648,7 @@ async function displayPOTM() {
       const potmName = document.getElementById(`potmName${index}`);
       if (potmName) {
         potmName.textContent = `${player.first} ${player.last}`;
-      } 
+      }
       const potmImage = document.getElementById(`potmImage${index}`);
       if (potmImage) {
         potmImage.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${player.image_path}`;

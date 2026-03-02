@@ -32,8 +32,10 @@ const transporter = nodemailer.createTransport({
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const { upload } = require('./helper');
-const { userExists, addUser, login, changePassword,
+
+const { avtarUpload, celebrationUpload, celebrationMultiUpload } = require('./helper');
+
+const { userExists, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
     passwordMatches, getMailingListAddresses, getMailingLists,
     deleteMailingList, createMailingList, existsMailingList,
@@ -280,22 +282,7 @@ app.post('/isadmin', async (req, res) => {
     res.json({ isAdmin: isAdminFlag });
 });
 
-//add user route should be available only to superuser or admin in real application
-//this is because anyone can hit this endpoint and create users whereas
-//in this application, list of users are pre-defined (members of the bridge club)
-// app.post('/adduser', async (req, res) => {
-//     const { username, password } = req.body;
-//     const userExistsFlag = await userExists(username);
-//     if (userExistsFlag) {
-//         return res.status(400).json({ success: false, message: 'User already exists' });
-//     }
-//     const success = await addUser(username, password);
-//     if (success) {
-//         res.json({ success: true, message: 'User added successfully' });
-//     } else {
-//         res.status(500).json({ success: false, message: 'Failed to add user' });
-//     }
-// });
+
 app.get('/api/directorsdata', (req, res) => {
     try {
         const stmt = db.prepare('SELECT first,last,phone,email FROM player where director=1 order by last;');
@@ -319,7 +306,7 @@ app.get('/api/officersdata', (req, res) => {
 });
 
 app.get('/api/playerdata', (req, res) => {
-    
+
     try {
         const stmt = db.prepare(
             `SELECT id,image_path,first,last,email,phone,
@@ -391,7 +378,7 @@ app.put('/getdefaultlogincredentials', async (req, res) => {
 });
 
 // Accept multipart/form-data with optional file field 'playerImage' for updates
-app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) => {
+app.put('/api/playerdata/:id', avtarUpload.single('playerImage'), async (req, res) => {
     const playerId = req.params.id;
     const data = req.body;
     console.log('Updating player:', playerId, { body: data, file: req.file?.filename });
@@ -419,17 +406,6 @@ app.put('/api/playerdata/:id', upload.single('playerImage'), async (req, res) =>
             (data.isDirector === true || data.isDirector === 'true' || data.isDirector === 'on') ? 1 : 0,
             (!data.officerPosition || data.officerPosition === 'None') ? null : data.officerPosition,
             playerId);
-
-        // If a file was uploaded, try to update the row with an image_path.
-        // if (req.file) {
-        //     const imagePath = req.newFileName;
-        //     try {
-        //         // db.prepare('UPDATE player SET image_path = ? WHERE id = ?;').run(imagePath, playerId);
-        //         result.rows[0].image_path = imagePath;
-        //     } catch (e) {
-        //         console.warn('Could not persist image_path to DB (column may not exist):', e.message);
-        //     }
-        // }
 
         res.json(result);
     } catch (err) {
@@ -482,8 +458,8 @@ app.get('/get-session-id', (req, res) => {
         const isAdmin = req.session.isAdmin;
         const casuallogin = req.session.casuallogin;
         const full_name = req.session.fullname;
-        console.log('Session ID:', sessionId,securelogin,insecurelogin,username,userid,isAdmin,casuallogin,full_name);
-        res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname:full_name });
+        console.log('Session ID:', sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, full_name);
+        res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname: full_name });
     } else {
         res.json({ message: 'No session found' });
     }
@@ -751,7 +727,7 @@ app.get('/api/announcements', (req, res) => {
 });
 app.put('/api/announcement/:id', (req, res) => {
     const announcementId = req.params.id;
-    const { title, announcement, playerid, displaytill, priority } = req.body;  
+    const { title, announcement, playerid, displaytill, priority } = req.body;
     try {
         const stmt = db.prepare('UPDATE announcement SET title = ?, announcement = ?, playerid = ?, displaytill = ?, priority = ? WHERE id = ?;');
         const result = stmt.run(title, announcement, playerid, displaytill, priority, announcementId);
@@ -780,7 +756,7 @@ app.post('/api/announcement', (req, res) => {
 app.delete('/api/announcement/:id', (req, res) => {
     const announcementId = req.params.id;
     try {
-        const stmt = db.prepare('UPDATE announcement SET del = 1 WHERE id = ?;');   
+        const stmt = db.prepare('UPDATE announcement SET del = 1 WHERE id = ?;');
         const result = stmt.run(announcementId);
         if (result.changes === 0) {
             return res.status(404).json({ success: false, message: 'Announcement not found' });
@@ -789,7 +765,7 @@ app.delete('/api/announcement/:id', (req, res) => {
     } catch (err) {
         console.error('Error deleting announcement:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
-    }   
+    }
 });
 
 app.get('/api/getplayingintentions/:playerid', (req, res) => {
@@ -806,12 +782,12 @@ app.get('/api/getplayingintentions/:playerid', (req, res) => {
 });
 
 app.post('/api/setplayingintentions', (req, res) => {
-    const { playerId, day, intention} = req.body;    
+    const { playerId, day, intention } = req.body;
     try {
         const sql = `UPDATE player SET ${day} = ? WHERE id = ?;`;
         const stmt = db.prepare(sql);
-        const result = stmt.run( intention, playerId);
-            
+        const result = stmt.run(intention, playerId);
+
         if (result.changes === 0) {
             return res.status(404).json({ success: false, message: 'Player not found' });
         }
@@ -823,29 +799,29 @@ app.post('/api/setplayingintentions', (req, res) => {
 });
 
 app.post('/api/updatepotm', (req, res) => {
-    const { potmmonth,potmyear,playerid,potmplayerid } = req.body;
+    const { potmmonth, potmyear, playerid, potmplayerid } = req.body;
     const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid) values(
     ?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid = ?,
     comment = '' where potmmonth = ? and potmyear =? and playerid = ?;`
     try {
         const stmt = db.prepare(sql);
-        stmt.run(potmmonth,potmyear,playerid,potmplayerid,potmplayerid,potmmonth,potmyear,playerid);
+        stmt.run(potmmonth, potmyear, playerid, potmplayerid, potmplayerid, potmmonth, potmyear, playerid);
         res.json({ success: true, message: 'Player of the Month updated successfully' });
     } catch (err) {
         console.error('Error updating Player of the Month:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}); 
+});
 
 app.get('/api/getpotm/:potmmonth/:potmyear', (req, res) => {
     const { potmmonth, potmyear } = req.params;
     try {
         // const stmt = db.prepare(`SELECT player.id, player.first, player.last, player.image_path, 
-            // count(player.id) as votes, 
-            // json_group_array(potm.comment) AS comments_json
-            // FROM player inner join potm on 
-            // player.id = potm.potmplayerid WHERE potmmonth = ? AND potmyear = ? 
-            // group by player.id, player.first, player.last, player.image_path order by votes desc LIMIT 3;`);
+        // count(player.id) as votes, 
+        // json_group_array(potm.comment) AS comments_json
+        // FROM player inner join potm on 
+        // player.id = potm.potmplayerid WHERE potmmonth = ? AND potmyear = ? 
+        // group by player.id, player.first, player.last, player.image_path order by votes desc LIMIT 3;`);
         const stmt = db.prepare(`SELECT player.id, player.first, player.last, player.image_path, 
             count(player.id) as votes, 
             group_concat(potm.comment, ' | ') AS comments_concat
@@ -858,7 +834,7 @@ app.get('/api/getpotm/:potmmonth/:potmyear', (req, res) => {
         console.error('Error fetching Player of the Month:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}); 
+});
 
 app.get('/api/getpotmwords', (req, res) => {
     try {
@@ -876,7 +852,7 @@ app.post('/api/savephrase', (req, res) => {
         const stmt1 = db.prepare('SELECT comment FROM potm WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
         const existing = stmt1.get(playerid, potmplayerid, potmmonth, potmyear);
         if (existing) {
-            const updatedPhrase = (existing.comment === ''|| existing.comment == null) ? potmphrase : `${existing.comment},${potmphrase}`;
+            const updatedPhrase = (existing.comment === '' || existing.comment == null) ? potmphrase : `${existing.comment},${potmphrase}`;
             const stmt = db.prepare('UPDATE potm SET comment = ? WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
             stmt.run(updatedPhrase, playerid, potmplayerid, potmmonth, potmyear);
         } else {
@@ -900,6 +876,105 @@ app.post('/api/clearpotmcomments/:potmmonth/:potmyear/:playerid', (req, res) => 
         console.error('Error clearing POTM comments:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
+});
+
+app.post('/api/celebration', (req, res) => {
+    const { createdByPlayerId, celebrationName, celebrationDate, celebrationDescription } = req.body;
+    try {
+        const stmt = db.prepare('INSERT INTO celebration (createdbyplayerid,celebrationname,celebrationdate, celebrationdescription) VALUES (?, ?, ?, ?)');
+        const result = stmt.run(createdByPlayerId, celebrationName, celebrationDate, celebrationDescription);
+        res.json({ success: true, celebrationid: result.lastInsertRowid, message: 'Celebration added successfully' });
+    } catch (err) {
+        console.error('Error adding celebration:', err);
+        if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            res.status(400).json({ success: false, message: 'Celebration with the same name already exists' });
+        } else {
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    }
+});
+
+//using the version suggested by GPT
+// app.post('/api/celebration/image',celebrationUpload.single('playerImage'), (req, res) => {
+//     const { celebrationid } = req.body;
+//     try {
+//         const image_path = req.newfilename;
+//         const stmt = db.prepare('insert into celebrationimages (celebrationid, image_path) VALUES (?, ?)');
+//         stmt.run(celebrationid, image_path);
+//         res.json({ success: true, message: 'Image uploaded successfully' });
+//     } catch (err) {
+//         console.error('Error uploading image:', err);
+//         res.status(500).json({ success: false, message: 'Internal server error' });
+//     }
+// });
+app.post('/api/celebration/image', (req, res, next) => {
+    celebrationUpload.single('playerImage')(req, res, (err) => {
+        if (err) {
+            console.error('Multer failed:', err);
+            if (err instanceof multer.MulterError) {
+                return res.status(400).json({ success: false, message: err.message });
+            }
+            return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+        }
+        next();
+    });
+}, (req, res) => {
+    console.log('body:', req.body);
+    console.log('file:', req.file);
+    console.log('location:', req.file.key);
+
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file received (playerImage)' });
+    }
+    
+    try {
+        const { celebrationid } = req.body;
+        const image_path = req.newFileName;
+        const stmt = db.prepare('insert into celebrationimages (celebrationid, image_path) VALUES (?, ?)');
+        stmt.run(celebrationid, image_path);
+        res.json({ success: true, message: 'Image uploaded successfully' });
+    } catch (err) {
+        console.error('Error uploading image:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+
+});
+
+app.post('/api/celebration/images', (req, res, next) => {
+  celebrationMultiUpload.array('celebrationImages', 10)(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+    }
+    next();
+  });
+}, (req, res) => {
+  try {
+    const { celebrationid } = req.body;
+
+    if (!celebrationid) {
+      return res.status(400).json({ success: false, message: 'celebrationid is required' });
+    }
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'No files uploaded' });
+    }
+
+    const stmt = db.prepare('INSERT INTO celebrationimages (celebrationid, image_path) VALUES (?, ?)');
+    for (const file of req.files) {
+      stmt.run(celebrationid, file.key || file.location || file.filename);
+    }
+
+    res.json({
+      success: true,
+      count: req.files.length,
+      files: req.files.map(f => ({ key: f.key, url: f.location }))
+    });
+  } catch (err) {
+    console.error('Error uploading celebration images:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 });
 
 app.listen(PORT, () => {

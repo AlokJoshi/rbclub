@@ -466,7 +466,8 @@
 
 							</div>
 							<div style="display:grid;place-items:center;margin-top: 20px;">
-								<button class="button primary" type="button" style="margin-top: 30px;" onclick="clearAllPOTMCommentsInDatabase()">
+								<button class="button primary" type="button" style="margin-top: 30px;"
+									onclick="clearAllPOTMCommentsInDatabase()">
 									Clear All Comments
 								</button>
 							</div>
@@ -474,17 +475,17 @@
 						<br>
 						<h2 id="potmheading" style="margin-top: 20px;">Players of the month</h2>
 						<div class="field full">
-							<div style = "border:5px solid #f0f0f0; padding: 10px;">
+							<div style="border:5px solid #f0f0f0; padding: 10px;">
 								<h2 id="potmName1"></h2>
 								<img id="potmImage1" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
 								<h3 id="potmComment1"></h3>
 							</div>
-							<div style = "border:5px solid #f0f0f0; padding: 10px;">
+							<div style="border:5px solid #f0f0f0; padding: 10px;">
 								<h2 id="potmName2"></h2>
 								<img id="potmImage2" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
 								<h3 id="potmComment2"></h3>
 							</div>
-							<div style = "border:5px solid #f0f0f0; padding: 10px;">
+							<div style="border:5px solid #f0f0f0; padding: 10px;">
 								<h2 id="potmName3"></h2>
 								<img id="potmImage3" style="width:50vw;height:50vh;" src="" alt="Player of the Month">
 								<h3 id="potmComment3"></h3>
@@ -502,11 +503,22 @@
 			<h3>Here we will display pictures of the members' birthdays and any other celebrations.</h3>
 		</header>
 		<div class="content">
-			<form action="">
+			<form id="celebrationForm" action="">
 				<div class="fields">
+					<div class="field half">
+						<label for="celebrationname">Create a new celebration</label>
+						<input type="text" id="celebrationname" name="celebrationname"
+							placeholder="Enter celebration name(e.g) January Birthdays, Christmas Party etc">
+					</div>
+					<div class="field half">
+						<label for="celebrationdate">Celebration Date</label>
+						<input type="date" id="celebrationdate" name="celebrationdate"
+							placeholder="Enter celebration date">
+					</div>
 					<div class="field full">
-						<label for="celbrationname">Create a new celebration</label>
-						<input type="text" id="celbrationname" name="celbrationname" placeholder="Enter celebration name(e.g) January Birthdays, Christmas Party etc">
+						<label for="celebrationdescription">Description</label>
+						<input type="text" id="celebrationdescription" name="celebrationdescription"
+							placeholder="Enter celebration description">
 					</div>
 					<div class="field full">
 						<button type="button" id="addcelebration" name="addcelebration" onclick="addCelebration()">
@@ -515,7 +527,24 @@
 					</div>
 				</div>
 			</form>
-			<p>Details about upcoming events will be displayed here.</p>
+			<form action="" id="celebrationImageForm"">
+				<div class="fields">
+					<div class="field full">
+						<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
+						<input type="file" id="celebrationImageInput" name="celebrationImageInput" accept="image/*">
+					</div>
+					<div class="field full">
+						<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
+							onclick="uploadCelebrationImage()">
+							Upload Image
+						</button>
+					</div>
+				</div>
+			</form>
+			<p>Photos:</p> <!-- Display uploaded celebration photos here -->
+			<div id="celebrationPhotos">// call displayCelebrationPhotos() to populate this div
+
+			</div>
 		</div>
 	</section>
 
