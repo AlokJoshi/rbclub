@@ -531,7 +531,7 @@
 				<div class="fields">
 					<div class="field full">
 						<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
-						<input type="file" id="celebrationImageInput" name="celebrationImageInput" accept="image/*">
+						<input type="file" id="celebrationImageInput" name="celebrationImageInput" accept="image/*" multiple required>
 					</div>
 					<div class="field full">
 						<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
@@ -541,6 +541,9 @@
 					</div>
 				</div>
 			</form>
+			<label for="officerPosition">Select a Celebration:</label>
+			<select id="celebrations" name="celebrations">
+			</select>
 			<p>Photos:</p> <!-- Display uploaded celebration photos here -->
 			<div id="celebrationPhotos">// call displayCelebrationPhotos() to populate this div
 

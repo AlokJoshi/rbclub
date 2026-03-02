@@ -376,9 +376,12 @@ async function uploadCelebrationImage() {
 
   const formData = new FormData();
   formData.set('celebrationid', celebrationid);
-  formData.set('playerImage', fileInput.files[0]); // one file field only
+  for (const file of fileInput.files) {
+    formData.append('celebrationImages', file);
+  }
+  // formData.set('playerImage', fileInput.files); // now we are uploading multiple files
 
-  const response = await fetch('/api/celebration/image', {
+  const response = await fetch('/api/celebration/images', {
     method: 'POST',
     body: formData
   });
@@ -386,12 +389,38 @@ async function uploadCelebrationImage() {
   if (response.ok) {
     const result = await response.json();
     console.log('Upload result:', result);
-    alert('Image uploaded successfully');
+    showCustomAlert('Image uploaded successfully', 3);
+    displayCelebrationPhotos(celebrationid);
   } else {
     const result = await response.json().catch(() => ({}));
-    alert(result.message || 'Failed to upload image');
+    showCustomAlert(result.message || 'Failed to upload image', 3);
   }
 }
+
+async function displayCelebrationPhotos(celbrationid) {
+  try{
+    const response = await fetch(`/api/celebration/${celebrationid}/images`, {
+      method: 'GET'
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const result = await response.json();
+    const container = document.getElementById('celebrationPhotos');
+    container.innerHTML = '';
+    for (const img of result) {
+      const imgEl = document.createElement('img');
+      imgEl.src = img.url;
+      imgEl.alt = img.description || 'Celebration photo';
+      imgEl.style.maxWidth = '200px';
+      imgEl.style.margin = '5px';
+      container.appendChild(imgEl);
+    }
+    console.log('Celebration photos:', result);
+  } catch (err) {
+    console.error('Error fetching celebration photos:', err);
+  }
+}
+
+
 async function SubmitChanges() {
   const playerId = document.getElementById('playerId').value;
   // Build FormData for multipart upload (includes file if selected)
