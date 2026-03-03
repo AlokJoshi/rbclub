@@ -885,6 +885,17 @@ app.post('/api/clearpotmcomments/:potmmonth/:potmyear/:playerid', (req, res) => 
     }
 });
 
+app.get('/api/celebrations', (req, res) => {
+    try {
+        const stmt = db.prepare('SELECT * FROM celebration where archive = 0');
+        const celebrations = stmt.all();
+        res.json({ success: true, celebrations });
+    } catch (err) {
+        console.error('Error fetching celebrations:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
 app.post('/api/celebration', (req, res) => {
     const { createdByPlayerId, celebrationName, celebrationDate, celebrationDescription } = req.body;
     try {
@@ -900,6 +911,31 @@ app.post('/api/celebration', (req, res) => {
         }
     }
 });
+
+app.delete('/api/celebration/:celebrationid', (req, res) => {
+    const { celebrationid } = req.params;
+    try {
+        const stmt = db.prepare('Update celebration SET archive = 1 WHERE celebrationid = ?');
+        stmt.run(celebrationid);
+        res.json({ success: true, message: 'Celebration deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting celebration:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.delete('/api/celebration/image/:id', (req, res) => {    
+    const { id } = req.params;
+    try {
+        const stmt = db.prepare('Update celebrationimages SET archive = 1 WHERE Id = ?');
+        stmt.run(id);
+        res.json({ success: true, message: 'Celebration image deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting celebration image:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
 
 //using the version suggested by GPT
 // app.post('/api/celebration/image',celebrationUpload.single('playerImage'), (req, res) => {
@@ -991,9 +1027,9 @@ app.post('/api/celebration/images', (req, res, next) => {
 app.get('/api/celebration/:celebrationid/images', async (req, res) => {
     const { celebrationid } = req.params;
     try {
-        const stmt = db.prepare('SELECT image_path FROM celebrationimages WHERE celebrationid = ?');
+        const stmt = db.prepare('SELECT id, image_path FROM celebrationimages WHERE celebrationid = ? and archive = 0');
         const images = stmt.all(celebrationid);
-        res.json(images.map(img => ({ url: `https://rbcstorage.sfo3.digitaloceanspaces.com/${img.image_path}` })));
+        res.json(images.map(img => ({ id:img.id, url: `https://rbcstorage.sfo3.digitaloceanspaces.com/${img.image_path}` })));
     } catch (err) {
         console.error('Error fetching celebration images:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });

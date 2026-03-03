@@ -1,5 +1,6 @@
 //global
 let sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname;
+let celebrationsLoaded = false;
 
 function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
@@ -303,6 +304,33 @@ function DisableSubmitButton(disable) {
   const btn = document.getElementById('submitPlayerChangesButton');
   if (btn) btn.disabled = disable;
 }
+
+async function populateCelebrations() {
+  const celebrations = document.getElementById('celebrations');
+  try{
+    const res = await fetch('/api/celebrations', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log(result);
+    celebrations.innerHTML = '';
+    const defaultOption = document.createElement('option');
+    defaultOption.textContent = 'Select a celebration';
+    celebrations.appendChild(defaultOption);
+
+    result.celebrations.forEach(celebration => {
+      const opt = document.createElement('option');
+      opt.value = celebration.id;
+      opt.dataset.description = celebration.celebrationdescription;
+      opt.textContent = `${celebration.celebrationname} - (${celebration.celebrationdate})`;
+      celebrations.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('API error:', err);
+  }
+}
+
 async function addCelebration() {
   const cn = document.getElementById('celebrationname');
   if (!cn?.value?.trim()) {
@@ -342,11 +370,27 @@ async function addCelebration() {
       const imageForm = document.getElementById('celebrationImageForm');
       imageForm.dataset.celebrationid = celebrationid;
       showCustomAlert('Celebration added successfully. Now add pictures one at a time', 5);
+      populateCelebrations()
     } else {
-      showCustomAlert('Failed to add celebration: ' + result.message, 5);
+      showCustomAlert(`Failed to add celebration: ${result.message}`, 5);
     }
   }
 }
+
+async function deleteCelebrationImage(celebrationImageId) {
+  if (!celebrationImageId) return alert('Missing celebration image id');
+  if (!confirm('Are you sure you want to delete this image?')) return;
+  const response = await fetch(`/api/celebration/image/${celebrationImageId}`, {
+    method: 'DELETE'
+  });
+  if (response.ok) {
+    showCustomAlert('Image deleted successfully', 3);
+    displayCelebrationPhotos();
+  } else {
+    const result = await response.json().catch(() => ({}));
+    showCustomAlert(result.message || 'Failed to delete image', 3);
+  }
+} 
 
 // async function uploadCelebrationImage() {
 //   const form = document.getElementById('celebrationImageForm');
@@ -397,7 +441,15 @@ async function uploadCelebrationImage() {
   }
 }
 
-async function displayCelebrationPhotos(celbrationid) {
+async function displayCelebrationPhotos(celebrationid) {
+  
+  if (!celebrationid) {
+    const select = document.getElementById('celebrations');
+    celebrationid = select?.value;
+    const description = select?.selectedOptions[0]?.dataset?.description;
+    document.getElementById('celdescdisplay').value = description;
+  }
+
   try{
     const response = await fetch(`/api/celebration/${celebrationid}/images`, {
       method: 'GET'
@@ -407,12 +459,32 @@ async function displayCelebrationPhotos(celbrationid) {
     const container = document.getElementById('celebrationPhotos');
     container.innerHTML = '';
     for (const img of result) {
+      const div = document.createElement('div');
+      div.style.display = 'inline-block';
+      div.style.margin = '5px';
+      div.style.width = '100%';
+      div.style.border = '1px solid #ddd';
+      const iDel = document.createElement('i');
+      iDel.className = 'fas fa-trash-alt';
+      iDel.style.position = 'relative';
+      iDel.style.top = '5px';
+      iDel.style.right = '5px';
+      iDel.style.cursor = 'pointer';
+      iDel.title = 'Delete image';
+      iDel.addEventListener('click', () => {
+        if (confirm('Are you sure you want to delete this image?')) {
+          deleteCelebrationImage(img.id);
+        }
+      });
+      div.appendChild(iDel);
       const imgEl = document.createElement('img');
       imgEl.src = img.url;
       imgEl.alt = img.description || 'Celebration photo';
-      imgEl.style.maxWidth = '200px';
+      imgEl.style.width = '100%';
+      imgEl.style.height = 'auto';
       imgEl.style.margin = '5px';
-      container.appendChild(imgEl);
+      div.appendChild(imgEl);
+      container.appendChild(div);
     }
     console.log('Celebration photos:', result);
   } catch (err) {
@@ -420,6 +492,24 @@ async function displayCelebrationPhotos(celbrationid) {
   }
 }
 
+async function deleteCelebration() {
+  const celebrationid = document.getElementById('celebrations').value;
+  if (!celebrationid) return alert('No celebration selected');
+  if (!confirm('Are you sure you want to delete this celebration?')) return;
+
+  const response = await fetch(`/api/celebration/${celebrationid}`, {
+    method: 'DELETE'
+  });
+
+  if (response.ok) {
+    showCustomAlert('Celebration deleted successfully', 3);
+    // Refresh the celebrations list
+    populateCelebrations();
+  } else {
+    const result = await response.json().catch(() => ({}));
+    showCustomAlert(result.message || 'Failed to delete celebration', 3);
+  }
+}
 
 async function SubmitChanges() {
   const playerId = document.getElementById('playerId').value;
@@ -1538,6 +1628,8 @@ document.addEventListener('DOMContentLoaded', PopulateMailingLists);
 document.addEventListener('DOMContentLoaded', PopulateAnnouncements);
 document.addEventListener('DOMContentLoaded', PopulatePOTMForm);      //needs to be only once
 document.addEventListener('DOMContentLoaded', displayPOTM);
+document.addEventListener('DOMContentLoaded', setupCelebrationsLazyLoad);
+
 
 async function clearAllPOTMCommentsInDatabase() {
   const potmmonth = new Date().getMonth() + 1; // Current month
@@ -1820,7 +1912,7 @@ function closestComing4thSundayOfMonth(date) {
 
 async function displayPlayIntentions() {
 
-  const sessiondetails = await getSessionDetails() // Ensure we have the latest session details before proceeding
+  await getSessionDetails() // Ensure we have the latest session details before proceeding
 
   if (userid > 0) {
     // Show playing intentions modal
@@ -1853,6 +1945,21 @@ async function setPlayingIntentions() {
   document.getElementById('playingt1').checked = (intentions.t1 == 1);
   document.getElementById('playingf1').checked = (intentions.f1 == 1);
   document.getElementById('playingug').checked = (intentions.ug == 1);
+}
+
+
+function setupCelebrationsLazyLoad() {
+  const select = document.getElementById('celebrations');
+  if (!select) return;
+
+  const loadIfNeeded = async () => {
+    if (celebrationsLoaded) return;
+    celebrationsLoaded = true;
+    await populateCelebrations();
+  };
+
+  select.addEventListener('focus', loadIfNeeded, { once: false });
+  select.addEventListener('pointerdown', loadIfNeeded, { once: false });
 }
 
 decide()

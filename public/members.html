@@ -520,7 +520,7 @@
 						<input type="text" id="celebrationdescription" name="celebrationdescription"
 							placeholder="Enter celebration description">
 					</div>
-					<div class="field full">
+					<div class="field full wrap">
 						<button type="button" id="addcelebration" name="addcelebration" onclick="addCelebration()">
 							Add Celebration
 						</button>
@@ -533,7 +533,7 @@
 						<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
 						<input type="file" id="celebrationImageInput" name="celebrationImageInput" accept="image/*" multiple required>
 					</div>
-					<div class="field full">
+					<div class="field full wrap">
 						<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
 							onclick="uploadCelebrationImage()">
 							Upload Image
@@ -541,11 +541,24 @@
 					</div>
 				</div>
 			</form>
-			<label for="officerPosition">Select a Celebration:</label>
-			<select id="celebrations" name="celebrations">
-			</select>
+			<div style="display: grid;grid-template-columns: 20fr 1fr 1fr;">
+				<div>
+					<label for="celebrations">Select a Celebration:</label>
+					<select id="celebrations" name="celebrations" onchange="displayCelebrationPhotos()">
+					</select>
+					<input type="textarea" placeholder="Celebration Description" id="celdescdisplay" name="celdescdisplay" style="width: 100%;height: auto"; readonly>
+				</div>
+				<div>
+					<!-- style="position:relative;top:-5px;right:5px;" -->
+					<i class="fas fa-sync" onclick="populateCelebrations()" aria-hidden="true"></i>
+				</div>
+				<div>
+					<!-- style="position:relative;top:-5px;right:5px;" -->
+					<i class="fas fa-trash-alt" onclick="deleteCelebration()" aria-hidden="true"></i>
+				</div>
+			</div>
 			<p>Photos:</p> <!-- Display uploaded celebration photos here -->
-			<div id="celebrationPhotos">// call displayCelebrationPhotos() to populate this div
+			<div id="celebrationPhotos">// displayCelebrationPhotos() populates this div
 
 			</div>
 		</div>
@@ -785,7 +798,7 @@
 					<label id="lblplayingug" for="playingug">Sunday</label>
 				</div>
 				<div class="field fourth">
-					<button id="closePlayingModalBtn" type="button" onclick="closePlayingModal()"
+					<button id="closePlayingModalBtn" type="button" onclick="closeplayingModal()"
 						class="button primary">Close</button>
 				</div>
 			</div>
