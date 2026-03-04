@@ -915,8 +915,11 @@ app.post('/api/celebration', (req, res) => {
 app.delete('/api/celebration/:celebrationid', (req, res) => {
     const { celebrationid } = req.params;
     try {
-        const stmt = db.prepare('Update celebration SET archive = 1 WHERE celebrationid = ?');
-        stmt.run(celebrationid);
+        const stmt = db.prepare('Update celebration SET archive = 1 WHERE id = ?');
+        const result = stmt.run(celebrationid);
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Celebration not found' });
+        }
         res.json({ success: true, message: 'Celebration deleted successfully' });
     } catch (err) {
         console.error('Error deleting celebration:', err);
@@ -928,7 +931,10 @@ app.delete('/api/celebration/image/:id', (req, res) => {
     const { id } = req.params;
     try {
         const stmt = db.prepare('Update celebrationimages SET archive = 1 WHERE Id = ?');
-        stmt.run(id);
+        const result = stmt.run(id);
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Celebration image not found' });
+        }
         res.json({ success: true, message: 'Celebration image deleted successfully' });
     } catch (err) {
         console.error('Error deleting celebration image:', err);

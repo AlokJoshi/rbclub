@@ -531,7 +531,7 @@
 				<div class="fields">
 					<div class="field full">
 						<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
-						<input type="file" id="celebrationImageInput" name="celebrationImageInput" accept="image/*" multiple required>
+						<input type="file" id="celebrationImageInput" name="celebrationImageInput" onchange="checkTotalFileSize()" accept="image/*" multiple required>
 					</div>
 					<div class="field full wrap">
 						<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
@@ -781,23 +781,23 @@
 			<span class="close" onclick="closeplayingModal()">&times;</span>
 			<h2>Planning to Play?</h2>
 			<div class="fields">
-				<div class="field fourth">
+				<div class="field fourth wrap">
 					<input type="checkbox" id="playingm1" onchange="playing('m1')">
 					<label id="lblplayingm1" for="playingm1">Monday</label>
 				</div>
-				<div class="field fourth">
+				<div class="field fourth wrap">
 					<input type="checkbox" id="playingt1" onchange="playing('t1')">
 					<label id="lblplayingt1" for="playingt1">Tuesday</label>
 				</div>
-				<div class="field fourth">
+				<div class="field fourth wrap">
 					<input type="checkbox" id="playingf1" onchange="playing('f1')">
 					<label id="lblplayingf1" for="playingf1">Friday</label>
 				</div>
-				<div class="field fourth">
+				<div class="field fourth wrap">
 					<input type="checkbox" id="playingug" onchange="playing('ug')">
 					<label id="lblplayingug" for="playingug">Sunday</label>
 				</div>
-				<div class="field fourth">
+				<div class="field fourth wrap">
 					<button id="closePlayingModalBtn" type="button" onclick="closeplayingModal()"
 						class="button primary">Close</button>
 				</div>
@@ -816,6 +816,7 @@
 	</div>
 
 	<!-- Scripts -->
+	<script src= "https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
 	<script src="assets/js/jquery.min.js"></script>
 	<script src="assets/js/jquery.scrolly.min.js"></script>
 	<script src="assets/js/browser.min.js"></script>

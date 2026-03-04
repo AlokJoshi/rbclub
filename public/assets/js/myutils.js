@@ -8,14 +8,33 @@ function delay(durationInMilliseconds) {
 
 //delay duration in seconds
 async function showCustomAlert(message, delayDuration = 3) {
-  const alertBox = document.getElementById('customAlert');
-  const alertMessage = alertBox.querySelector('p');
-  alertMessage.textContent = message;
-  alertBox.style.display = 'flex';
-  await delay(delayDuration * 1000); // Display for the specified duration
-  // Fade out effect
-  alertBox.style.transition = 'opacity 0.5s';
-  alertBox.style.display = 'none';
+  swal(message);
+  // const alertBox = document.getElementById('customAlert');
+  // const alertMessage = alertBox.querySelector('p');
+  // alertMessage.textContent = message;
+  // alertBox.style.display = 'flex';
+  // await delay(delayDuration * 1000); // Display for the specified duration
+  // // Fade out effect
+  // alertBox.style.transition = 'opacity 0.5s';
+  // alertBox.style.display = 'none';
+}
+
+async function showCustomConfirmWithInput(message) {
+  const expected = 'DELETE';
+  const userInput = await swal({
+    title: message,
+    content: {
+      element: 'input',
+      attributes: {
+        placeholder: `Type ${expected} to confirm`,
+        autocapitalize: 'off'
+      }
+    },
+    buttons: ['Cancel', 'Confirm']
+  });
+
+  return typeof userInput === 'string' &&
+    userInput.trim().toUpperCase() === expected;
 }
 
 function displaynameandphonecheckform() {
@@ -307,7 +326,7 @@ function DisableSubmitButton(disable) {
 
 async function populateCelebrations() {
   const celebrations = document.getElementById('celebrations');
-  try{
+  try {
     const res = await fetch('/api/celebrations', {
       method: 'GET'
     });
@@ -369,7 +388,7 @@ async function addCelebration() {
       const celebrationid = result.celebrationid;
       const imageForm = document.getElementById('celebrationImageForm');
       imageForm.dataset.celebrationid = celebrationid;
-      showCustomAlert('Celebration added successfully. Now add pictures one at a time', 5);
+      showCustomAlert('Celebration added successfully. Now add upto 10 pictures (total 10MB) at a time', 5);
       populateCelebrations()
     } else {
       showCustomAlert(`Failed to add celebration: ${result.message}`, 5);
@@ -379,7 +398,8 @@ async function addCelebration() {
 
 async function deleteCelebrationImage(celebrationImageId) {
   if (!celebrationImageId) return alert('Missing celebration image id');
-  if (!confirm('Are you sure you want to delete this image?')) return;
+  // if (!confirm('Are you sure you want to delete this image?')) return;
+  // if (!showCustomConfirm('Are you sure you want to delete this image?')) return;
   const response = await fetch(`/api/celebration/image/${celebrationImageId}`, {
     method: 'DELETE'
   });
@@ -390,26 +410,8 @@ async function deleteCelebrationImage(celebrationImageId) {
     const result = await response.json().catch(() => ({}));
     showCustomAlert(result.message || 'Failed to delete image', 3);
   }
-} 
+}
 
-// async function uploadCelebrationImage() {
-//   const form = document.getElementById('celebrationImageForm');
-//   const fileInput = document.getElementById('celebrationImageInput');
-//   const celebrationid = form.dataset.celebrationid;
-//   const formData = new FormData(form);
-//   formData.append('celebrationid', celebrationid);
-//   formData.set('playerImage', fileInput.files[0]);
-//   const response = await fetch('/api/celebration/image', {
-//     method: 'POST',
-//     body: formData
-//   });
-//   if (response.ok) {
-//     showCustomAlert('Image uploaded successfully',3);
-//   } else {
-//     const result = await response.json().catch(() => ({}));
-//     showCustomAlert('Failed to upload image',3);
-//   }
-// }
 async function uploadCelebrationImage() {
   const form = document.getElementById('celebrationImageForm');
   const fileInput = document.getElementById('celebrationImageInput');
@@ -442,7 +444,7 @@ async function uploadCelebrationImage() {
 }
 
 async function displayCelebrationPhotos(celebrationid) {
-  
+
   if (!celebrationid) {
     const select = document.getElementById('celebrations');
     celebrationid = select?.value;
@@ -450,7 +452,7 @@ async function displayCelebrationPhotos(celebrationid) {
     document.getElementById('celdescdisplay').value = description;
   }
 
-  try{
+  try {
     const response = await fetch(`/api/celebration/${celebrationid}/images`, {
       method: 'GET'
     });
@@ -460,19 +462,14 @@ async function displayCelebrationPhotos(celebrationid) {
     container.innerHTML = '';
     for (const img of result) {
       const div = document.createElement('div');
-      div.style.display = 'inline-block';
-      div.style.margin = '5px';
-      div.style.width = '100%';
-      div.style.border = '1px solid #ddd';
+      div.style = `display: inline-block; margin: 5px; width: 100%; border: 1px solid #ddd;`;
+
       const iDel = document.createElement('i');
       iDel.className = 'fas fa-trash-alt';
-      iDel.style.position = 'relative';
-      iDel.style.top = '5px';
-      iDel.style.right = '5px';
-      iDel.style.cursor = 'pointer';
+      iDel.style = '[position: relative; top: 5px; right: 5px; cursor: pointer;';
       iDel.title = 'Delete image';
       iDel.addEventListener('click', () => {
-        if (confirm('Are you sure you want to delete this image?')) {
+        if (showCustomConfirm('Are you sure you want to delete this image?')) {
           deleteCelebrationImage(img.id);
         }
       });
@@ -493,9 +490,11 @@ async function displayCelebrationPhotos(celebrationid) {
 }
 
 async function deleteCelebration() {
-  const celebrationid = document.getElementById('celebrations').value;
-  if (!celebrationid) return alert('No celebration selected');
-  if (!confirm('Are you sure you want to delete this celebration?')) return;
+  const option = document.getElementById("celebrations")?.selectedOptions[0];
+  if (!option) return showCustomAlert('No celebration selected');
+  const celebrationid = option.value;
+  const result = await showCustomConfirmWithInput('Are you sure you want to delete this celebration? Type DELETE to confirm.');
+  if (!result) return;
 
   const response = await fetch(`/api/celebration/${celebrationid}`, {
     method: 'DELETE'
@@ -724,6 +723,7 @@ async function createPlayerTable() {
       const tdEdit = document.createElement('td');
       const iEdit = document.createElement('i');
       iEdit.className = 'fas fa-edit';
+      iEdit.title = 'Edit Player';
 
       iEdit.addEventListener('click', () => {
         if (((userid === row.id) && securelogin) || (isAdmin && securelogin)) {
@@ -739,9 +739,11 @@ async function createPlayerTable() {
       const tdDel = document.createElement('td');
       const iDelete = document.createElement('i');
       iDelete.className = 'fas fa-trash';
+      iDelete.title = 'Delete Player';
       iDelete.addEventListener('click', async () => {
         if (isAdmin && securelogin) {
-          if (window.prompt(`Type DELETE to confirm deletion of player :${row.first} ${row.last}`, '') === 'DELETE') {
+          const result = await showCustomConfirmWithInput('Are you sure you want to delete this player? Type DELETE to confirm.');
+          if (result) {
             await DeletePlayer(row.id);
           }
         } else {
@@ -1120,6 +1122,8 @@ async function PopulateEmailList() {
     const cell_edit = document.createElement('td');
     const iEdit = document.createElement('i');
     iEdit.className = 'fas fa-edit';
+    iEdit.style.marginLeft = '10px';
+    iEdit.title = 'Edit Mailing List';
     iEdit.addEventListener('click', () => {
       // Copy the data to the addMailingList form and enable the update button
       document.getElementById('mailingListId').value = row.id;
@@ -1135,6 +1139,7 @@ async function PopulateEmailList() {
     const iDelete = document.createElement('i');
     iDelete.className = 'fas fa-trash';
     iDelete.style.marginLeft = '10px';
+    iDelete.title = 'Delete Mailing List';
     iDelete.addEventListener('click', async () => {
       // Implement delete functionality here
       console.log(`Delete mailing list with ID: ${row.id}`);
@@ -1445,8 +1450,9 @@ async function PopulateAnnouncements(params) {
           showCustomAlert('You must be securely logged in as Admin or as the creator of the announcement to delete this announcement.', 10);
           return;
         }
-        if (window.prompt(`Type DELETE to confirm deletion of announcement Title:${announcement.title},
-          Announcement:${announcement.announcement}`, '') === 'DELETE') {
+        const result = await showCustomConfirmWithInput(`Type DELETE to confirm deletion of announcement Title:${announcement.title},
+          Announcement:${announcement.announcement}`);
+        if (result) {
           const res = await fetch(`/api/announcement/${announcement.id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const result = await res.json();
@@ -1947,6 +1953,35 @@ async function setPlayingIntentions() {
   document.getElementById('playingug').checked = (intentions.ug == 1);
 }
 
+function checkTotalFileSize() {
+  //use this function when files are being added
+  const input = document.getElementById('celebrationImageInput');
+  const submitButton = document.getElementById('uploadCelebrationImageId');
+  const maxTotalSize = 10 * 1024 * 1024; // 10 MB limit (adjust as needed)
+  let totalSize = 0;
+
+  // Clear previous error messages
+  // errorMsg.textContent = '';
+  submitButton.disabled = false;
+
+  if(input.files.length>10){
+    showCustomAlert('You can upload a maximum of 10 files with a total size of 10 MB only at a time.');
+    submitButton.disabled = true;
+    return;
+  }
+
+  if (input.files.length > 0) {
+    for (const file of input.files) {
+      totalSize += file.size;
+    }
+
+    if (totalSize > maxTotalSize) {
+      const maxSizeMB = maxTotalSize / (1024 * 1024);
+      showCustomAlert(`Total file size (${(totalSize / (1024 * 1024)).toFixed(2)} MB) exceeds the limit of ${maxSizeMB} MB.`);
+      submitButton.disabled = true; // Disable the submit button
+    }
+  }
+}
 
 function setupCelebrationsLazyLoad() {
   const select = document.getElementById('celebrations');

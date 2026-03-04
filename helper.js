@@ -70,7 +70,7 @@ const celebrationMultiStorage = multerS3({
 
 const celebrationMultiUpload = multer({
   storage: celebrationMultiStorage,
-  limits: { files: 10, fileSize: 5 * 1024 * 1024 }
+  limits: { files: 10, fileSize: 10 * 1024 * 1024 }
 });
 
 const avatarUpload = multer({ storage: avatarStorage })
