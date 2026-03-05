@@ -8,7 +8,10 @@ function delay(durationInMilliseconds) {
 
 //delay duration in seconds
 async function showCustomAlert(message, delayDuration = 3) {
-  swal(message);
+  swal({ 
+    title: 'Riverside Bridge Club',
+    text: message 
+  });
   // const alertBox = document.getElementById('customAlert');
   // const alertMessage = alertBox.querySelector('p');
   // alertMessage.textContent = message;
@@ -1388,6 +1391,7 @@ async function PopulateAnnouncements(params) {
       img.style.width = '100px';
       img.style.height = '100px';
       img.style.borderRadius = '50%';
+      img.title = announcement.fromname;
       pictureCell.appendChild(img);
       row.appendChild(pictureCell);
 
@@ -1837,9 +1841,7 @@ async function decide() {
     logindetails2 = `${fullname} : You are logged in as an Admin and can view and edit all data.`
     showCustomAlert(logindetails, 7)
   } else {
-    logindetails = `Note that you are not logged in. You must log in with the log-in details 
-    sent to you. Alternatively, you can log in by using your full name and phone number. 
-    If you are a member and have not received login details, please contact the club.`
+    logindetails = `Note that you are not logged in. You must log in with the log-in details sent to you. Alternatively, you can log in by using your full name and phone number. If you are a member and have not received login details, please contact the club.`
     logindetails2 = logindetails
     showCustomAlert(logindetails, 7)
     console.log("User is not logged in.");
@@ -1995,6 +1997,10 @@ function setupCelebrationsLazyLoad() {
 
   select.addEventListener('focus', loadIfNeeded, { once: false });
   select.addEventListener('pointerdown', loadIfNeeded, { once: false });
+}
+
+async function displayEmailsSent() {
+    
 }
 
 decide()

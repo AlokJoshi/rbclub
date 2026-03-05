@@ -17,14 +17,14 @@
 	<!-- Wrapper -->
 	<div id="wrapper">
 
-		<!-- Announcements -->
+		<!-- Announcements Section-->
 		<section class="announcements">
 			<header class="parent">
 				<div>
 					<i class="fas fa-bullhorn announcement-icon" aria-hidden="true"></i>
 					<h2>Announcements</h2>
 				</div>
-				<div id="loginresult"></div>
+				<div style="width:300px;height:200px;display:grid;place-items:center;font-weight:900" id="loginresult"></div>
 			</header>
 			<div class="content">
 				<h2 style="color:blue" cursor="pointer" onclick="displayaddannouncementform()">Add Announcement</h2>
@@ -43,7 +43,7 @@
 			</div>
 		</section>
 
-		<!-- Add/Update Announcements -->
+		<!-- Add/Update Announcements Section -->
 		<section id="addupdateannouncements" style="display:none">
 			<header>
 				<h1>Add/Update Announcement</h1>
@@ -86,7 +86,7 @@
 			</div>
 		</section>
 
-		<!-- Intro -->
+		<!-- Intro Section -->
 		<section class="intro">
 			<header>
 				<h1>Riverside Bridge Club (Unit 537)</h1>
@@ -129,7 +129,7 @@
 			</div>
 		</section>
 
-		<!-- Section -->
+		<!-- Add or Edit Player Section -->
 		<section id="addoreditplayer" style="display:none">
 			<header>
 				<h2>Update or Edit Players</h2>
@@ -236,7 +236,7 @@
 					</footer>
 		</section>
 
-		<!-- Section -->
+		<!-- Expected Attendance Section -->
 		<section>
 			<header>
 				<h2>Expected Attendance</h2>
@@ -269,7 +269,7 @@
 			</div>
 		</section>
 
-		<!-- Section -->
+		<!-- Directors Section -->
 		<section>
 			<header>
 				<h2>Directors</h2>
@@ -292,7 +292,7 @@
 			</div>
 		</section>
 
-		<!-- Section to display officers-->
+		<!-- Officers Section -->
 		<section>
 			<header>
 				<h2>Officers</h2>
@@ -412,6 +412,7 @@
 			</div>
 		</section>
 
+		<!-- Send Email Section -->
 		<section>
 			<header>
 				<h2>Send Email</h2>
@@ -445,9 +446,13 @@
 						</button>
 					</div>
 				</form>
-			</div>
+				<div id="displayemails">
+						<!--create a list of sent emails here -->
+				</div>
+			</div> <!-- End of Send Email Content -->
 		</section>
 
+		<!-- Player of the Month Section -->
 		<section>
 			<header>
 				<h2>Player of the Month</h2>
@@ -491,47 +496,47 @@
 								<h3 id="potmComment3"></h3>
 							</div>
 						</div>
+					</div>
 				</form>
 			</div>
+		</section>
 
-	</div> <!-- content -->
-	</section>
-
-	<section>
-		<header>
-			<h2>Celebrations</h2>
-			<h3>Here we will display pictures of the members' birthdays and any other celebrations.</h3>
-		</header>
-		<div class="content">
-			<form id="celebrationForm" action="">
-				<div class="fields">
-					<div class="field half">
-						<label for="celebrationname">Create a new celebration</label>
-						<input type="text" id="celebrationname" name="celebrationname"
-							placeholder="Enter celebration name(e.g) January Birthdays, Christmas Party etc">
+		<!-- Celebrations Section -->
+		<section>
+			<header>
+				<h2>Celebrations</h2>
+				<h3>Here we will display pictures of the members' birthdays and any other celebrations.</h3>
+			</header>
+			<div class="content">
+				<form id="celebrationForm" action="">
+					<div class="fields">
+						<div class="field half">
+							<label for="celebrationname">Create a new celebration</label>
+							<input type="text" id="celebrationname" name="celebrationname"
+								placeholder="Enter celebration name(e.g) January Birthdays, Christmas Party etc">
+						</div>
+						<div class="field half">
+							<label for="celebrationdate">Celebration Date</label>
+							<input type="date" id="celebrationdate" name="celebrationdate" placeholder="Enter celebration date">
+						</div>
+						<div class="field full">
+							<label for="celebrationdescription">Description</label>
+							<input type="text" id="celebrationdescription" name="celebrationdescription"
+								placeholder="Enter celebration description">
+						</div>
+						<div class="field full wrap">
+							<button type="button" id="addcelebration" name="addcelebration" onclick="addCelebration()">
+								Add Celebration
+							</button>
+						</div>
 					</div>
-					<div class="field half">
-						<label for="celebrationdate">Celebration Date</label>
-						<input type="date" id="celebrationdate" name="celebrationdate"
-							placeholder="Enter celebration date">
-					</div>
-					<div class="field full">
-						<label for="celebrationdescription">Description</label>
-						<input type="text" id="celebrationdescription" name="celebrationdescription"
-							placeholder="Enter celebration description">
-					</div>
-					<div class="field full wrap">
-						<button type="button" id="addcelebration" name="addcelebration" onclick="addCelebration()">
-							Add Celebration
-						</button>
-					</div>
-				</div>
-			</form>
-			<form action="" id="celebrationImageForm"">
-				<div class="fields">
+				</form>
+				<form action="" id="celebrationImageForm"">
+				<div class=" fields">
 					<div class="field full">
 						<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
-						<input type="file" id="celebrationImageInput" name="celebrationImageInput" onchange="checkTotalFileSize()" accept="image/*" multiple required>
+						<input type="file" id="celebrationImageInput" name="celebrationImageInput" onchange="checkTotalFileSize()"
+							accept="image/*" multiple required>
 					</div>
 					<div class="field full wrap">
 						<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
@@ -539,14 +544,15 @@
 							Upload Image
 						</button>
 					</div>
-				</div>
+			</div>
 			</form>
 			<div style="display: grid;grid-template-columns: 20fr 1fr 1fr;">
 				<div>
 					<label for="celebrations">Select a Celebration:</label>
 					<select id="celebrations" name="celebrations" onchange="displayCelebrationPhotos()">
 					</select>
-					<input type="textarea" placeholder="Celebration Description" id="celdescdisplay" name="celdescdisplay" style="width: 100%;height: auto"; readonly>
+					<input type="textarea" placeholder="Celebration Description" id="celdescdisplay" name="celdescdisplay"
+						style="width: 100%;height: auto" ; readonly>
 				</div>
 				<div>
 					<!-- style="position:relative;top:-5px;right:5px;" -->
@@ -561,7 +567,7 @@
 			<div id="celebrationPhotos">// displayCelebrationPhotos() populates this div
 
 			</div>
-		</div>
+	</div>
 	</section>
 
 	<!-- Copyright -->
@@ -777,29 +783,29 @@
 	</div>
 
 	<div id="playingModal" class="modal">
-		<div class="modal-content">
+		<div style="width:200px" class="modal-content">
 			<span class="close" onclick="closeplayingModal()">&times;</span>
 			<h2>Planning to Play?</h2>
 			<div class="fields">
-				<div class="field fourth wrap">
-					<input type="checkbox" id="playingm1" onchange="playing('m1')">
+				<div class="field fourth ">
+					<input type="checkbox" style="height:auto;display:inline" id="playingm1" onchange="playing('m1')">
 					<label id="lblplayingm1" for="playingm1">Monday</label>
 				</div>
-				<div class="field fourth wrap">
-					<input type="checkbox" id="playingt1" onchange="playing('t1')">
+				<div class="field fourth ">
+					<input type="checkbox" style="height:auto;display:inline" id="playingt1" onchange="playing('t1')">
 					<label id="lblplayingt1" for="playingt1">Tuesday</label>
 				</div>
-				<div class="field fourth wrap">
-					<input type="checkbox" id="playingf1" onchange="playing('f1')">
+				<div class="field fourth ">
+					<input type="checkbox" style="height:auto;display:inline" id="playingf1" onchange="playing('f1')">
 					<label id="lblplayingf1" for="playingf1">Friday</label>
 				</div>
-				<div class="field fourth wrap">
-					<input type="checkbox" id="playingug" onchange="playing('ug')">
+				<div class="field fourth ">
+					<input type="checkbox" style="height:auto;display:inline" id="playingug" onchange="playing('ug')">
 					<label id="lblplayingug" for="playingug">Sunday</label>
 				</div>
 				<div class="field fourth wrap">
-					<button id="closePlayingModalBtn" type="button" onclick="closeplayingModal()"
-						class="button primary">Close</button>
+					<button id="closePlayingModalBtn" style="height:auto;display:inline" type="button"
+						onclick="closeplayingModal()" class="button primary">Close</button>
 				</div>
 			</div>
 		</div>
@@ -816,7 +822,7 @@
 	</div>
 
 	<!-- Scripts -->
-	<script src= "https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
 	<script src="assets/js/jquery.min.js"></script>
 	<script src="assets/js/jquery.scrolly.min.js"></script>
 	<script src="assets/js/browser.min.js"></script>

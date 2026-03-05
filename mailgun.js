@@ -26,6 +26,27 @@ async function sendSimpleEmail() {
   }
 }
 
+async function getMessageEvents(recipientEmail) {
+  const mailgun = new Mailgun(FormData);
+  const mg = mailgun.client({
+    username: "api",
+    key: process.env.MAILGUN_API_KEY,
+    // When you have an EU-domain, you must specify the endpoint:
+    // url: "https://api.eu.mailgun.net"
+  });
+    mg.domains.list()
+    .then(domains => console.log(domains)) // logs array of domains
+    .catch(err => console.error(err)); // logs any error
+
+  //   mg.messages.retrieveStoredEmail(process.env.MAILGUN_DOMAIN,process.env.MAILGUN_API_KEY)
+  // .then(storedEmail => console.log(storedEmail)) // logs response data
+  // .catch(err => console.error(err)); // logs any error
+  // } catch (error) {
+  //   console.log(error);
+  
+} 
+
 module.exports = {
-    sendSimpleEmail
+    sendSimpleEmail,
+    getMessageEvents
 };

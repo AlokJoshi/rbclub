@@ -6,9 +6,11 @@ try {
 }
 
 const { sendTestSMS } = require('./infobip');
-const { sendSimpleEmail } = require('./mailgun');
+const { sendSimpleEmail,getMessageEvents } = require('./mailgun');
 // sendTestSMS();
 // sendSimpleEmail();
+// following lists the events
+getMessageEvents('alokjoshiofaarmax@gmail.com');
 
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
