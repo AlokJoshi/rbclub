@@ -64,6 +64,7 @@ test-pg.js
 *.http
 session-storage issue.txt
 reset-password.txt
+notes.txt
 
 *.sqlite-shm
 *.sqlite-wal

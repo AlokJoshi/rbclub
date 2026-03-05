@@ -1,7 +1,18 @@
 require('dotenv').config({ quiet: true });
+const crypto = require('crypto')
 
 const FormData = require("form-data"); // form-data v4.0.1
 const Mailgun = require( "mailgun.js"); // mailgun.js v11.1.0
+
+
+const verify = ({ signingKey, timestamp, token, signature }) => {
+    const encodedToken = crypto
+        .createHmac('sha256', signingKey)
+        .update(timestamp.concat(token))
+        .digest('hex')
+
+    return (encodedToken === signature)
+}
 
 async function sendSimpleEmail() {
   const mailgun = new Mailgun(FormData);
@@ -16,6 +27,7 @@ async function sendSimpleEmail() {
       from: "info@riversidebridgeclub.com",
       // from: "Mailgun Sandbox <postmaster@sandbox0836465be48442e79cc9ccf38025f456.mailgun.org>",
       to: ["Alok Joshi <alokjoshiofaarmax@gmail.com>"],
+      // to: ["Alok Joshi <ajoshi@flash.net>"],
       subject: "Hello Alok Joshi",
       text: "Congratulations Alok Joshi, you just sent an email with Mailgun! You are truly awesome!",
     });
@@ -48,5 +60,6 @@ async function getMessageEvents(recipientEmail) {
 
 module.exports = {
     sendSimpleEmail,
-    getMessageEvents
+    getMessageEvents,
+    verify
 };

@@ -8,7 +8,7 @@ try {
 const { sendTestSMS } = require('./infobip');
 const { sendSimpleEmail,getMessageEvents } = require('./mailgun');
 // sendTestSMS();
-// sendSimpleEmail();
+sendSimpleEmail();
 // following lists the events
 getMessageEvents('alokjoshiofaarmax@gmail.com');
 
@@ -1042,6 +1042,11 @@ app.get('/api/celebration/:celebrationid/images', async (req, res) => {
         console.error('Error fetching celebration images:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
+});
+
+app.post('/', (req, res) => {
+    console.log(req.body);
+    res.json({ message: 'Welcome to the RBC API' });
 });
 
 app.listen(PORT, () => {
