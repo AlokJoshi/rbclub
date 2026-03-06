@@ -14,7 +14,7 @@ const verify = ({ signingKey, timestamp, token, signature }) => {
     return (encodedToken === signature)
 }
 
-async function sendSimpleEmail() {
+async function sendEmail(addresses, subject, text) {
   const mailgun = new Mailgun(FormData);
   const mg = mailgun.client({
     username: "api",
@@ -26,15 +26,17 @@ async function sendSimpleEmail() {
     const data = await mg.messages.create(process.env.MAILGUN_DOMAIN, {
       from: "info@riversidebridgeclub.com",
       // from: "Mailgun Sandbox <postmaster@sandbox0836465be48442e79cc9ccf38025f456.mailgun.org>",
-      to: ["Alok Joshi <alokjoshiofaarmax@gmail.com>"],
-      // to: ["Alok Joshi <ajoshi@flash.net>"],
-      subject: "Hello Alok Joshi",
-      text: "Congratulations Alok Joshi, you just sent an email with Mailgun! You are truly awesome!",
+      // to: ["Alok Joshi <alokjoshiofaarmax@gmail.com>","ajoshi@flash.net"],
+      to: addresses,
+      subject: subject,
+      text: text,
     });
 
     console.log(data); // logs response data
+    return data;
   } catch (error) {
     console.log(error); //logs any error
+    return null;
   }
 }
 
@@ -57,9 +59,19 @@ async function getMessageEvents(recipientEmail) {
   //   console.log(error);
   
 } 
+function saveEmailRecord(emailData) {
+  // This function would contain logic to save the email data to a database
+    const {sentbyplayerid,recipients,subject,text,timestamp} = emailData;
+    //first save the email data to the emails table
+    
+    // For example, you could use an ORM like Sequelize or Mongoose to save the data to a SQL or NoSQL database
+    // The emailData parameter would contain all the relevant information about the email event, such as recipient, event type, timestamp, etc.
+    // You would need to define a schema for your email records and then create a new record with the emailData
+}
 
 module.exports = {
-    sendSimpleEmail,
+    sendEmail,
     getMessageEvents,
-    verify
+    verify,
+    saveEmailRecord
 };

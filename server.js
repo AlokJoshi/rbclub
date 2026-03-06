@@ -6,9 +6,9 @@ try {
 }
 
 const { sendTestSMS } = require('./infobip');
-const { sendSimpleEmail,getMessageEvents } = require('./mailgun');
+const { sendEmail,getMessageEvents,verify } = require('./mailgun');
 // sendTestSMS();
-sendSimpleEmail();
+sendEmail();
 // following lists the events
 getMessageEvents('alokjoshiofaarmax@gmail.com');
 
@@ -1043,11 +1043,79 @@ app.get('/api/celebration/:celebrationid/images', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+// send email
+app.post('/api/sendemail', async (req, res) => {
+    //playerid is the id of the sender
+    const { mailinglistId, playerid, subject, text } = req.body;
+    const recipients = mailinglistId ? getMailingListRecipients(mailinglistId).recipients : [];
+    const recipientEmails = recipients.map(r => r.email)
+    const filteredRecipientEmails = recipientEmails.filter(email => email !== null && email !== undefined && email.trim() !== ''); // Filter out null or undefined emails
+    if (recipients.length == 0 || filteredRecipientEmails.length === 0) {
+        return res.status(400).json({ success: false, message: 'No valid email addresses found for the selected mailing list' });
+    } 
+    const data = await sendEmail(filteredRecipientEmails,subject,text); 
+    if (!data.success) {
+        return res.status(500).json({ success: false, message: 'Failed to send email' });
+    }
+    //save the information in the emails table for record keeping
+    const recipient = memberid ? db.prepare('SELECT email FROM player WHERE id = ?').get(memberid)?.email : null;
+    const to = recipients.length > 0 ? filteredRecipientEmails.join(',') : recipient;   
+    try {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: to,
+            subject: subject,
+            text: text
+        });
+        res.json({ success: true, message: 'Email sent successfully' });
+    } catch (err) {
+        console.error('Error sending email:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}); 
 
-app.post('/', (req, res) => {
-    console.log(req.body);
+
+
+
+// webhook endpoints for mailgun to track email events like accepted, delivered, unsubscribed etc. The endpoints verify the signature sent by mailgun to ensure that the request is coming from mailgun and then log the event data. These endpoints can be extended to update the database or perform other actions based on the email events.
+app.post('/emailaccepted',checkAuthenticity, (req, res) => {
+    console.log('Email accepted endpoint hit with data:');
+    
+    const eventData = req.body['event-data'];
+    const recipient = eventData.recipient;
+
     res.json({ message: 'Welcome to the RBC API' });
 });
+
+function checkAuthenticity(req, res, next) {
+    const signature = req.body.signature;
+    const verified = verify({
+        timestamp: signature.timestamp,
+        token: signature.token,
+        signature: signature.signature,
+        signingKey: process.env.MAILGUN_SIGNING_KEY
+    })
+    if (!verified) {
+        console.error('Invalid signature for email event');
+        return res.status(400).json({ message: 'Invalid signature' });
+    }
+    next();
+}
+app.post('/emailunsubscribe',checkAuthenticity, (req, res) => {
+    console.log('Email unsubscribe endpoint hit with data:');
+    console.log(req.body.signature);
+    console.log(req.body['event-data']);
+    res.json({ message: 'Welcome to the RBC API' });
+});
+
+app.post('/emaildelivered',checkAuthenticity, (req, res) => {
+    console.log('Email delivered endpoint hit with data:');
+    console.log(req.body.signature);
+    console.log(req.body['event-data']);
+    res.json({ message: 'Welcome to the RBC API' });
+});
+// End of mailgun webhook endpoints
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
