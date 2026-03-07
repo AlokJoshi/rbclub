@@ -8,7 +8,8 @@ try {
 const { sendTestSMS } = require('./infobip');
 const { sendEmail,getMessageEvents,verify } = require('./mailgun');
 // sendTestSMS();
-sendEmail();
+// sendEmail();
+
 // following lists the events
 getMessageEvents('alokjoshiofaarmax@gmail.com');
 
@@ -689,26 +690,24 @@ app.post('/api/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-app.post('/api/sendemail', async (req, res) => {
-    const { mailinglistId, memberid, subject, text } = req.body;
-    const recipients = mailinglistId ? getMailingListRecipients(mailinglistId).recipients : [];
-    const recipientEmails = recipients.map(r => r.email)
-    const filteredRecipientEmails = recipientEmails.filter(email => email !== null && email !== undefined && email.trim() !== ''); // Filter out null or undefined emails
-    const recipient = memberid ? db.prepare('SELECT email FROM player WHERE id = ?').get(memberid)?.email : null;
-    const to = recipients.length > 0 ? filteredRecipientEmails.join(',') : recipient;
-    try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to,
-            subject,
-            text
-        });
-        res.json({ success: true, message: 'Email sent successfully' });
-    } catch (err) {
-        console.error('Error sending email:', err);
-        res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-});
+// app.post('/api/sendemail', async (req, res) => {
+//     const { mailinglistId, memberid, subject, text } = req.body;
+//     const recipients = mailinglistId ? getMailingListRecipients(mailinglistId).recipients : [];
+//     const recipientEmails = recipients.map(r => r.email)
+//     const filteredRecipientEmails = recipientEmails.filter(email => email !== null && email !== undefined && email.trim() !== ''); // Filter out null or undefined emails
+//     const recipient = memberid ? db.prepare('SELECT email FROM player WHERE id = ?').get(memberid)?.email : null;
+//     const to = recipients.length > 0 ? filteredRecipientEmails.join(',') : recipient;
+//     try {
+//         const data = await sendEmail(filteredRecipientEmails, subject, text);
+//         if(!data) {   
+//             return res.status(500).json({ success: false, message: 'Failed to send email' });
+//         }
+//         res.json({ success: true, message: 'Email sent successfully' });
+//     } catch (err) {
+//         console.error('Error sending email:', err);
+//         res.status(500).json({ success: false, message: 'Internal server error' });
+//     }
+// });
 
 
 async function playerExists(first, last) {
@@ -1043,6 +1042,7 @@ app.get('/api/celebration/:celebrationid/images', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+
 // send email
 app.post('/api/sendemail', async (req, res) => {
     //playerid is the id of the sender
@@ -1054,24 +1054,20 @@ app.post('/api/sendemail', async (req, res) => {
         return res.status(400).json({ success: false, message: 'No valid email addresses found for the selected mailing list' });
     } 
     const data = await sendEmail(filteredRecipientEmails,subject,text); 
-    if (!data.success) {
+    if (!(data && data.status === 200)) {
         return res.status(500).json({ success: false, message: 'Failed to send email' });
     }
+    const messageid = data.id || null;
+
     //save the information in the emails table for record keeping
-    const recipient = memberid ? db.prepare('SELECT email FROM player WHERE id = ?').get(memberid)?.email : null;
-    const to = recipients.length > 0 ? filteredRecipientEmails.join(',') : recipient;   
-    try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: to,
-            subject: subject,
-            text: text
-        });
-        res.json({ success: true, message: 'Email sent successfully' });
-    } catch (err) {
-        console.error('Error sending email:', err);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+    const date=new Date().toISOString();
+    const stmt = db.prepare('INSERT INTO emails (messageid, sentbyplayerid, subject, emailtext, sentdate) VALUES (?, ?, ?, ?, ?)');
+    stmt.run(messageid, playerid, subject, text, date);
+    if (stmt.changes === 0) {
+        return res.json({ success: false, message: 'Email sent but not saved the the database' });
     }
+    return res.json({ success: true, message: 'Email sent and saved successfully' });
+   
 }); 
 
 
@@ -1083,7 +1079,10 @@ app.post('/emailaccepted',checkAuthenticity, (req, res) => {
     
     const eventData = req.body['event-data'];
     const recipient = eventData.recipient;
-
+    const messageId = eventData.id;
+    console.log('Storage key', eventData.storage.key)
+    console.log('Recipient:', recipient);
+    console.log('Message ID:', messageId);
     res.json({ message: 'Welcome to the RBC API' });
 });
 
@@ -1115,7 +1114,19 @@ app.post('/emaildelivered',checkAuthenticity, (req, res) => {
     res.json({ message: 'Welcome to the RBC API' });
 });
 // End of mailgun webhook endpoints
+// Email replies 
+app.post('/emailreplies',checkAuthenticity, (req, res) => {
+    console.log('Email reply endpoint hit with data:');
+    const eventData = req.body['event-data'];
+    const recipient = eventData.recipient;
+    const messageId = eventData.id;
+    const storageKey = eventData.storage.key;
+    console.log('Storage key', storageKey)
+    console.log('Recipient:', recipient);
+    console.log('Message ID:', messageId);
 
+});
+// End of email replies handling
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
