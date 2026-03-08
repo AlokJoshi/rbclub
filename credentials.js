@@ -1,9 +1,10 @@
 require('dotenv').config({ quiet: true });
+const {db} = require('./db');
 const bcrypt = require('bcrypt');
 const sqlite = require('better-sqlite3');
 // Initialize the sqlite database connection
 // const db = new sqlite('mydb.sqlite', { verbose: console.log });
-const db = new sqlite('mydb.sqlite');
+// const db = new sqlite('mydb.sqlite');
 
 
 const admin_ids = process.env.ADMIN_IDS ? JSON.parse(process.env.ADMIN_IDS) : [];

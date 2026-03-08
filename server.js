@@ -4,14 +4,14 @@ try {
 } catch (e) {
     console.log('dotenv not found, using environment variables');
 }
-
+const {db}= require('./db');
 const { sendTestSMS } = require('./infobip');
 const { sendEmail,getMessageEvents,verify } = require('./mailgun');
 // sendTestSMS();
 // sendEmail();
 
 // following lists the events
-getMessageEvents('alokjoshiofaarmax@gmail.com');
+// getMessageEvents('alokjoshiofaarmax@gmail.com');
 
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -52,7 +52,7 @@ const { userExists, login, changePassword,
 // 1. Initialize the SQLite database
 // connects to the existing SQLite database
 // const db = new sqlite('mydb.sqlite', { verbose: console.log });
-const db = new sqlite('mydb.sqlite',);
+// const db = new sqlite('mydb.sqlite');
 
 // Optional: Enable WAL mode for better performance
 // db.pragma('journal_mode = WAL');
@@ -72,14 +72,7 @@ function normalizeSessionsSchema() {
     const columns = db.prepare('PRAGMA table_info(sessions)').all();
     const names = new Set(columns.map((c) => c.name));
 
-    // if (!names.has('expired')) {
-    //     const sourceExpirationColumn = columns.find((column) => ['expire', 'expires', 'expired'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
-    //     db.exec('ALTER TABLE sessions ADD COLUMN expired');
-    //     if (sourceExpirationColumn) {
-    //         // Fix: Just copy from source column, don't use COALESCE with the new column
-    //         db.exec(`UPDATE sessions SET expired = ${quoteIdent(sourceExpirationColumn.name)}`);
-    //     }
-    // }
+    
 
     if (!names.has('sess')) {
         const sourceSessionColumn = columns.find((column) => ['data', 'session', 'sess'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
@@ -90,8 +83,6 @@ function normalizeSessionsSchema() {
         }
     }
 
-    // const normalizedColumns = db.prepare('PRAGMA table_info(sessions)').all().map((column) => column.name);
-    // console.log('Sessions table columns:', normalizedColumns.join(', '));
 }
 
 normalizeSessionsSchema();
