@@ -14,7 +14,7 @@ const verify = ({ signingKey, timestamp, token, signature }) => {
     return (encodedToken === signature)
 }
 
-async function sendEmail(addresses, subject, text) {
+async function sendEmail(addresses, subject, text, html='') {
   const mailgun = new Mailgun(FormData);
   const mg = mailgun.client({
     username: "api",
@@ -25,11 +25,10 @@ async function sendEmail(addresses, subject, text) {
   try {
     const data = await mg.messages.create(process.env.MAILGUN_DOMAIN, {
       from: "info@riversidebridgeclub.com",
-      // from: "Mailgun Sandbox <postmaster@sandbox0836465be48442e79cc9ccf38025f456.mailgun.org>",
-      // to: ["Alok Joshi <alokjoshiofaarmax@gmail.com>","ajoshi@flash.net"],
       to: addresses,
       subject,
       text,
+      html
     });
 
     console.log(data); // logs response data

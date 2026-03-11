@@ -165,6 +165,7 @@ async function logout() {
     }
 
     showCustomAlert('You have been logged out.');
+    await delay(2000)
     decide();
   } catch (err) {
     console.error('Logout error:', err);

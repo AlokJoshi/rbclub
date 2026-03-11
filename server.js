@@ -164,6 +164,22 @@ app.get('/members', (req, res) => {
     }
 });
 
+// admins route
+app.get('/admins', (req, res) => {
+    try {
+        req.session.insecurelogin = req.session.insecurelogin || false;
+        req.session.securelogin = req.session.securelogin || false;
+        req.session.username = req.session.username || '';
+        req.session.userid = req.session.userid || 0;
+        req.session.isAdmin = req.session.isAdmin || false;
+        req.session.casuallogin = req.session.casuallogin || false;
+        res.sendFile(path.join(__dirname, 'public', 'admins.html'));
+    } catch (err) {
+        console.error('Error in admins route:', err);
+        res.status(500).send('Server error');
+    }
+});
+
 // Guests route
 app.get('/guests', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'guests.html'));
@@ -506,22 +522,31 @@ app.post('/forgot-password', async (req, res) => {
 
         // Create reset URL
         // const resetUrl = `http://localhost:${PORT}/reset-password?token=${resetToken}`;
-        const resetUrl = `http://localhost:${PORT}/?token=${resetToken}`;
+        const resetUrl = `http://localhost:${PORT}/members?token=${resetToken}`;
 
         // Send email
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Password Reset Request',
-            html: `
-                <h2>Password Reset Request</h2>
+        // await transporter.sendMail({
+        //     from: process.env.EMAIL_USER,
+        //     to: email,
+        //     subject: 'Password Reset Request',
+        //     html: `
+        //         <h2>Password Reset Request</h2>
+        //         <p>Hello ${user.first},</p>
+        //         <p>You requested a password reset. Click the link below to reset your password:</p>
+        //         <a href="${resetUrl}">Reset Password</a>
+        //         <p>This link will expire in 1 hour.</p>
+        //         <p>If you didn't request this, please ignore this email.</p>
+        //     `
+        // });
+
+        sendEmail([email], 'Password Reset Request','', `
+            <h2>Password Reset Request</h2>
                 <p>Hello ${user.first},</p>
                 <p>You requested a password reset. Click the link below to reset your password:</p>
                 <a href="${resetUrl}">Reset Password</a>
                 <p>This link will expire in 1 hour.</p>
                 <p>If you didn't request this, please ignore this email.</p>
-            `
-        });
+            `);
 
         res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
     } catch (err) {
