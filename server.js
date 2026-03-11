@@ -6,7 +6,7 @@ try {
 }
 const {db}= require('./db');
 const { sendTestSMS } = require('./infobip');
-const { sendEmail,getMessageEvents,verify } = require('./mailgun');
+const { sendEmail,verify } = require('./mailgun');
 // sendTestSMS();
 // sendEmail();
 
@@ -36,7 +36,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const { avtarUpload, celebrationUpload, celebrationMultiUpload } = require('./helper');
+const { avtarUpload, emailReplyUpload, celebrationMultiUpload } = require('./helper');
 
 const { userExists, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
@@ -113,6 +113,22 @@ app.use(session({
     }
 }));
 
+//added this error handling middleware to get more info on errors(suggested by GPT-5.1-Codex)
+app.use((err, req, res, next) => {
+const traceId = crypto.randomUUID();
+// console.error('DB route failed', { traceId, route: req.method + ' ' + req.originalUrl, stack: err.stack });
+// res.status(500).json({ error: 'Internal Server Error', traceId });
+  console.error('DB route failed', {
+    traceId,
+    route: `${req.method} ${req.originalUrl}`,
+    params: req.params,
+    query: req.query,
+    body: req.body,
+    stack: err.stack,
+  });
+  res.status(500).json({ error: 'Internal Server Error', traceId });
+});
+
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -123,10 +139,10 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 //when I added this, the post(/api/celebration/images) started working!!
 //otherwise I was getting 404 Not Found in the front-end!!
-app.use((req, res, next) => {
-  console.log('REQ', req.method, req.originalUrl);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log('REQ', req.method, req.originalUrl);
+//   next();
+// });
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'landing.html'));
@@ -332,7 +348,7 @@ app.get('/api/playerdata', (req, res) => {
         const result = stmt.all();
         res.json(result);
     } catch (err) {
-        console.error('Error fetching player data:', err);
+        console.error('Error fetching player data:', { sql: stmt.source, stack: err.stack });
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -343,7 +359,7 @@ app.get('/api/playerdata/:id', (req, res) => {
         const result = stmt.get(playerId);
         res.json(result);
     } catch (err) {
-        console.error('Error fetching player data:', err);
+        console.error('Error fetching player data:', { sql: stmt.source, params: { playerId }, stack: err.stack });
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -458,9 +474,9 @@ app.get('/get-session-id', (req, res) => {
         const userid = req.session.userid;
         const isAdmin = req.session.isAdmin;
         const casuallogin = req.session.casuallogin;
-        const full_name = req.session.fullname;
-        console.log('Session ID:', sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, full_name);
-        res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname: full_name });
+        const fullname = req.session.fullname;
+        console.log('Session ID:', sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname);
+        res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname });
     } else {
         res.json({ message: 'No session found' });
     }
@@ -1078,13 +1094,19 @@ app.post('/emailaccepted',checkAuthenticity, (req, res) => {
 });
 
 function checkAuthenticity(req, res, next) {
-    const signature = req.body.signature;
-    const verified = verify({
-        timestamp: signature.timestamp,
-        token: signature.token,
-        signature: signature.signature,
-        signingKey: process.env.MAILGUN_SIGNING_KEY
-    })
+    let verified = false;
+    try{
+        const signature = req.body.signature;
+        verified = verify({
+            timestamp: signature.timestamp || req.body.timestamp,
+            token: signature.token || req.body.token,
+            signature: signature.signature || signature,
+            signingKey: process.env.MAILGUN_SIGNING_KEY
+        })
+    }catch(err){
+        console.error('Error verifying signature:', err);
+        return res.status(400).json({ message: 'Error verifying signature' });
+    }
     if (!verified) {
         console.error('Invalid signature for email event');
         return res.status(400).json({ message: 'Invalid signature' });
@@ -1106,15 +1128,19 @@ app.post('/emaildelivered',checkAuthenticity, (req, res) => {
 });
 // End of mailgun webhook endpoints
 // Email replies 
-app.post('/emailreplies',checkAuthenticity, (req, res) => {
+// app.post('/emailreplies',checkAuthenticity, (req, res) => {
+app.post('/emailreplies',emailReplyUpload.any(),checkAuthenticity, (req, res) => {
     console.log('Email reply endpoint hit with data:');
-    const eventData = req.body['event-data'];
-    const recipient = eventData.recipient;
-    const messageId = eventData.id;
-    const storageKey = eventData.storage.key;
-    console.log('Storage key', storageKey)
-    console.log('Recipient:', recipient);
-    console.log('Message ID:', messageId);
+    console.log('Email reply received with body:', req.body);
+    console.log('Email reply files:', req.files);
+    res.json({sucess:true})
+    // const eventData = req.body['event-data'];
+    // const recipient = eventData.recipient;
+    // const messageId = eventData.id;
+    // const storageKey = eventData.storage.key;
+    // console.log('Storage key', storageKey)
+    // console.log('Recipient:', recipient);
+    // console.log('Message ID:', messageId);
 
 });
 // End of email replies handling

@@ -14,6 +14,10 @@ const s3 = new S3Client({
     }
 });
 
+const emailReplyUpload = multer({
+  storage: multer.memoryStorage()
+});
+
 const avatarStorage = multerS3({
   s3,
   bucket: process.env.SPACES_BUCKET,
@@ -80,7 +84,8 @@ module.exports = {
     avatarUpload,
     avtarUpload: avatarUpload,
     celebrationUpload,
-    celebrationMultiUpload
+    celebrationMultiUpload,
+    emailReplyUpload
 };
 
 /* suggested by
