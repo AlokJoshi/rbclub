@@ -14,13 +14,14 @@ const verify = ({ signingKey, timestamp, token, signature }) => {
     return (encodedToken === signature)
 }
 
-async function sendEmail(addresses, subject, text, html='') {
+async function sendEmail({addresses, subject, text, html='',emailid=''}) {
+  // emailid is an optional parameter that can be used to track the email in the database
+  // this requires that we first save the data in the emails table and then pass the emailid to this function to include in the email headers or body for tracking purposes
+  
   const mailgun = new Mailgun(FormData);
   const mg = mailgun.client({
     username: "api",
     key: process.env.MAILGUN_API_KEY,
-    // When you have an EU-domain, you must specify the endpoint:
-    // url: "https://api.eu.mailgun.net"
   });
   try {
     const data = await mg.messages.create(process.env.MAILGUN_DOMAIN, {
@@ -28,7 +29,8 @@ async function sendEmail(addresses, subject, text, html='') {
       to: addresses,
       subject,
       text,
-      html
+      html,
+      'v:emailid': emailid // include emailid in the email variables for tracking
     });
 
     console.log(data); // logs response data

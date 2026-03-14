@@ -1,44 +1,9 @@
-//global
-let sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname;
-let celebrationsLoaded = false;
 
-function delay(durationInMilliseconds) {
-  return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
-}
 
-//delay duration in seconds
-async function showCustomAlert(message, delayDuration = 3) {
-  swal({ 
-    title: 'Riverside Bridge Club',
-    text: message 
-  });
-  // const alertBox = document.getElementById('customAlert');
-  // const alertMessage = alertBox.querySelector('p');
-  // alertMessage.textContent = message;
-  // alertBox.style.display = 'flex';
-  // await delay(delayDuration * 1000); // Display for the specified duration
-  // // Fade out effect
-  // alertBox.style.transition = 'opacity 0.5s';
-  // alertBox.style.display = 'none';
-}
 
-async function showCustomConfirmWithInput(message) {
-  const expected = 'DELETE';
-  const userInput = await swal({
-    title: message,
-    content: {
-      element: 'input',
-      attributes: {
-        placeholder: `Type ${expected} to confirm`,
-        autocapitalize: 'off'
-      }
-    },
-    buttons: ['Cancel', 'Confirm']
-  });
 
-  return typeof userInput === 'string' &&
-    userInput.trim().toUpperCase() === expected;
-}
+
+
 
 function displaynameandphonecheckform() {
   const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
@@ -48,6 +13,7 @@ function displaynameandphonecheckform() {
 function displayloginform() {
   const loginmodal = document.getElementById('loginmodal')
   loginmodal.style.display = 'block'
+  // loginmodal.style.display='flex'
 }
 
 function displaychangepasswordform() {
@@ -59,99 +25,9 @@ function displaychangepasswordform() {
   changepasswordmodal.style.display = 'block'
 }
 
-function displayaddnewplayerform() {
-  if (!isAdmin || !securelogin) {
-    showCustomAlert('You must be securely logged in as Admin to add a new player.', 10);
-    return;
-  }
-  const addnewplayermodal = document.getElementById('addnewplayermodal')
-  const newplayerfirstname = document.getElementById('newplayerfirstname')
-  newplayerfirstname.value = ''
-  const newplayerlastname = document.getElementById('newplayerlastname')
-  newplayerlastname.value = ''
-  addnewplayermodal.style.display = 'block'
-}
-
-function displaydefaultlogincredentialsform() {
-  if (!isAdmin || !securelogin) {
-    showCustomAlert('You must be securely logged in as Admin to view default login credentials.', 10);
-    return;
-  }
-  const defaultlogincredentials = document.getElementById('defaultlogincredentials')
-  const dlc_name = document.getElementById('dlc_name')
-  dlc_name.value = ''
-  const defaultlogincredentialsresult = document.getElementById('defaultlogincredentialsresult')
-  defaultlogincredentialsresult.innerText = ''
-  defaultlogincredentials.style.display = 'block'
-}
-
-function closedefaultlogincredentialsform() {
-  const defaultlogincredentials = document.getElementById('defaultlogincredentials')
-  defaultlogincredentials.style.display = 'none'
-}
-
 function closeNameAndPhoneCheck() {
   const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
   nameandphonecheckmodal.style.display = 'none'
-}
-
-async function GetDefaultLoginCredentials() {
-  try {
-    console.log('Fetching default login credentials');
-    const fullname = document.getElementById('dlc_name').value;
-    const first = fullname.split(' ')[0];
-    const last = fullname.split(' ').slice(1).join(' ');
-    const res = await fetch(`/getdefaultlogincredentials`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ first, last })
-    });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    console.log(result);
-    const defaultlogincredentialsresult = document.getElementById('defaultlogincredentialsresult')
-    defaultlogincredentialsresult.innerText = `Default Username: ${result.username}, Password: ${result.password}`
-  } catch (err) {
-    console.error('Error fetching default login credentials:', err);
-    showCustomAlert(`Error fetching default login credentials: ${err.message}`, 5);
-  }
-}
-async function SubmitNewPlayer() {
-  try {
-    console.log('Adding new player first and last names only');
-    const res = await fetch(`/addnewplayer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        first: document.getElementById('newplayerfirstname').value,
-        last: document.getElementById('newplayerlastname').value
-      })
-    });
-    if (!res.ok) {
-      const err = await res.text();
-      if (res.status === 400) {
-        showCustomAlert('Player with the same first and last name already exists', 5);
-        return;
-      }
-      throw new Error(`Add player failed: ${res.status} ${err}`);
-    }
-    //res.message has the username and password
-    const result = await res.json();
-    if (!result.success) {
-      showCustomAlert(`Adding new player failed: ${result.message}`, 5);
-      await createPlayerTable(); // refresh the table display
-    } else {
-      showCustomAlert(result.message, 5);
-    }
-  } catch (err) {
-    console.error('Error adding new player:', err);
-    showCustomAlert(`Error adding new player: ${err.message}`, 5);
-  }
 }
 
 async function logout() {
@@ -181,11 +57,6 @@ function closeLoginModal() {
 function closeChangePasswordModal() {
   const changePasswordModal = document.getElementById("changepasswordmodal");
   changePasswordModal.style.display = "none";
-}
-
-function closeAddNewPlayerModal() {
-  const addNewPlayerModal = document.getElementById("addnewplayermodal");
-  addNewPlayerModal.style.display = "none";
 }
 
 function closeResetPasswordModal() {
@@ -1018,32 +889,7 @@ var loginModal = document.getElementById("loginmodal");
 // shouldAdmitToSite()
 
 // checkIfUserShouldBeAllowedTemporayLogin()
-async function getSessionDetails() {
-  try {
 
-    const res = await fetch('/get-session-id', {
-      method: 'GET'
-    });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const result = await res.json()
-    sessionId = result.sessionId;
-    securelogin = result.securelogin;
-    insecurelogin = result.insecurelogin;
-    username = result.username;
-    userid = result.userid;
-    isAdmin = result.isAdmin;
-    casuallogin = result.casuallogin;
-    fullname = result.fullname;
-
-    return [result.sessionId, result.securelogin, result.insecurelogin, result.username, result.userid, result.isAdmin, result.casuallogin, result.fullname];
-
-  } catch (err) {
-
-    console.error('API error:', err);
-  }
-}
 async function PopulateDirectorsTable() {
   try {
     const res = await fetch('api/directorsdata', {
@@ -1094,273 +940,9 @@ async function PopulateOfficersTable() {
     console.error('API error:', err);
   }
 }
-async function PopulateEmailList() {
-
-  const tbody = document.getElementById('emaillistbody');
-  if (!tbody) return console.warn('Table body #emaillistbody not found');
-
-  tbody.innerHTML = '';
-
-  const res = await fetch('/api/mailinglists', {
-    method: 'GET'
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const result = await res.json();
 
 
-  result.mailingLists.forEach(row => {
-    const tr = document.createElement('tr');
 
-    const id = document.createElement('td');
-    id.textContent = row.id;
-    tr.appendChild(id);
-
-    const name = document.createElement('td');
-    name.textContent = row.name;
-    tr.appendChild(name);
-
-    const description = document.createElement('td');
-    description.textContent = row.description;
-    tr.appendChild(description);
-
-    const cell_edit = document.createElement('td');
-    const iEdit = document.createElement('i');
-    iEdit.className = 'fas fa-edit';
-    iEdit.style.marginLeft = '10px';
-    iEdit.title = 'Edit Mailing List';
-    iEdit.addEventListener('click', () => {
-      // Copy the data to the addMailingList form and enable the update button
-      document.getElementById('mailingListId').value = row.id;
-      document.getElementById('newMailingListName').value = row.name;
-      document.getElementById('newMailingListDescription').value = row.description;
-      document.getElementById('updateMailingListButton').disabled = false;
-      document.getElementById('addMailingListButton').disabled = true;
-    });
-    cell_edit.appendChild(iEdit);
-    tr.appendChild(cell_edit);
-
-    const cell_delete = document.createElement('td');
-    const iDelete = document.createElement('i');
-    iDelete.className = 'fas fa-trash';
-    iDelete.style.marginLeft = '10px';
-    iDelete.title = 'Delete Mailing List';
-    iDelete.addEventListener('click', async () => {
-      // Implement delete functionality here
-      console.log(`Delete mailing list with ID: ${row.id}`);
-      const res = await fetch(`/api/mailinglist/${row.id}`, {
-        method: 'DELETE'
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        showCustomAlert(`Error deleting mailing list: ${res.status} ${err}`, 5);
-        return;
-      } else {
-        showCustomAlert(`Mailing list deleted successfully`, 5);
-        await PopulateEmailList(); // Refresh the list after deletion
-      }
-    });
-    cell_delete.appendChild(iDelete);
-    tr.appendChild(cell_delete);
-
-    tbody.appendChild(tr);
-  });
-}
-async function UpdateMailingList() {
-  const mailingListId = document.getElementById('mailingListId').value;
-  const nameInput = document.getElementById('newMailingListName');
-  const descriptionInput = document.getElementById('newMailingListDescription');
-  const name = nameInput.value.trim();
-  const description = descriptionInput.value.trim();
-  if (!name) {
-    showCustomAlert('Please enter a name for the mailing list.', 5);
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/mailinglists', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ id: mailingListId, name, description })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      showCustomAlert(`Error updating mailing list: ${err.message}`, 5);
-      return;
-    }
-    showCustomAlert('Mailing list updated successfully.', 5);
-    await PopulateEmailList();
-    nameInput.value = '';
-    descriptionInput.value = '';
-    document.getElementById('updateMailingListButton').disabled = true;
-    document.getElementById('addMailingListButton').disabled = false;
-  } catch (err) {
-    console.error('Error updating mailing list:', err);
-    showCustomAlert(`Error updating mailing list. ${err}`, 5);
-  }
-}
-
-async function AddMailingList() {
-  const nameInput = document.getElementById('newMailingListName');
-  const descriptionInput = document.getElementById('newMailingListDescription');
-  const name = nameInput.value.trim();
-  const description = descriptionInput.value.trim();
-
-  if (!name) {
-    showCustomAlert('Please enter a name for the mailing list.', 5);
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/mailinglists', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ name, description })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      showCustomAlert(`Error adding mailing list: ${err.message}`, 5);
-      return;
-    }
-    showCustomAlert('Mailing list added successfully.', 5);
-    await PopulateEmailList();
-    nameInput.value = '';
-    descriptionInput.value = '';
-  } catch (err) {
-    console.error('Error adding mailing list:', err);
-    showCustomAlert(`Error adding mailing list. ${err}`, 5);
-  }
-}
-
-async function PopulateMailingLists() {
-  try {
-    const res = await fetch('/api/mailinglists', {
-      method: 'GET'
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    const select = document.getElementById('mailingListSelect');
-    if (!select) return console.warn('Select element #mailingListSelect not found');
-    select.innerHTML = '<option value="">Select a mailing list</option>';
-    result.mailingLists.forEach(ml => {
-      const option = document.createElement('option');
-      option.value = ml.id;
-      option.textContent = ml.name;
-      select.appendChild(option);
-    });
-  } catch (err) {
-    console.error('Error populating mailing lists:', err);
-  }
-}
-
-async function loadEmailTo() {
-  const select = document.getElementById('mailingListSelect');
-  const mailingListId = select.value;
-  if (!mailingListId) {
-    showCustomAlert('Please select a mailing list to load recipients.', 5);
-    return;
-  }
-}
-
-async function loadEmailRecipients() {
-  const select = document.getElementById('mailingListSelect');
-  const mailingListId = select.value;
-  if (!mailingListId) {
-    showCustomAlert('Please select a mailing list to load recipients.', 5);
-    return;
-  }
-  try {
-    const res = await fetch(`/api/mailinglist/${mailingListId}/recipients`, {
-      method: 'GET'
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    const tableBody = document.getElementById('emailRecipientsTableBody');
-    if (!tableBody) return console.warn('Table body #emailRecipientsTableBody not found');
-    tableBody.innerHTML = '';
-    result.recipients.forEach(recipient => {
-      const row = document.createElement('tr');
-      const idCell = document.createElement('td');
-      idCell.textContent = recipient.mailinglistdetailsid;
-      row.appendChild(idCell);
-      const nameCell = document.createElement('td');
-      nameCell.textContent = recipient.name;
-      row.appendChild(nameCell);
-      const emailCell = document.createElement('td');
-      emailCell.textContent = recipient.email;
-      row.appendChild(emailCell);
-      const deleteCell = document.createElement('td');
-      deleteCell.style.cursor = 'pointer';
-      deleteCell.addEventListener('click', async () => {
-        // Implement delete functionality here
-        const mailingListDetailsId = recipient.mailinglistdetailsid;
-        const res = await fetch(`/api/mailinglist/${mailingListDetailsId}/removerecipient`, {
-          method: 'DELETE',
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const result = await res.json();
-        if (result.success) {
-          row.remove();
-          showCustomAlert(`Recipient ${recipient.name} removed successfully.`, 2);
-        } else {
-          showCustomAlert(`Error removing recipient. ${result.message}`, 5);
-        }
-      });
-      const deleteIcon = document.createElement('i');
-      deleteIcon.className = 'fas fa-trash';
-      deleteCell.appendChild(deleteIcon);
-      row.appendChild(deleteCell);
-      tableBody.appendChild(row);
-    });
-    populateNonEmailRecipients();
-  } catch (err) {
-    console.error('Error loading email recipients:', err);
-    showCustomAlert(`Error loading email recipients. ${err}`, 5);
-  }
-}
-async function populateNonEmailRecipients() {
-  try {
-    const mailingListId = document.getElementById('mailingListSelect').value;
-    const res = await fetch(`/api/nonemailrecipients/${mailingListId}`, {
-      method: 'GET'
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    const container = document.getElementById('nonEmailRecipients');
-    if (!container) return console.warn('Container #nonEmailRecipients not found');
-    container.innerHTML = '';
-    result.recipients.forEach(recipient => {
-      const div = document.createElement('div');
-      div.style.cursor = 'pointer';
-      div.textContent = `${recipient.name}`;
-      div.onclick = async () => {
-        // Handle click to include recipient
-        const memberid = recipient.playerid;
-        const res = await fetch(`/api/mailinglist/${mailingListId}/addrecipient`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ memberid })
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const result = await res.json();
-        if (result.success) {
-          div.style.display = 'none';
-          showCustomAlert(`Recipient ${recipient.name} added successfully.`, 2);
-          loadEmailRecipients(); // Refresh the email recipients list
-        } else {
-          showCustomAlert(`Error adding recipient. ${result.message}`, 5);
-        }
-      };
-      container.appendChild(div);
-    });
-  } catch (err) {
-    console.error('Error populating non-email recipients:', err);
-    showCustomAlert(`Error populating non-email recipients. ${err}`, 5);
-  }
-}
 
 function CancelAnnouncement() {
   document.getElementById('addupdateannouncements').style.display = 'none';
@@ -1578,64 +1160,10 @@ async function addAnnouncement() {
     });
 }
 
-function sendEmail() {
-  if (isAdmin) {
-    const mailinglistId = document.getElementById('toEmailGroup').value;
-  } else {
-    const memberid = document.getElementById('toEmailIndividual').value;
-  }
-  const subject = document.getElementById('emailSubject').value.trim();
-  const body = document.getElementById('emailBody').value.trim();
-  if (isAdmin && !mailinglistId) {
-    showCustomAlert('Please select a mailing list to send the email to.', 5);
-    return;
-  }
-  if (!isAdmin && !memberid) {
-    showCustomAlert('Please select a member to send the email to.', 5);
-    return;
-  }
-  if (!subject) {
-    showCustomAlert('Please enter a subject for the email.', 5);
-    return;
-  }
-  if (!body) {
-    showCustomAlert('Please enter a body for the email.', 5);
-    return;
-  }
-  const emailData = {
-    mailinglistId: isAdmin ? mailinglistId : null,
-    memberid: !isAdmin ? memberid : null,
-    subject,
-    text: body
-  };
-  // Send the email using fetch or any other method
-  fetch('/api/sendemail', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(emailData)
-  })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
-    .then(result => {
-      if (result.success) {
-        showCustomAlert('Email sent successfully.', 2);
-      } else {
-        showCustomAlert(`Error sending email. ${result.message}`, 5);
-      }
-    })
-    .catch(err => {
-      console.error('Error sending email:', err);
-      showCustomAlert(`Error sending email. ${err}`, 5);
-    });
 
-}
 
 document.addEventListener('DOMContentLoaded', PopulateDirectorsTable);
 document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
-document.addEventListener('DOMContentLoaded', PopulateEmailList);
-document.addEventListener('DOMContentLoaded', PopulateMailingLists);
 document.addEventListener('DOMContentLoaded', PopulateAnnouncements);
 document.addEventListener('DOMContentLoaded', PopulatePOTMForm);      //needs to be only once
 document.addEventListener('DOMContentLoaded', displayPOTM);
@@ -1798,61 +1326,7 @@ async function displayPOTM() {
   }
 }
 
-function SetupForAdmin(isAdmin) {
-  const toEmailIndividual = document.getElementById('toEmailIndividual');
-  const toEmailGroup = document.getElementById('toEmailGroup');
-  toEmailIndividual.style.display = isAdmin ? 'none' : 'block';
-  toEmailGroup.style.display = isAdmin ? 'block' : 'none';
-}
 
-async function decide() {
-  [sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname] = await getSessionDetails()
-  // Base the decision on global variables set during login or checks
-  console.log(sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname)
-  // Check if the session exists
-  // const [sessionid,securelogin]= await isUserLoggedIn()
-
-  // remove blurred effect from all content classes
-  const contentElements = document.getElementsByClassName('content');
-  const show = sessionId && (casuallogin || insecurelogin || securelogin);
-  for (let i = 0; i < contentElements.length; i++) {
-    if (!show) {
-      contentElements[i].classList.add('blurred');
-    } else {
-      contentElements[i].classList.remove('blurred');
-    }
-  }
-
-  let logindetails = ''
-  let logindetails2 = ``
-  if (sessionId && casuallogin) {
-    logindetails = `You are logged in as ${username} but you are a casual visitor. You can only view the data.`
-    logindetails2 = `${fullname} : As a casual visitor, you can only view the data.`
-    showCustomAlert(logindetails, 7)
-  } else if (sessionId && insecurelogin) {
-    logindetails = `You are logged in as ${username} but you are using a password that is not secure. You can only view the data.`
-    logindetails2 = `${fullname} : You are using a password that is not secure. You can only view the data.`
-    showCustomAlert(logindetails, 7)
-  } else if (sessionId && securelogin && !isAdmin) {
-    logindetails = `Note that you are securely logged in as ${username} and you can view data as well as edit your own data.`
-    logindetails2 = `${fullname} : You are securely logged in and can view data as well as edit your own data.`
-    showCustomAlert(logindetails, 7)
-  } else if (sessionId && securelogin && isAdmin) {
-    logindetails = `Note that you are logged in as ${username}, an Admin, and can view and edit all data.`
-    logindetails2 = `${fullname} : You are logged in as an Admin and can view and edit all data.`
-    showCustomAlert(logindetails, 7)
-  } else {
-    logindetails = `Note that you are not logged in. You must log in with the log-in details sent to you. Alternatively, you can log in by using your full name and phone number. If you are a member and have not received login details, please contact the club.`
-    logindetails2 = logindetails
-    showCustomAlert(logindetails, 7)
-    console.log("User is not logged in.");
-  }
-  document.getElementById('loginresult').textContent = logindetails2;
-
-
-  SetupForAdmin(isAdmin)
-
-}
 
 async function playing(day) {
   const checkbox = document.getElementById(`playing${day}`);
@@ -2000,9 +1474,6 @@ function setupCelebrationsLazyLoad() {
   select.addEventListener('pointerdown', loadIfNeeded, { once: false });
 }
 
-async function displayEmailsSent() {
-    
-}
 
 decide()
 

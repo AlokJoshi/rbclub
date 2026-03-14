@@ -289,6 +289,21 @@ function getMailingListRecipients(listId) {
     }
 }
 
+function getMailingListEmails(listId) {
+    try {
+        const result = getMailingListRecipients(listId);
+        if (result.success) {
+            const emails = result.recipients.map(r => r.email).filter(email => email !== null && email !== undefined && email.trim() !== '');
+            return {success: true, emails: emails, message: 'Recipient emails fetched successfully'};
+        } else {
+            return {success: false, emails: [], message: 'Error fetching recipients'};
+        }
+    } catch (err) {
+        console.error('Error fetching mailing list emails:', err);
+        return {success: false, emails: [], message: 'Error fetching emails'};
+    }
+}
+
 function getNonMailingListRecipients(listId) {
     try {
         const stmt = db.prepare(`SELECT player.id as playerid, CONCAT(player.first,' ',player.last) AS name, player.email FROM player LEFT JOIN mailinglistdetails ON player.id = mailinglistdetails.playerid and mailinglistdetails.mailinglistid=? WHERE mailinglistdetails.mailinglistid IS NULL order by player.first, player.last;`);
@@ -320,6 +335,17 @@ function getPOTMWords() {
         return {success: false, words: [], message: 'Error fetching POTM words'};
     }
 }
+function getEmails(){
+    try{
+        const stmt = db.prepare(`Select emails.*, concat(player.first,' ',player.last) as sender from 
+            emails inner join player on emails.sentbyplayerid = player.id order by sentdate desc;`);
+        const result = stmt.all();
+        return {success: true, emails: result, message: 'Emails fetched successfully'};
+    } catch (err) {
+        console.error('Error fetching emails:', err);
+        return {success: false, emails: [], message: 'Error fetching emails'};      
+    }
+}
 
 module.exports = {
     userExists,
@@ -340,8 +366,10 @@ module.exports = {
     existsMailingList,
     updateMailingList,
     getMailingListRecipients,
+    getMailingListEmails,
     getNonMailingListRecipients,
     addRecipientToMailingList,
     formatDateToYYYYMMDD,
-    getPOTMWords
+    getPOTMWords,
+    getEmails
 }

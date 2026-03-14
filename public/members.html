@@ -95,10 +95,10 @@
 				<button type="button" id="loginBtn" class="button primary" onclick="displayloginform()">Login</button>
 				<button type="button" id="changePasswordBtn" class="button primary" onclick="displaychangepasswordform()">Change
 					Password</button>
-				<button type="button" id="addnewplayerBtn" class="button primary" onclick="displayaddnewplayerform()">Add New
+				<!-- <button type="button" id="addnewplayerBtn" class="button primary" onclick="displayaddnewplayerform()">Add New
 					Player</button>
 				<button type="button" id="defaultlogincredentialsBtn" class="button primary"
-					onclick="displaydefaultlogincredentialsform()">Default Login Credentials</button>
+					onclick="displaydefaultlogincredentialsform()">Default Login Credentials</button> -->
 				<button type="button" id="logoutBtn" class="button primary" onclick="logout()">Logout</button>
 			</header>
 			<div class="content">
@@ -316,141 +316,9 @@
 			</div>
 		</section>
 
-		<!-- Section to display email list names-->
-		<section>
-			<header>
-				<h2>Maililng Lists</h2>
-			</header>
-			<div class="content">
-				<div style="height:200px;overflow:scroll" id="emaillist">
-					<table>
-						<thead>
-							<tr>
-								<th>Id</th>
-								<th>Mailing List Name</th>
-								<th>Description</th>
-								<th>Edit</th>
-								<th>Delete</th>
-							</tr>
-						</thead>
-						<tbody id="emaillistbody">
-							<tr>
-								<td colspan="5">Loading mailing lists names..</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<br>
-				<label for="addMailingListForm">Add or Edit Mailing List</label>
-				<form action="" id="addMailingListForm" style="margin-top:20px;">
-					<div class="fields">
-						<input type="hidden" id="mailingListId" name="mailingListId" value="">
-						<div style="display:flex; justify-content: space-around;">
-							<div class="field half">
-								<label for="newMailingListName">New Mailing List Name</label>
-								<input type="text" name="newMailingListName" id="newMailingListName" placeholder="New Mailing List Name"
-									required />
-							</div>
-							<div class="field half">
-								<label for="newMailingListDescription">New Mailing List Description</label>
-								<input type="text" name="newMailingListDescription" id="newMailingListDescription"
-									placeholder="New Mailing List Description" />
-							</div>
-						</div>
-						<div style="display:flex; justify-content: space-around;">
-							<div class="field half">
-								<button id="addMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
-									onclick="AddMailingList()">Add
-									Mailing List</button>
-							</div>
-							<div class="field half">
-								<button id="updateMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
-									onclick="UpdateMailingList()" disabled>Update Mainling List</button>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</section>
+		
 
-		<!-- Section to Add/Delete email recipients from mailing lists-->
-		<section>
-			<header>
-				<h2>Email Recipients Management</h2>
-			</header>
-			<div class="content">
-				<Select id="mailingListSelect" onchange="loadEmailRecipients()">
-					<option value="">Select Mailing List</option>
-				</Select>
-				<table id="emailRecipientsTable">
-					<thead>
-						<tr>
-							<th>Id</th>
-							<th>Name</th>
-							<th>Email</th>
-							<th>Delete</th>
-						</tr>
-					</thead>
-					<tbody id="emailRecipientsTableBody">
-						<tr>
-							<td colspan="4">Loading email recipients...</td>
-						</tr>
-					</tbody>
-				</table>
-				<br>
-				<label for="addEmailRecipientForm">Add (by clicking) Email Recipient to Mailing List</label>
-				<form action="" id="addEmailRecipientForm" style="margin-top:20px;">
-					<div class="fields">
-						<div class="field full">
-							<div id="nonEmailRecipients"
-								style="height: 300px; width:200px; overflow: scroll; border:1px solid #ccc; padding:4px;">
-								<!-- This will be populated with list of all members that are not already in the selected mailing list -->
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</section>
-
-		<!-- Send Email Section -->
-		<section>
-			<header>
-				<h2>Send Email</h2>
-			</header>
-			<div class="content">
-				<p>This is another section for future use.</p>
-				<form action="">
-					<div id="toEmailIndividual" class="field full">
-						<label for="toEmailIndividual">Email To:</label>
-						<select name="toEmailIndividual" id="toEmailIndividual" placeholder="To Email" required>
-							<option value="">Select Recipient</option>
-						</select>
-					</div>
-					<div id="toEmailGroup" class="field full">
-						<label for="toEmailGroup">Email To:</label>
-						<select name="toEmailGroup" id="toEmailGroup" placeholder="To Email" required>
-							<option value="">Select Group</option>
-						</select>
-					</div>
-					<div class="field full">
-						<label for="emailSubject">Email Subject</label>
-						<input type="text" name="emailSubject" id="emailSubject" placeholder="Email Subject" required />
-					</div>
-					<div class="field full">
-						<label for="emailBody">Email Text</label>
-						<textarea name="emailBody" id="emailBody" placeholder="Email Body" required></textarea>
-					</div>
-					<div class="field full wrap">
-						<button class="button primary" type="button" style="margin-top: 30px;" onclick="sendEmail()">
-							Send Email
-						</button>
-					</div>
-				</form>
-				<div id="displayemails">
-						<!--create a list of sent emails here -->
-				</div>
-			</div> <!-- End of Send Email Content -->
-		</section>
+		
 
 		<!-- Player of the Month Section -->
 		<section>
@@ -579,10 +447,10 @@
 	<!-- <button id="open-modal-btn">Open Login Form</button> -->
 
 	<!-- The Modal -->
-	<div id="loginmodal" class="modal">
+	<div id="loginmodal"  class="modal">
 
 		<!-- Modal content -->
-		<div class="modal-content">
+		<div class="modal-content" style="height:70%">
 			<span id="closeLoginModal" class="close" onclick="closeLoginModal()">&times;</span>
 			<h2>Login</h2>
 			<form action="">
@@ -676,39 +544,10 @@
 		</div>
 		<p id="changeasswordError" style="color: red;"></p>
 	</div>
-
-	<div id="addnewplayermodal" class="modal wrap">
-
-		<!-- Modal content -->
-		<div class="modal-content">
-			<span class="close" onclick="closeAddNewPlayerModal()">&times;</span>
-			<h2>Add New Player</h2>
-			<form id="addNewPlayerForm">
-				<div class="fields">
-
-					<div class="field half">
-						<label for="newplayerfirstname">First Name</label>
-						<input type="text" name="newplayerfirstname" id="newplayerfirstname" placeholder="First Name" required />
-					</div>
-					<div class="field half">
-						<label for="newplayerlastname">Last Name</label>
-						<input type="text" name="newplayerlastname" id="newplayerlastname" placeholder="Last Name" required />
-					</div>
-					<div class="field full wrap">
-						<button id="submitNewPlayerButton" type="button" style="margin-top: 30px;" onclick="SubmitNewPlayer()"
-							class="button primary">Add
-							Player</button>
-					</div>
-				</div>
-			</form>
-
-		</div>
-
-	</div> <!-- addnewplayermodal -->
-
+	
+	<!-- I think we are not using this -->
 	<!-- The Modal -->
-	<div id="nameandphonecheck" class="modal wrap">
-		<!-- Modal content -->
+	<!-- <div id="nameandphonecheck" class="modal wrap">
 		<div class="modal-content">
 			<span class="close" onclick="closeNameAndPhoneCheck()">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
@@ -734,35 +573,10 @@
 						onclick="DoNameAndPhoneCheck()">Check</button>
 				</div>
 			</div>
-		</div> <!--modal content -->
-	</div>
+		</div> 
+	</div> -->
 
-	<!-- The Modal -->
-	<div id="defaultlogincredentials" class="modal wrap">
-		<!-- Modal content -->
-		<div class="modal-content">
-			<span id="defaultlogincredentialsclose" onclick="closedefaultlogincredentialsform()" class="close">&times;</span>
-			<h2>Riverside Bridge Club (Unit 537)</h2>
-			<div class="fields" id="defaultlogincredentialssection" style="display:block">
 
-				<div class="field full">
-					<label for="dlc_name">
-						Default Login Credentials - Enter the name:
-					</label>
-					<input type="text" placeholder="John Smith" name="dlc_name" id="dlc_name">
-				</div>
-
-				<div class="field full">
-					<p id="defaultlogincredentialsresult"></p>
-				</div>
-
-				<div class="field full wrap">
-					<button type="button" class="button primary" style="margin-top: 30px;"
-						onclick="GetDefaultLoginCredentials()">Get Default Login Credentials</button>
-				</div>
-			</div>
-		</div> <!--modal content -->
-	</div>
 
 	<div id="resetPasswordModal" class="modal">
 		<div class="modal-content">
@@ -828,7 +642,8 @@
 	<script src="assets/js/browser.min.js"></script>
 	<script src="assets/js/breakpoints.min.js"></script>
 	<script src="assets/js/util.js"></script>
-	<script src="assets/js/myutils.js"></script>
+  <script src="assets/js/common.js"></script>
+	<script src="assets/js/members.js"></script>
 	<script src="assets/js/main.js"></script>
 
 </body>

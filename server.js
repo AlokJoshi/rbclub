@@ -4,9 +4,9 @@ try {
 } catch (e) {
     console.log('dotenv not found, using environment variables');
 }
-const {db}= require('./db');
+const { db } = require('./db');
 const { sendTestSMS } = require('./infobip');
-const { sendEmail,verify } = require('./mailgun');
+const { sendEmail, verify } = require('./mailgun');
 // sendTestSMS();
 // sendEmail();
 
@@ -42,10 +42,10 @@ const { userExists, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
     passwordMatches, getMailingListAddresses, getMailingLists,
     deleteMailingList, createMailingList, existsMailingList,
-    updateMailingList, getMailingListRecipients, isPlayer,
+    updateMailingList, getMailingListRecipients, getMailingListEmails, isPlayer,
     saveGuestInquiry, getNonMailingListRecipients,
     addRecipientToMailingList, formatDateToYYYYMMDD,
-    getPOTMWords } = require('./credentials')
+    getPOTMWords,getEmails } = require('./credentials')
 
 
 
@@ -72,7 +72,7 @@ function normalizeSessionsSchema() {
     const columns = db.prepare('PRAGMA table_info(sessions)').all();
     const names = new Set(columns.map((c) => c.name));
 
-    
+
 
     if (!names.has('sess')) {
         const sourceSessionColumn = columns.find((column) => ['data', 'session', 'sess'].includes(column.name.replace(/["'`\[\]]/g, '').toLowerCase()));
@@ -115,18 +115,18 @@ app.use(session({
 
 //added this error handling middleware to get more info on errors(suggested by GPT-5.1-Codex)
 app.use((err, req, res, next) => {
-const traceId = crypto.randomUUID();
-// console.error('DB route failed', { traceId, route: req.method + ' ' + req.originalUrl, stack: err.stack });
-// res.status(500).json({ error: 'Internal Server Error', traceId });
-  console.error('DB route failed', {
-    traceId,
-    route: `${req.method} ${req.originalUrl}`,
-    params: req.params,
-    query: req.query,
-    body: req.body,
-    stack: err.stack,
-  });
-  res.status(500).json({ error: 'Internal Server Error', traceId });
+    const traceId = crypto.randomUUID();
+    // console.error('DB route failed', { traceId, route: req.method + ' ' + req.originalUrl, stack: err.stack });
+    // res.status(500).json({ error: 'Internal Server Error', traceId });
+    console.error('DB route failed', {
+        traceId,
+        route: `${req.method} ${req.originalUrl}`,
+        params: req.params,
+        query: req.query,
+        body: req.body,
+        stack: err.stack,
+    });
+    res.status(500).json({ error: 'Internal Server Error', traceId });
 });
 
 // Serve uploaded files
@@ -173,6 +173,7 @@ app.get('/admins', (req, res) => {
         req.session.userid = req.session.userid || 0;
         req.session.isAdmin = req.session.isAdmin || false;
         req.session.casuallogin = req.session.casuallogin || false;
+        console.log(`file being sent for admins route with session data:` + path.join(__dirname, 'public', 'admins.html'))
         res.sendFile(path.join(__dirname, 'public', 'admins.html'));
     } catch (err) {
         console.error('Error in admins route:', err);
@@ -539,14 +540,18 @@ app.post('/forgot-password', async (req, res) => {
         //     `
         // });
 
-        sendEmail([email], 'Password Reset Request','', `
-            <h2>Password Reset Request</h2>
-                <p>Hello ${user.first},</p>
+        sendEmail(
+            {
+                addresses: [email],
+                subject: 'Password Reset Request',
+                text: '',
+                html: `<h2>Password Reset Request</h2>
+                <p>Hello ${user.first} ${user.last},</p>
                 <p>You requested a password reset. Click the link below to reset your password:</p>
                 <a href="${resetUrl}">Reset Password</a>
                 <p>This link will expire in 1 hour.</p>
                 <p>If you didn't request this, please ignore this email.</p>
-            `);
+            ` });
 
         res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
     } catch (err) {
@@ -960,7 +965,7 @@ app.delete('/api/celebration/:celebrationid', (req, res) => {
     }
 });
 
-app.delete('/api/celebration/image/:id', (req, res) => {    
+app.delete('/api/celebration/image/:id', (req, res) => {
     const { id } = req.params;
     try {
         const stmt = db.prepare('Update celebrationimages SET archive = 1 WHERE Id = ?');
@@ -1010,7 +1015,7 @@ app.delete('/api/celebration/image/:id', (req, res) => {
 //     if (!req.file) {
 //         return res.status(400).json({ success: false, message: 'No file received (playerImage)' });
 //     }
-    
+
 //     try {
 //         const { celebrationid } = req.body;
 //         const image_path = req.newFileName;
@@ -1027,40 +1032,40 @@ app.delete('/api/celebration/image/:id', (req, res) => {
 
 
 app.post('/api/celebration/images', (req, res, next) => {
-  celebrationMultiUpload.array('celebrationImages', 10)(req, res, (err) => {
-    if (err) {
-      if (err instanceof multer.MulterError) {
-        return res.status(400).json({ success: false, message: err.message });
-      }
-      return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
-    }
-    next();
-  });
-}, (req, res) => {
-  try {
-    const { celebrationid } = req.body;
-
-    if (!celebrationid) {
-      return res.status(400).json({ success: false, message: 'celebrationid is required' });
-    }
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ success: false, message: 'No files uploaded' });
-    }
-
-    const stmt = db.prepare('INSERT INTO celebrationimages (celebrationid, image_path) VALUES (?, ?)');
-    for (const file of req.files) {
-      stmt.run(celebrationid, file.key || file.location || file.filename);
-    }
-
-    res.json({
-      success: true,
-      count: req.files.length,
-      files: req.files.map(f => ({ key: f.key, url: f.location }))
+    celebrationMultiUpload.array('celebrationImages', 10)(req, res, (err) => {
+        if (err) {
+            if (err instanceof multer.MulterError) {
+                return res.status(400).json({ success: false, message: err.message });
+            }
+            return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+        }
+        next();
     });
-  } catch (err) {
-    console.error('Error uploading celebration images:', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
+}, (req, res) => {
+    try {
+        const { celebrationid } = req.body;
+
+        if (!celebrationid) {
+            return res.status(400).json({ success: false, message: 'celebrationid is required' });
+        }
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ success: false, message: 'No files uploaded' });
+        }
+
+        const stmt = db.prepare('INSERT INTO celebrationimages (celebrationid, image_path) VALUES (?, ?)');
+        for (const file of req.files) {
+            stmt.run(celebrationid, file.key || file.location || file.filename);
+        }
+
+        res.json({
+            success: true,
+            count: req.files.length,
+            files: req.files.map(f => ({ key: f.key, url: f.location }))
+        });
+    } catch (err) {
+        console.error('Error uploading celebration images:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
 });
 
 app.get('/api/celebration/:celebrationid/images', async (req, res) => {
@@ -1068,7 +1073,7 @@ app.get('/api/celebration/:celebrationid/images', async (req, res) => {
     try {
         const stmt = db.prepare('SELECT id, image_path FROM celebrationimages WHERE celebrationid = ? and archive = 0');
         const images = stmt.all(celebrationid);
-        res.json(images.map(img => ({ id:img.id, url: `https://rbcstorage.sfo3.digitaloceanspaces.com/${img.image_path}` })));
+        res.json(images.map(img => ({ id: img.id, url: `https://rbcstorage.sfo3.digitaloceanspaces.com/${img.image_path}` })));
     } catch (err) {
         console.error('Error fetching celebration images:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
@@ -1078,49 +1083,76 @@ app.get('/api/celebration/:celebrationid/images', async (req, res) => {
 // send email
 app.post('/api/sendemail', async (req, res) => {
     //playerid is the id of the sender
-    const { mailinglistId, playerid, subject, text } = req.body;
-    const recipients = mailinglistId ? getMailingListRecipients(mailinglistId).recipients : [];
-    const recipientEmails = recipients.map(r => r.email)
+    const { mailinglistId, individualEmails, playerid, subject, text } = req.body;
+    const recipientEmails = mailinglistId ? getMailingListEmails(mailinglistId).emails : individualEmails;
     const filteredRecipientEmails = recipientEmails.filter(email => email !== null && email !== undefined && email.trim() !== ''); // Filter out null or undefined emails
-    if (recipients.length == 0 || filteredRecipientEmails.length === 0) {
+    if (filteredRecipientEmails.length === 0) {
         return res.status(400).json({ success: false, message: 'No valid email addresses found for the selected mailing list' });
-    } 
-    const data = await sendEmail(filteredRecipientEmails,subject,text); 
-    if (!(data && data.status === 200)) {
-        return res.status(500).json({ success: false, message: 'Failed to send email' });
     }
-    const messageid = data.id || null;
 
     //save the information in the emails table for record keeping
-    const date=new Date().toISOString();
-    const stmt = db.prepare('INSERT INTO emails (messageid, sentbyplayerid, subject, emailtext, sentdate) VALUES (?, ?, ?, ?, ?)');
-    stmt.run(messageid, playerid, subject, text, date);
-    if (stmt.changes === 0) {
-        return res.json({ success: false, message: 'Email sent but not saved the the database' });
+    //and once it is saved, send the email with information about
+    //the emailid so that we can track the email events in the emails table
+    const date = new Date().toISOString();
+    const stmt = db.prepare('INSERT INTO emails (senttoemail, sentbyplayerid, subject, emailtext, sentdate) VALUES (?, ?, ?, ?, ?)');
+    const numEmails = filteredRecipientEmails.length;
+    let savedCount = 0;
+    let sentCount = 0;
+    
+    await Promise.all(filteredRecipientEmails.map(async email => {
+        console.log('Email sent to:', email);
+        const result = stmt.run(email, playerid, subject, text, date);
+        const emailid = result.lastInsertRowid;
+        if (emailid) {
+            savedCount++;
+            //now we send the email
+            const data = await sendEmail({
+                addresses: [email],
+                subject,
+                text,
+                emailid
+            });
+            if ((data && data.status === 200)) {
+                sentCount++;
+            }
+        }
+    }));
+    if (savedCount !== numEmails) {
+        return res.json({ success: false, message: 'Some Emails were sent but not saved to the database' });
+    }
+    if (sentCount !== numEmails) {
+        return res.json({ success: false, message: 'Some Emails were saved but not sent successfully' });
     }
     return res.json({ success: true, message: 'Email sent and saved successfully' });
-   
-}); 
+
+});
 
 
 
 
 // webhook endpoints for mailgun to track email events like accepted, delivered, unsubscribed etc. The endpoints verify the signature sent by mailgun to ensure that the request is coming from mailgun and then log the event data. These endpoints can be extended to update the database or perform other actions based on the email events.
-app.post('/emailaccepted',checkAuthenticity, (req, res) => {
-    console.log('Email accepted endpoint hit with data:');
-    
-    const eventData = req.body['event-data'];
-    const recipient = eventData.recipient;
-    const messageId = eventData.id;
-    console.log('Storage key', eventData.storage.key)
-    console.log('Recipient:', recipient);
-    console.log('Message ID:', messageId);
-    res.json({ message: 'Welcome to the RBC API' });
+app.post('/emailaccepted', checkAuthenticity, (req, res) => {
+
+    try {
+        const uservariable = req.body['event-data']['user-variables'];
+        const emailid = uservariable ? uservariable.emailid : null;
+        const messageId = req.body['event-data'].message.headers['message-id'] || null;
+        const storageKey = req.body['event-data'].storage ? req.body['event-data'].storage.key : null;
+        if(!emailid || !messageId) {
+            return res.status(400).json({ message: 'Email ID or Message ID not found in user variables' });
+        }
+        //now we can update the emails table to set the status of the email to accepted based on the emailid    if (emailid) {
+        const stmt = db.prepare('UPDATE emails SET accepted = ?, messageid = ?, storagekey = ? WHERE id = ?');
+        stmt.run("Yes", messageId, storageKey, emailid);
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+    return res.status(200).json({ message: 'Email accepted event processed successfully' });
 });
 
 function checkAuthenticity(req, res, next) {
     let verified = false;
-    try{
+    try {
         const signature = req.body.signature;
         verified = verify({
             timestamp: signature.timestamp || req.body.timestamp,
@@ -1128,7 +1160,7 @@ function checkAuthenticity(req, res, next) {
             signature: signature.signature || signature,
             signingKey: process.env.MAILGUN_SIGNING_KEY
         })
-    }catch(err){
+    } catch (err) {
         console.error('Error verifying signature:', err);
         return res.status(400).json({ message: 'Error verifying signature' });
     }
@@ -1138,37 +1170,62 @@ function checkAuthenticity(req, res, next) {
     }
     next();
 }
-app.post('/emailunsubscribe',checkAuthenticity, (req, res) => {
+app.post('/emailunsubscribe', checkAuthenticity, (req, res) => {
     console.log('Email unsubscribe endpoint hit with data:');
     console.log(req.body.signature);
     console.log(req.body['event-data']);
     res.json({ message: 'Welcome to the RBC API' });
 });
 
-app.post('/emaildelivered',checkAuthenticity, (req, res) => {
-    console.log('Email delivered endpoint hit with data:');
-    console.log(req.body.signature);
-    console.log(req.body['event-data']);
-    res.json({ message: 'Welcome to the RBC API' });
+app.post('/emaildelivered', checkAuthenticity, (req, res) => {
+    try {
+        const uservariable = req.body['event-data']['user-variables'];
+        const emailid = uservariable ? uservariable.emailid : null;
+        const storageKey = req.body['event-data'].storage ? req.body['event-data'].storage.key : null;
+        if(!emailid) {
+            return res.status(400).json({ message: 'Email ID not found in user variables' });
+        }
+        //now we can update the emails table to set the status of the email to delivered based on the emailid    if (emailid) {
+        const stmt = db.prepare('UPDATE emails SET delivered = ? , storagekey = ? WHERE id = ?');
+        stmt.run("Yes", storageKey, emailid);
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+    return res.status(200).json({ message: 'Email delivered event processed successfully' });
 });
+
 // End of mailgun webhook endpoints
 // Email replies 
 // app.post('/emailreplies',checkAuthenticity, (req, res) => {
-app.post('/emailreplies',emailReplyUpload.any(),checkAuthenticity, (req, res) => {
-    console.log('Email reply endpoint hit with data:');
-    console.log('Email reply received with body:', req.body);
-    console.log('Email reply files:', req.files);
-    res.json({sucess:true})
-    // const eventData = req.body['event-data'];
-    // const recipient = eventData.recipient;
-    // const messageId = eventData.id;
-    // const storageKey = eventData.storage.key;
-    // console.log('Storage key', storageKey)
-    // console.log('Recipient:', recipient);
-    // console.log('Message ID:', messageId);
+app.post('/emailreplies', emailReplyUpload.any(), checkAuthenticity, (req, res) => {
 
+    const messageId = req.body['In-Reply-To'] ? req.body['In-Reply-To'].slice(1, -1) : null;
+    const reply = req.body['body-plain'] || null;
+
+    if(!messageId || !reply) {
+        console.error('Message ID or reply body not found in email replies event');
+        return res.status(400).json({ message: 'Message ID or reply body not found' });
+    }
+    //save the reply in the database 
+    const stmt = db.prepare('UPDATE emails Set reply = ? WHERE messageid = ?');
+    stmt.run(reply, messageId);
+
+    res.json({ sucess: true })
+    
 });
 // End of email replies handling
+
+app.get('/api/emails', (req, res) => {
+    try{
+        const result = getEmails();
+        if(!result.success){
+            return res.status(500).json({success: false, message: result.message});
+        }
+        return res.status(200).json(result);
+    }catch(err){
+        res.status(500).json({ success: false, message: err });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

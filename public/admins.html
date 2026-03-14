@@ -2,167 +2,326 @@
 <html>
 
 <head>
-    <title>Riverside Bridge Club (Unit 537) - Admins</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-    <meta name="description" content="Riverside Bridge Club - Unit 537" />
-    <meta name="keywords" content="bridge, club, riverside, card game, unit 537, members, guests,
+  <title>Riverside Bridge Club (Unit 537) - Admins</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta name="description" content="Riverside Bridge Club - Unit 537" />
+  <meta name="keywords" content="bridge, club, riverside, card game, unit 537, members, guests,
     fun, social, competitive, delay Alzheimer's, wheelchair accessible, acbl" />
-    <link rel="stylesheet" href="/assets/css/main.css" />
-	<script src= "https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
-    <style>
-        .admins-container {
-            /* display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            text-align: center;
-            padding: 2rem; */
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            /* padding: 50px; */
-        }
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
 
-        .admins-header {
-            color: black;
-            margin-bottom: 3rem;
-            font-size: 1.5rem;
-        }
-
-        .admins-header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .admins-header h2 {
-            font-size: 2rem;
-            font-weight: 300;
-            margin-bottom: 1rem;
-        }
-
-        .admins-header p {
-            font-size: 2.2rem;
-            opacity: 0.9;
-        }
-
-        .admins-buttons {
-            display: flex;
-            gap: 2rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .admins-button {
-            padding: 2rem 4rem;
-            font-size: 1.5rem;
-            min-width: 250px;
-            background: white;
-            color: #667eea;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .admins-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            color: #764ba2;
-        }
-
-        .video-responsive {
-            position: relative;
-            padding-bottom: 56.25%;
-            /* 16:9 aspect ratio (height / width = 9 / 16 = 0.5625) */
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
-            background: #000;
-            /* Optional: background color while loading */
-        }
-
-        .video-responsive iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-
-        .copyright {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: white;
-            opacity: 0.8;
-        }
-
-        .copyright a {
-            color: white;
-            text-decoration: underline;
-        }
-    </style>
 </head>
 
 <body>
-    <div class="admins-container">
-        <div id="wrapper">
-            <div class="admins-header">
-                <header>
-                    <h1>Welcome to</h1>
-                    <h2>Riverside Bridge Club</h2>
-                </header>
+  <div id="wrapper">
+    <section class="intro">
+      <header>
+        <h1>Administrator Options</h1>
+        <button type="button" id="addnewplayerBtn" class="button primary wrap" onclick="displayaddnewplayerform()">Add
+          New Player</button>
+        <button type="button" id="defaultlogincredentialsBtn" class="button primary wrap"
+          onclick="displaydefaultlogincredentialsform()">Default Login Credentials</button>
+        <button type="button" id="manageemailsBtn" class="button primary wrap" onclick="manageemails()">Manage
+          Emails</button>
+      </header>
+      <div class="content">
+        <p><strong>Welcome Admins!</strong></p>
+        <p>When a new member joins our club you can add him as a member 
+          by entering his first and last name. The system will then return
+          to you his temporary login name and login password. Please inform
+          the member to change his password as soon as possible. 
+        </p>
+        <p>Sometimes a member may forget his temporary login password. 
+          You can get the temporary login credentials and provide
+          them to the member.
+        </p>
+        <p>As an admin you can send emails individually or a group of members.
+          To make it easy to send emails to a group of members without having
+          to everytime select each individual member to include in the group
+          you can create mailing lists. For instance you may create a mailing 
+          list called 'All members'. In this mailing list you would include all
+          the members. Similarly you may include one for 'New members' in which
+          you may include only those members who are new to our club. etc.
+        </p>
+        <p>Once you have created these mailing lists then you just have to select
+          the mailing list.</p>
+        <p>You can also monitor who all have received the emails that you
+          or other admins have sent.
+        </p>
+      </div>
+    </section>
 
-                <section class="intro">
-                    <header>
-                        <h2>We play bridge for fun, socializing, and competition</h2>
-                    </header>
-                    <div class="content">
-                        <p>We're glad you're interested in Riverside Bridge Club.</p>
-                        <p>Whether you're new to bridge or an experienced player, we'd love to have you visit our club
-                            and see what we're all about!</p>
-                        <p>Even if you have never played bridge before, we welcome you. This site offers resources and
-                            information to help you get started.</p>
-                    </div>
-                </section>
-
-                
-
-                
-
+      <!-- Send Email Section -->
+      <section class="email" style="display:none">
+        <header>
+          <h2>Send Email</h2>
+        </header>
+        <div class="content">
+          <form action="">
+            <div id="toEmailIndividual" class="field full">
+              <label for="toEmailIndividualSelect">Email To Individual(s):</label>
+              <select name="toEmailIndividualSelect" id="toEmailIndividualSelect" style="height:40vh" placeholder="To Email" multiple required>
+                <option value="">Select Recipient(s)</option>
+              </select>
             </div>
-        </div>
+            <div id="toEmailGroup" class="field full">
+              <label for="toEmailGroupSelect">Email To Email List:</label>
+              <select name="toEmailGroupSelect" id="toEmailGroupSelect" placeholder="To Email" required>
+                <option value="">Select Group</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="emailSubject">Email Subject</label>
+              <input type="text" name="emailSubject" id="emailSubject" placeholder="Email Subject" required />
+            </div>
+            <div class="field full">
+              <label for="emailBody">Email Text</label>
+              <textarea name="emailBody" id="emailBody" placeholder="Email Body" required></textarea>
+            </div>
+            <div class="field full wrap">
+              <button class="button primary" type="button" style="margin-top: 30px;" onclick="sendEmail()">
+                Send Email
+              </button>
+            </div>
+          </form>
+          <div id="displayemails">
+            <table id="emailstable">
+              <thead>
+                <tr>
+                  <th>Sent On</th>
+                  <th>By</th>
+                  <th>To</th>
+                  <th>Subject</th>
+                  <th>Body</th>
+                  <th>Reply</th>
+                </tr>
+              </thead>
+              <tbody id="emailsbody">
+                <tr>
+                  <td colspan="7">Loading sent emails...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div> <!-- End of Send Email Content -->
+      </section>
 
-        <div class="admins-buttons">
-            <a href="/members" class="admins-button">
-                <strong>Members</strong><br>
-                <span style="font-size: 0.8em;">Club Members Page</span>
-            </a>
-            <a href="/guests" class="admins-button">
-                <strong>Guests</strong><br>
-                <span style="font-size: 0.8em;">Visitor Information Page</span>
-            </a>
+      <!-- Section to display email list names-->
+      <section class="email" style="display:none">
+        <header>
+          <h2>Maililng Lists</h2>
+        </header>
+        <div class="content">
+          <div style="height:200px;overflow:auto" id="emaillist">
+            <table>
+              <thead>
+                <tr>
+                  <th>Id</th>
+                  <th>Mailing List Name</th>
+                  <th>Description</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody id="emaillistbody">
+                <tr>
+                  <td colspan="5">Loading mailing lists names...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <br>
+          <label for="addMailingListForm">Add or Edit Mailing List</label>
+          <form action="" id="addMailingListForm" style="margin-top:20px;">
+            <div class="fields">
+              <input type="hidden" id="mailingListId" name="mailingListId" value="">
+              <div style="display:flex; justify-content: space-around;">
+                <div class="field half">
+                  <label for="newMailingListName">Mailing List Name</label>
+                  <input type="text" name="newMailingListName" id="newMailingListName"
+                    placeholder="New Mailing List Name" required />
+                </div>
+                <div class="field half">
+                  <label for="newMailingListDescription">New Mailing List Description</label>
+                  <input type="text" name="newMailingListDescription" id="newMailingListDescription"
+                    placeholder="New Mailing List Description" />
+                </div>
+              </div>
+              <div style="display:flex; justify-content: space-around;">
+                <div class="field half">
+                  <button id="addMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
+                    onclick="AddMailingList()">Add
+                    Mailing List</button>
+                </div>
+                <div class="field half">
+                  <button id="updateMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
+                    onclick="UpdateMailingList()" disabled>Update Mainling List</button>
+                </div>
+              </div>
+            </div>
+          </form>
         </div>
+      </section>
 
+      <!-- Section to Add/Delete email recipients from mailing lists-->
+      <section class="email" style="display:none">
+        <header>
+          <h2>Email Recipients Management</h2>
+        </header>
+        <div class="content">
+          <Select id="mailingListSelect" onchange="loadEmailRecipients()">
+            <option value="">Select Mailing List</option>
+          </Select>
+          <table id="emailRecipientsTable">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody id="emailRecipientsTableBody">
+              <tr>
+                <td colspan="4">Loading email recipients...</td>
+              </tr>
+            </tbody>
+          </table>
+          <br>
+          <label for="addEmailRecipientForm">Add (by clicking) Email Recipient to Mailing List</label>
+          <form action="" id="addEmailRecipientForm" style="margin-top:20px;">
+            <div class="fields">
+              <div class="field full">
+                <div id="nonEmailRecipients"
+                  style="height: 300px; width:200px; overflow: scroll; border:1px solid #ccc; padding:4px;">
+                  <!-- This will be populated with list of all members that are not already in the selected mailing list -->
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    <div id="addnewplayermodal" class="modal wrap">
+
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close" onclick="closeAddNewPlayerModal()">&times;</span>
+        <h2>Add New Player</h2>
+        <form id="addNewPlayerForm">
+          <div class="fields">
+
+            <div class="field half">
+              <label for="newplayerfirstname">First Name</label>
+              <input type="text" name="newplayerfirstname" id="newplayerfirstname" placeholder="First Name" required />
+            </div>
+            <div class="field half">
+              <label for="newplayerlastname">Last Name</label>
+              <input type="text" name="newplayerlastname" id="newplayerlastname" placeholder="Last Name" required />
+            </div>
+            <div class="field full wrap">
+              <button id="submitNewPlayerButton" type="button" style="margin-top: 30px;" onclick="SubmitNewPlayer()"
+                class="button primary">Add
+                Player</button>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </div> <!-- addnewplayermodal -->
+
+    <!-- emailModal -->
+    <div id="emailmodal" class="modal wrap">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close" onclick="closeEmailModal()">&times;</span>
+        <h2>Email Details</h2>
+        <form id="emailDetailsForm">
+          <div class="fields">
+
+            <div class="field half">
+              <label for="emailSender">Sender</label>
+              <input type="text" name="emailSender" id="emailSender"/>
+            </div>
+
+            <div class="field half">
+              <label for="emailRecipient">Recipient</label>
+              <input type="text" name="emailRecipient" id="emailRecipient"/>
+            </div>
+
+            <div class="field full">
+              <label for="emailSubject">Subject</label>
+              <input type="text" name="emailSubject" id="emailSubject"/>
+            </div>
+
+            <div class="field full">
+              <label for="emailBody">Body</label>
+              <textarea name="emailBody" id="emailBody"></textarea>
+            </div>
+
+            <div class="field full wrap">
+              <button id="cancelEmailButton" type="button" style="margin-top: 30px;" onclick="closeEmailModal()"
+                class="button primary">Cancel</button>
+            </div>
+          </div>
+        </form>
+
+      </div>
+
+    </div> <!-- emailModal -->
+
+    <!-- The Modal -->
+    <div id="defaultlogincredentials" class="modal wrap">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span id="defaultlogincredentialsclose" onclick="closedefaultlogincredentialsform()"
+          class="close">&times;</span>
+        <h2>Riverside Bridge Club</h2>
+        <div class="fields" id="defaultlogincredentialssection" style="display:block">
+
+          <div class="field full">
+            <label for="dlc_name">
+              Default Login Credentials - Enter the name:
+            </label>
+            <input type="text" placeholder="John Smith" name="dlc_name" id="dlc_name">
+          </div>
+
+          <div class="field full">
+            <p id="defaultlogincredentialsresult"></p>
+          </div>
+
+          <div class="field full wrap">
+            <button type="button" class="button primary" style="margin-top: 30px;"
+              onclick="GetDefaultLoginCredentials()">Default Login Credentials</button>
+          </div>
+        </div>
+      </div> <!--modal content -->
     </div>
-    <div class="copyright">&copy; Riverside Bridge Club. Design: <a href="https://html5up.net">HTML5 UP</a>.</div>
-    <!-- Scripts -->
-        <script src="assets/js/jquery.min.js"></script>
-        <script src="assets/js/browser.min.js"></script>
-        <script src="assets/js/breakpoints.min.js"></script>
-        <script src="assets/js/util.js"></script>
-        <script src="assets/js/main.js"></script>
-        <script src="assets/js/myutils.js"></script>
-        <script src="assets/js/main.js"></script>
-        
+
+    <div class="admins-buttons">
+      <a href="/members" class="admins-button">
+        <strong>Members</strong><br>
+        <span style="font-size: 0.8em;">Club Members</span>
+      </a>
+      <a href="/guests" class="admins-button">
+        <strong>Guests</strong><br>
+        <span style="font-size: 0.8em;">Visitors Information</span>
+      </a>
+    </div>
+
+  </div>
+  <div class="copyright">&copy; Riverside Bridge Club. Design: <a href="https://html5up.net">HTML5 UP</a>.</div>
+  <!-- Scripts -->
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/browser.min.js"></script>
+  <script src="assets/js/breakpoints.min.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/admins.js"></script>
+  <script src="assets/js/main.js"></script>
+
 </body>
-    
+
 </html>
