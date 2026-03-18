@@ -438,6 +438,24 @@
 	</div>
 	</section>
 
+	<!-- Blogs section -->
+	 <section>
+			<header>
+				<h2>Blogs</h2>
+						<p>Blogs or articles written by the members. If you like a blog
+							please encourage the author by commenting on the blog. 
+							Click <a onclick="createblog()">here</a> to create a blog. 
+						</p>
+						<button class="button" onclick="createblog()">Create Blog/Edit Your blog</button>
+			</header>
+			<div class="content">
+				<form action="">
+					<select name="bloglist" id="bloglistid" onchange="showblog()"></select>
+					<input type="textarea" id="blogcontent" name="blogcontent" placeholder="Enter your blog content"
+						style="width: 100%; height: 300px;" readonly></input>
+				</form>
+			</div>
+	 </section>
 	<!-- Copyright -->
 	<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
 	</div>
@@ -547,7 +565,7 @@
 	
 	<!-- I think we are not using this -->
 	<!-- The Modal -->
-	<!-- <div id="nameandphonecheck" class="modal wrap">
+	<div id="nameandphonecheck" class="modal wrap">
 		<div class="modal-content">
 			<span class="close" onclick="closeNameAndPhoneCheck()">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
@@ -574,7 +592,7 @@
 				</div>
 			</div>
 		</div> 
-	</div> -->
+	</div>
 
 
 
@@ -645,6 +663,14 @@
   <script src="assets/js/common.js"></script>
 	<script src="assets/js/members.js"></script>
 	<script src="assets/js/main.js"></script>
+  <script src="assets/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+
+	<!-- <script>
+    tinymce.init({
+      selector: '#blogcontent',
+      license_key: 'gpl' // gpl for open source, T8LK:... for commercial
+    });
+  </script> -->
 
 </body>
 

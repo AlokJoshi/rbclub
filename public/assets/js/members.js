@@ -651,6 +651,94 @@ function displayaddannouncementform() {
 
 document.addEventListener('DOMContentLoaded', createPlayerTable);
 document.addEventListener('DOMContentLoaded', ClearForm);
+document.addEventListener('DOMContentLoaded',PopulateBlogList);
+
+let blogEditorInitPromise = null;
+
+async function PopulateBlogList(){
+  try{
+    const bloglist = document.getElementById('bloglistid');
+    if(!bloglist){
+      console.warn('Blog list element with id "bloglistid" not found');
+      return;
+    }
+    const res = await fetch('/api/blogs', {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    bloglist.innerHTML = '';
+    if (result.success) {
+      const blogs = result.blogs;
+      if (blogs.length === 0) {
+        bloglist.innerHTML = '<option>No blogs found.</option>';
+        return;
+      }
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'Select a blog';
+      bloglist.appendChild(defaultOption);
+      blogs.forEach(blog => {
+        const option = document.createElement('option');
+        option.value = blog.id;
+        option.textContent = `${blog.title.slice(0, 50)} by ${blog.author}`;
+        option.dataset.blog = blog.blog
+        bloglist.appendChild(option);
+      });
+    }
+
+  }catch(err){
+    console.error('Error populating blog list:', err);
+    showCustomAlert(`Error populating blog list. ${err}`, 5);
+  }
+} 
+
+function ensureBlogEditor() {
+  if (typeof tinymce === 'undefined') {
+    console.warn('TinyMCE not loaded yet');
+    return Promise.resolve(null);
+  }
+
+  const existingEditor = tinymce.get('blogcontent');
+  if (existingEditor) return Promise.resolve(existingEditor);
+
+  if (!blogEditorInitPromise) {
+    blogEditorInitPromise = tinymce
+      .init({
+        selector: '#blogcontent',
+        license_key: 'gpl'
+      })
+      .then(editors => editors && editors[0])
+      .catch(err => {
+        blogEditorInitPromise = null;
+        throw err;
+      });
+  }
+
+  return blogEditorInitPromise;
+}
+
+async function showblog(){
+  const bloglist = document.getElementById('bloglistid');
+  const selectedOption = bloglist?.selectedOptions[0];
+  const blogHtml = selectedOption?.dataset.blog || '';
+
+  try {
+    const editor = await ensureBlogEditor();
+    if (editor) {
+      editor.setContent(blogHtml);
+      return;
+    }
+  } catch (err) {
+    console.error('Error initializing TinyMCE:', err);
+  }
+  //if tinymce is not initialized, fall back on just
+  //showing html content itself in the textarea (not rendered)
+  const blogcontent = document.getElementById('blogcontent');
+  if (blogcontent) {
+    blogcontent.value = blogHtml;
+  }
+}
 
 // Add this after your existing DOMContentLoaded listeners
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1359,21 +1447,39 @@ function closeplayingModal() {
 }
 
 function closestComingMonday(date) {
-  const day = date.getDay();
-  const diff = 7 - day;
-  return new Date(date.setDate(date.getDate() + diff));
+  const base = new Date(date)
+  const day = base.getDay();
+  let diff = (8 - day) % 7; //values 0 to 6
+  const hours = date.getHours();
+  if (diff===0 && hours>12){
+    diff = 7;
+  }
+  base.setDate(base.getDate() + diff);
+  return base;
 }
 
 function closestComingTuesday(date) {
-  const day = date.getDay();
-  const diff = 8 - day;
-  return new Date(date.setDate(date.getDate() + diff));
+  const base = new Date(date)
+  const day = base.getDay();
+  let diff = (9 - day) % 7; //values 0 to 6
+  const hours = date.getHours();
+  if (diff===0 && hours>12){
+    diff = 7;
+  }
+  base.setDate(base.getDate() + diff);
+  return base;
 }
 
 function closestComingFriday(date) {
-  const day = date.getDay();
-  const diff = 11 - day;
-  return new Date(date.setDate(date.getDate() + diff));
+  const base = new Date(date)
+  const day = base.getDay();
+  let diff = (12 - day) % 7; //values 0 to 6
+  const hours = date.getHours();
+  if (diff===0 && hours>12){
+    diff = 7;
+  }
+  base.setDate(base.getDate() + diff);
+  return base;
 }
 
 function closestComing4thSundayOfMonth(date) {
@@ -1474,6 +1580,9 @@ function setupCelebrationsLazyLoad() {
   select.addEventListener('pointerdown', loadIfNeeded, { once: false });
 }
 
+function createblog(){
+   window.open('/blogs');  
+}
 
 decide()
 

@@ -27,19 +27,19 @@
       </header>
       <div class="content">
         <p><strong>Welcome Admins!</strong></p>
-        <p>When a new member joins our club you can add him as a member 
+        <p>When a new member joins our club you can add him as a member
           by entering his first and last name. The system will then return
           to you his temporary login name and login password. Please inform
-          the member to change his password as soon as possible. 
+          the member to change his password as soon as possible.
         </p>
-        <p>Sometimes a member may forget his temporary login password. 
+        <p>Sometimes a member may forget his temporary login password.
           You can get the temporary login credentials and provide
           them to the member.
         </p>
         <p>As an admin you can send emails individually or a group of members.
           To make it easy to send emails to a group of members without having
           to everytime select each individual member to include in the group
-          you can create mailing lists. For instance you may create a mailing 
+          you can create mailing lists. For instance you may create a mailing
           list called 'All members'. In this mailing list you would include all
           the members. Similarly you may include one for 'New members' in which
           you may include only those members who are new to our club. etc.
@@ -52,156 +52,166 @@
       </div>
     </section>
 
-      <!-- Send Email Section -->
-      <section class="email" style="display:none">
-        <header>
-          <h2>Send Email</h2>
-        </header>
-        <div class="content">
-          <form action="">
-            <div id="toEmailIndividual" class="field full">
-              <label for="toEmailIndividualSelect">Email To Individual(s):</label>
-              <select name="toEmailIndividualSelect" id="toEmailIndividualSelect" style="height:40vh" placeholder="To Email" multiple required>
-                <option value="">Select Recipient(s)</option>
-              </select>
-            </div>
-            <div id="toEmailGroup" class="field full">
-              <label for="toEmailGroupSelect">Email To Email List:</label>
-              <select name="toEmailGroupSelect" id="toEmailGroupSelect" placeholder="To Email" required>
-                <option value="">Select Group</option>
-              </select>
-            </div>
-            <div class="field full">
-              <label for="emailSubject">Email Subject</label>
-              <input type="text" name="emailSubject" id="emailSubject" placeholder="Email Subject" required />
-            </div>
-            <div class="field full">
-              <label for="emailBody">Email Text</label>
-              <textarea name="emailBody" id="emailBody" placeholder="Email Body" required></textarea>
-            </div>
-            <div class="field full wrap">
-              <button class="button primary" type="button" style="margin-top: 30px;" onclick="sendEmail()">
-                Send Email
-              </button>
-            </div>
-          </form>
-          <div id="displayemails">
-            <table id="emailstable">
-              <thead>
-                <tr>
-                  <th>Sent On</th>
-                  <th>By</th>
-                  <th>To</th>
-                  <th>Subject</th>
-                  <th>Body</th>
-                  <th>Reply</th>
-                </tr>
-              </thead>
-              <tbody id="emailsbody">
-                <tr>
-                  <td colspan="7">Loading sent emails...</td>
-                </tr>
-              </tbody>
-            </table>
+    <!-- Send Email Section -->
+    <section class="email" style="display:none">
+      <header>
+        <h2>Send Email</h2>
+      </header>
+      <div class="content">
+        <form action="">
+          <div id="toEmailIndividual" class="field full">
+            <label for="toEmailIndividualSelect">Email To Individual(s):</label>
+            <select name="toEmailIndividualSelect" id="toEmailIndividualSelect" style="height:40vh"
+              placeholder="To Email" multiple required>
+              <option value="">Select Recipient(s)</option>
+            </select>
           </div>
-        </div> <!-- End of Send Email Content -->
-      </section>
-
-      <!-- Section to display email list names-->
-      <section class="email" style="display:none">
-        <header>
-          <h2>Maililng Lists</h2>
-        </header>
-        <div class="content">
-          <div style="height:200px;overflow:auto" id="emaillist">
-            <table>
-              <thead>
-                <tr>
-                  <th>Id</th>
-                  <th>Mailing List Name</th>
-                  <th>Description</th>
-                  <th>Edit</th>
-                  <th>Delete</th>
-                </tr>
-              </thead>
-              <tbody id="emaillistbody">
-                <tr>
-                  <td colspan="5">Loading mailing lists names...</td>
-                </tr>
-              </tbody>
-            </table>
+          <div id="toEmailGroup" class="field full">
+            <label for="toEmailGroupSelect">Email To Email List:</label>
+            <select name="toEmailGroupSelect" id="toEmailGroupSelect" placeholder="To Email" required>
+              <option value="">Select Group</option>
+            </select>
           </div>
-          <br>
-          <label for="addMailingListForm">Add or Edit Mailing List</label>
-          <form action="" id="addMailingListForm" style="margin-top:20px;">
-            <div class="fields">
-              <input type="hidden" id="mailingListId" name="mailingListId" value="">
-              <div style="display:flex; justify-content: space-around;">
-                <div class="field half">
-                  <label for="newMailingListName">Mailing List Name</label>
-                  <input type="text" name="newMailingListName" id="newMailingListName"
-                    placeholder="New Mailing List Name" required />
-                </div>
-                <div class="field half">
-                  <label for="newMailingListDescription">New Mailing List Description</label>
-                  <input type="text" name="newMailingListDescription" id="newMailingListDescription"
-                    placeholder="New Mailing List Description" />
-                </div>
-              </div>
-              <div style="display:flex; justify-content: space-around;">
-                <div class="field half">
-                  <button id="addMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
-                    onclick="AddMailingList()">Add
-                    Mailing List</button>
-                </div>
-                <div class="field half">
-                  <button id="updateMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
-                    onclick="UpdateMailingList()" disabled>Update Mainling List</button>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-      </section>
+          <div class="field full">
+            <label for="emailSubject">Email Subject</label>
+            <input type="text" name="emailSubject" id="emailSubject" placeholder="Email Subject" required />
+          </div>
+          <div class="field full">
+            <label for="emailBody">Email Text</label>
+            <textarea name="emailBody" id="emailBody" placeholder="Email Body" required></textarea>
+          </div>
+          <div class="field full wrap">
+            <button class="button primary" type="button" style="margin-top: 30px;" onclick="sendEmail()">
+              Send Email
+            </button>
+          </div>
+        </form>
+      </div> <!-- End of Send Email Content -->
+    </section>
 
-      <!-- Section to Add/Delete email recipients from mailing lists-->
-      <section class="email" style="display:none">
-        <header>
-          <h2>Email Recipients Management</h2>
-        </header>
-        <div class="content">
-          <Select id="mailingListSelect" onchange="loadEmailRecipients()">
-            <option value="">Select Mailing List</option>
-          </Select>
-          <table id="emailRecipientsTable">
+    <!-- Review emails section-->
+    <section class="email" style="display:none">
+      <header>
+        <h2>Review Emails</h2>
+      </header>
+      <div class="content">
+        <div id="displayemails" style="max-height: 90vh; overflow: auto;">
+          <table id="emailstable">
             <thead>
               <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Delete</th>
+                <th>Sent On</th>
+                <th>By</th>
+                <th>To</th>
+                <th>Subject</th>
+                <th>Body</th>
+                <th>Reply</th>
               </tr>
             </thead>
-            <tbody id="emailRecipientsTableBody">
+            <tbody id="emailsbody">
               <tr>
-                <td colspan="4">Loading email recipients...</td>
+                <td colspan="7">Loading sent emails...</td>
               </tr>
             </tbody>
           </table>
-          <br>
-          <label for="addEmailRecipientForm">Add (by clicking) Email Recipient to Mailing List</label>
-          <form action="" id="addEmailRecipientForm" style="margin-top:20px;">
-            <div class="fields">
-              <div class="field full">
-                <div id="nonEmailRecipients"
-                  style="height: 300px; width:200px; overflow: scroll; border:1px solid #ccc; padding:4px;">
-                  <!-- This will be populated with list of all members that are not already in the selected mailing list -->
-                </div>
+        </div>
+      </div> <!-- End of Review Emails Content -->
+    </section>
+
+    <!-- Section to display email list names-->
+    <section class="email" style="display:none">
+      <header>
+        <h2>Maililng Lists</h2>
+      </header>
+      <div class="content">
+        <div style="height:200px;overflow:auto" id="emaillist">
+          <table>
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Mailing List Name</th>
+                <th>Description</th>
+                <th>Edit</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody id="emaillistbody">
+              <tr>
+                <td colspan="5">Loading mailing lists names...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <br>
+        <label for="addMailingListForm">Add or Edit Mailing List</label>
+        <form action="" id="addMailingListForm" style="margin-top:20px;">
+          <div class="fields">
+            <input type="hidden" id="mailingListId" name="mailingListId" value="">
+            <div style="display:flex; justify-content: space-around;">
+              <div class="field half">
+                <label for="newMailingListName">Mailing List Name</label>
+                <input type="text" name="newMailingListName" id="newMailingListName" placeholder="New Mailing List Name"
+                  required />
+              </div>
+              <div class="field half">
+                <label for="newMailingListDescription">New Mailing List Description</label>
+                <input type="text" name="newMailingListDescription" id="newMailingListDescription"
+                  placeholder="New Mailing List Description" />
               </div>
             </div>
-          </form>
-        </div>
-      </section>
+            <div style="display:flex; justify-content: space-around;">
+              <div class="field half">
+                <button id="addMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
+                  onclick="AddMailingList()">Add
+                  Mailing List</button>
+              </div>
+              <div class="field half">
+                <button id="updateMailingListButton" type="button" class="button primary" style="margin-top: 30px;"
+                  onclick="UpdateMailingList()" disabled>Update Mainling List</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Section to Add/Delete email recipients from mailing lists-->
+    <section class="email" style="display:none">
+      <header>
+        <h2>Email Recipients Management</h2>
+      </header>
+      <div class="content">
+        <Select id="mailingListSelect" onchange="loadEmailRecipients()">
+          <option value="">Select Mailing List</option>
+        </Select>
+        <table id="emailRecipientsTable">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody id="emailRecipientsTableBody">
+            <tr>
+              <td colspan="4">Loading email recipients...</td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
+        <label for="addEmailRecipientForm">Add (by clicking) Email Recipient to Mailing List</label>
+        <form action="" id="addEmailRecipientForm" style="margin-top:20px;">
+          <div class="fields">
+            <div class="field full">
+              <div id="nonEmailRecipients"
+                style="height: 300px; width:200px; overflow: scroll; border:1px solid #ccc; padding:4px;">
+                <!-- This will be populated with list of all members that are not already in the selected mailing list -->
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
 
     <div id="addnewplayermodal" class="modal wrap">
 
@@ -234,30 +244,40 @@
     <!-- emailModal -->
     <div id="emailmodal" class="modal wrap">
       <!-- Modal content -->
-      <div class="modal-content">
+      <div class="modal-content" style="height:90%;width: 90%;">
         <span class="close" onclick="closeEmailModal()">&times;</span>
         <h2>Email Details</h2>
         <form id="emailDetailsForm">
           <div class="fields">
 
             <div class="field half">
-              <label for="emailSender">Sender</label>
-              <input type="text" name="emailSender" id="emailSender"/>
+              <label for="emailDetailsSender">Sender</label>
+              <input type="text" name="emailDetailsSender" id="emailDetailsSender" readonly />
             </div>
 
             <div class="field half">
-              <label for="emailRecipient">Recipient</label>
-              <input type="text" name="emailRecipient" id="emailRecipient"/>
+              <label for="emailDetailsRecipient">Recipient</label>
+              <input type="text" name="emailDetailsRecipient" id="emailDetailsRecipient" readonly />
+            </div>
+
+            <div class="field half">
+              <label for="emailDetailsSubject">Subject</label>
+              <input type="text" name="emailDetailsSubject" id="emailDetailsSubject" readonly />
+            </div>
+
+            <div class="field half">
+              <label for="emailDetailsDate">Date</label>
+              <input type="text" name="emailDetailsDate" id="emailDetailsDate" readonly />
             </div>
 
             <div class="field full">
-              <label for="emailSubject">Subject</label>
-              <input type="text" name="emailSubject" id="emailSubject"/>
+              <label for="emailDetailsBody">Body</label>
+              <textarea name="emailDetailsBody" id="emailDetailsBody" readonly></textarea>
             </div>
 
             <div class="field full">
-              <label for="emailBody">Body</label>
-              <textarea name="emailBody" id="emailBody"></textarea>
+              <label for="emailDetailsReply">Reply</label>
+              <textarea name="emailDetailsReply" id="emailDetailsReply" readonly></textarea>
             </div>
 
             <div class="field full wrap">

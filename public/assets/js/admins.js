@@ -524,12 +524,14 @@ async function displayEmails() {
         `;
         row.dataset.emailId = email.id; // Store email ID in a data attribute for later use
         row.dataset.messageid=email.messageid; // Store message ID for fetching replies
-        row.dataset.sentbyplayerid=email.sentbyplayerid; // Store player ID for later use
+        row.dataset.sender=email.sender; // Store player ID for later use
         row.dataset.storagekey=email.storagekey; // Store storage key for later use
         row.dataset.delivered=email.delivered; // Store delivered status for later use
-        row.dataset.to = email.senttoemail; // Store recipient email for later use
+        row.dataset.senttoemail = email.senttoemail; // Store recipient email for later use
         row.dataset.subject = email.subject; // Store subject for later use
         row.dataset.emailtext = email.emailtext; // Store email text for later use
+        row.dataset.emailDate = email.sentdate; // Store date with time for later use
+        row.dataset.reply = email.reply ? email.reply : ''; // Store reply for later use
         row.addEventListener('click', () => {
           // Implement click functionality to view email details and replies
           viewEmailModal(row.dataset)
@@ -544,6 +546,23 @@ async function displayEmails() {
     console.error('Error fetching emails:', err);
     showCustomAlert(`Error fetching emails. ${err}`, 5);
   } 
+}
+
+function closeEmailModal(){
+  const emailModal = document.getElementById('emailmodal');
+  emailModal.style.display = 'none';
+}
+
+function viewEmailModal(dataset) {
+  const emailModal = document.getElementById('emailmodal');
+  emailModal.style.display = 'block'; 
+
+  document.getElementById('emailDetailsSender').value = dataset.sender? dataset.sender : '' ;
+  document.getElementById('emailDetailsRecipient').value = dataset.senttoemail ? dataset.senttoemail : '';
+  document.getElementById('emailDetailsSubject').value = dataset.subject ? dataset.subject : '' ;
+  document.getElementById('emailDetailsDate').value = dataset.emailDate ? dataset.emailDate : '';
+  document.getElementById('emailDetailsBody').value = dataset.emailtext ? dataset.emailtext : '';
+  document.getElementById('emailDetailsReply').value = dataset.reply ? dataset.reply : '';
 }
 
 SetupForAdmin(isAdmin)

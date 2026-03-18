@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <script src="assets/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+
+</head>
+
+<!-- tinymce.init({
+  selector: 'textarea',
+  setup: function(editor) {
+    editor.on('change', function() {
+      // Get all images
+      var images = editor.dom.select('img');
+      tinymce.each(images, function(image) {
+        console.log('Image Source:', image.src);
+        });
+    });
+  }
+}); -->
+
+<body class="is-preload">
+  <div id="wrapper">
+    <section class="blogs">
+      <header class="parent">
+        <h1>Welcome</h1>
+        <h2>Create a new blog or edit your existing blog</h2>
+      </header>
+      <div class="content">
+        <form method="">
+          <div class="fields">
+            <div class="field half wrap">
+              <button type="button" style="width:stretch" class="button primary" onclick="setupforcreateblog()">Author
+                Blog</button>
+            </div>
+            <div class="field half wrap">
+              <button type="button" style="width:stretch" class="button primary" onclick="setupforeditblog()">Edit
+                Blog</button>
+            </div>
+          </div>
+          <select name="blogselect" id="blogselectid" style="display:none" onchange="populateblogcontent()">
+            <option value="" disabled selected>Select a blog to edit</option>
+          </select>
+          <input type="text" name="blogtitle" id="blogtitleid" placeholder="Blog Title" required />
+          <input type="text" name="blogauthor" id="blogauthorid" placeholder="" readonly />
+          <textarea id="mytextarea" placeholder='Start here..'></textarea>
+          <div class="fields">
+            <div class="field half wrap">
+              <button type="button" style="width:stretch" class="button primary" onclick="submitblog()">Submit</button>
+            </div>
+            <div class="field half wrap">
+              <button type="button" style="width:stretch" class="button primary" onclick="cancelblog()">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </section>
+  </div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/browser.min.js"></script>
+  <script src="assets/js/breakpoints.min.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/blogs.js"></script>
+  <script>
+    tinymce.init({
+      selector: '#mytextarea',
+      license_key: 'gpl' // gpl for open source, T8LK:... for commercial
+      // setup: function (editor) {
+      //   editor.on('change', tinymcechange);
+      // }
+    });
+  </script>
+</body>
+
+</html>

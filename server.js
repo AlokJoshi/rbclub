@@ -164,6 +164,33 @@ app.get('/members', (req, res) => {
     }
 });
 
+// Blogs route
+app.get('/blogs', (req, res) => {
+    try {
+        req.session.insecurelogin = req.session.insecurelogin || false;
+        req.session.securelogin = req.session.securelogin || false;
+        req.session.username = req.session.username || '';
+        req.session.userid = req.session.userid || 0;
+        req.session.isAdmin = req.session.isAdmin || false;
+        req.session.casuallogin = req.session.casuallogin || false;
+        res.sendFile(path.join(__dirname, 'public', 'blog.html'));
+    } catch (err) {
+        console.error('Error in blog route:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+app.get('/api/bloglist', (req, res) => {
+    try {
+        const stmt = db.prepare(`select b.id,p.id as playerid, b.createddate,b.title,concat(p.first,' ',p.last) as author from player as p inner join blogs as b on p.id = b.playerid order by b.createddate desc;`);
+        const blogs = stmt.all();
+        res.json({success:true,blogs});
+    } catch (err) {
+        console.error('Error in /api/blogslist:', err);
+        res.status(500).send(`Server error: ${err.message}`);
+    }
+});
+
 // admins route
 app.get('/admins', (req, res) => {
     try {
@@ -1068,6 +1095,55 @@ app.post('/api/celebration/images', (req, res, next) => {
     }
 });
 
+app.post('/api/blog',(req,res) =>{
+    try{
+    const blogtitle = req.body.blogtitle
+    const stmt = db.prepare('INSERT INTO blog (title) VALUES (?)');
+    const result = stmt.run(title)
+    const blogid = result.lastInsertRowid
+    if(!blogid) return res.status(400).json({valid:false,message:'The title already exists. Change the title and try again.'})
+    return res.status(200).json({valid:true,blogid})
+    }catch(err){
+        res.status(500).json({success:false,message: `Internal server error: ${err}`})      
+    }
+})
+app.post('/api/blog/images', (req, res, next) => {
+    celebrationMultiUpload.array('blogimages', 10)(req, res, (err) => {
+        if (err) {
+            if (err instanceof multer.MulterError) {
+                return res.status(400).json({ success: false, message: err.message });
+            }
+            return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+        }
+        next();
+    });
+}, (req, res) => {
+    try {
+        const { blogid } = req.body;
+
+        if (!celebrationid) {
+            return res.status(400).json({ success: false, message: 'celebrationid is required' });
+        }
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ success: false, message: 'No files uploaded' });
+        }
+
+        const stmt = db.prepare('INSERT INTO celebrationimages (celebrationid, image_path) VALUES (?, ?)');
+        for (const file of req.files) {
+            stmt.run(celebrationid, file.key || file.location || file.filename);
+        }
+
+        res.json({
+            success: true,
+            count: req.files.length,
+            files: req.files.map(f => ({ key: f.key, url: f.location }))
+        });
+    } catch (err) {
+        console.error('Error uploading celebration images:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
 app.get('/api/celebration/:celebrationid/images', async (req, res) => {
     const { celebrationid } = req.params;
     try {
@@ -1224,6 +1300,30 @@ app.get('/api/emails', (req, res) => {
         return res.status(200).json(result);
     }catch(err){
         res.status(500).json({ success: false, message: err });
+    }
+});
+
+app.get('/api/blogs',(req,res)=>{
+    try{
+        const stmt = db.prepare(`SELECT b.*, concat(p.first, ' ', p.last) as author FROM blogs b inner join player p on b.playerid = p.id order by createddate desc;`);
+        const blogs = stmt.all();
+        res.json({ success: true, blogs });
+    }catch(err){
+        console.error('Error fetching blogs:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.get('/api/blogs/:id',(req,res)=>{
+    try{
+        const {id} = req.params
+        const stmt = db.prepare(`SELECT b.*, concat(p.first, ' ', p.last) as author FROM blogs b inner join player p on b.playerid = p.id where b.id = ?;`);
+
+        const blog = stmt.get(id);
+        res.json({ blog });
+    }catch(err){
+        console.error('Error fetching blogs:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
 

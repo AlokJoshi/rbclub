@@ -4070,12 +4070,12 @@ body.is-ie #wrapper>section>.content>section {
 /* Modal Content/Box */
 .modal-content {
 	background-color: #fefefe;
-	margin: 15% auto;
-	/* 15% from the top and centered */
+	margin: clamp(1.5rem, 5vh, 4rem) auto;
 	padding: 20px;
 	border: 1px solid #888;
-	width: 60%;
-	/* Could be more or less, depending on screen size */
+	width: min(60rem, 90vw);
+	max-height: calc(100vh - clamp(3rem, 10vh, 6rem));
+	overflow-y: auto;
 	border-radius: 5px;
 }
 
