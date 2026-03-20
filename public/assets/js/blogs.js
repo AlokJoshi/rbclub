@@ -257,16 +257,29 @@ function selectcard(event) {
     // For example, you could add it to a list of selected cards or display it somewhere on the page
     // identify the table that is active and add the cardcode to that table's cards span
     const activeTable = document.querySelector('table.active');
-    if (activeTable) {
+    const direction = activeTable.id; // n, s, e, w
+    if (activeTable && activeTable.dataset.count < 13) { // max 13 cards in a hand
       //decide which row to use
-      const direction = activeTable.id; // n, s, e, w
       const cardsSpan = activeTable.querySelector(`#${direction}${suit}cards`);
       if (cardsSpan) {
         cardsSpan.textContent += ` ${card}`;
-        target.style.display = 'none'; // hide the card after selecting
+        cardsSpan.textContent = sortcards(cardsSpan.textContent); // remove extra spaces
+        target.style.visibility = 'hidden'; // hide the card after selecting
+        activeTable.dataset.count = (parseInt(activeTable.dataset.count || '0') + 1).toString(); // increment count of cards in the active table
       }
+    }else {
+      showCustomAlert('You cannot select more than 13 cards for a hand.', 3);
     }
-
   }
 }
+function sortcards(cards) {
+  //AKQJT98765432 in that order
+  const cardArray = cards.trim().split(''); // split by space and remove empty strings
+  cardArray.sort((a, b) => {
+    const order='AKQJT98765432';
+    return order.indexOf(a) - order.indexOf(b);
+  });
+  return cardArray.join('');
+}
+
 decideAboutBloggers()
