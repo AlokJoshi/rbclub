@@ -61,6 +61,60 @@
       </div>
 
     </section>
+    <div id="handmodal" class="modal">
+			<span id="closehandmodal" class="close" onclick="closehandmodal()">&times;</span>
+      <h2>Create Hand</h2>
+      <table onclick="selectcard(event)">
+        <tr id="spade">
+          <td><img src="images/gallery/suits/spade.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        </tr>
+        <tr id="heart">
+          <td><img src="images/gallery/suits/heart.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        </tr>
+        <tr id="diamond">
+          <td><img src="images/gallery/suits/diamond.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        </tr>
+        <tr id="club">
+          <td><img src="images/gallery/suits/club.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        </tr>
+      </table>
+      <table>
+        <tr><td></td><td>
+          <table id="n"class="active">
+            <tr><td><div id="ns"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="nscards" class="cards"></span></div></td></tr>
+            <tr><td><div id="nh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="nhcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="nd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="ndcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="nc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="nccards" class="cards"></span></div></td></tr>
+          </table></td><td></td></tr>
+        <tr><td>
+          <table id="w">
+            <tr><td><div id="ws"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="wscards" class="cards"></span></div></td></tr>
+            <tr><td><div id="wh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="whcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="wd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="wdcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="wc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="wccards" class="cards"></span></div></td></tr>
+          </table></td><td style="border:2px solid grey">
+            <!-- here we add a table in the middle with 3 rows and 3 columns -->
+            <table>
+              <tr><td></td><td style="cursor:pointer" onclick="fixdirection('n')">North</td><td></td></tr>
+              <tr><td style="cursor:pointer" onclick="fixdirection('w')">West</td><td></td><td style="cursor:pointer" onclick="fixdirection('e')">East</td></tr>
+              <tr><td></td><td style="cursor:pointer" onclick="fixdirection('s')">South</td><td></td></tr>
+            </table>
+          </td><td>
+          <table id="e">
+            <tr><td><div id="es"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="escards" class="cards"></span></div></td></tr>
+            <tr><td><div id="eh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="ehcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="ed"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="edcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="ec"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="eccards" class="cards"></span></div></td></tr>
+          </table>
+          </td></tr>
+        <tr><td></td><td><table id="s">
+            <tr><td><div id="ss"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="sscards" class="cards"></span></div></td></tr>
+            <tr><td><div id="sh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="shcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="sd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="sdcards" class="cards"></span></div></td></tr>
+            <tr><td><div id="sc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="sccards" class="cards"></span></div></td></tr>
+        </table></td><td></td></tr>
+      </table>
+    </div>
   </div>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
   <script src="assets/js/jquery.min.js"></script>

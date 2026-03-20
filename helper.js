@@ -72,8 +72,28 @@ const celebrationMultiStorage = multerS3({
   }
 });
 
+const blogMultiStorage = multerS3({
+  s3,
+  bucket: process.env.SPACES_BUCKET,
+  acl: 'public-read',
+  contentType: multerS3.AUTO_CONTENT_TYPE,
+  key: (req, file, cb) => {
+    const ext = file.originalname.includes('.')
+      ? file.originalname.slice(file.originalname.lastIndexOf('.'))
+      : '';
+    const blogId = req.body.blogid || 'unknown';
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `blogimages/${blogId}-${unique}${ext}`);
+  }
+});
+
 const celebrationMultiUpload = multer({
   storage: celebrationMultiStorage,
+  limits: { files: 10, fileSize: 10 * 1024 * 1024 }
+});
+
+const blogMultiUpload = multer({
+  storage: blogMultiStorage,
   limits: { files: 10, fileSize: 10 * 1024 * 1024 }
 });
 
@@ -85,6 +105,7 @@ module.exports = {
     avtarUpload: avatarUpload,
     celebrationUpload,
     celebrationMultiUpload,
+    blogMultiUpload,
     emailReplyUpload
 };
 

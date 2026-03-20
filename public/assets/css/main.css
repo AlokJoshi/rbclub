@@ -4218,7 +4218,10 @@ grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 	padding: 5px;
 	cursor: pointer;
 }
-
+.cards {
+	width:100px;
+	display:inline-block;
+}
 /* added by alok */
 
 @media screen and (max-width: 1280px) {

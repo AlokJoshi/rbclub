@@ -7,6 +7,8 @@ try {
 const { db } = require('./db');
 const { sendTestSMS } = require('./infobip');
 const { sendEmail, verify } = require('./mailgun');
+const multer = require('multer');
+
 // sendTestSMS();
 // sendEmail();
 
@@ -36,7 +38,8 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const { avtarUpload, emailReplyUpload, celebrationMultiUpload } = require('./helper');
+const { avtarUpload, emailReplyUpload, 
+    celebrationMultiUpload, blogMultiUpload } = require('./helper');
 
 const { userExists, login, changePassword,
     registeredUsers, isAdmin, register, bulkregister,
@@ -1095,20 +1098,21 @@ app.post('/api/celebration/images', (req, res, next) => {
     }
 });
 
-app.post('/api/blog',(req,res) =>{
+app.post('/api/blog',async (req,res) =>{
     try{
-    const blogtitle = req.body.blogtitle
-    const stmt = db.prepare('INSERT INTO blog (title) VALUES (?)');
-    const result = stmt.run(title)
-    const blogid = result.lastInsertRowid
-    if(!blogid) return res.status(400).json({valid:false,message:'The title already exists. Change the title and try again.'})
-    return res.status(200).json({valid:true,blogid})
+        const { blogtitle, playerid} = req.body;
+        const stmt = db.prepare('INSERT INTO blogs (title, playerid) VALUES (?, ?);');
+        const result = stmt.run(blogtitle, playerid);
+        const blogid = result.changes==0 ? null : result.lastInsertRowid;
+        if(!blogid) return res.status(400).json({valid:false,message:'The title already exists. Change the title and try again.'})
+        return res.status(200).json({valid:true,blogid})
     }catch(err){
         res.status(500).json({success:false,message: `Internal server error: ${err}`})      
     }
 })
+
 app.post('/api/blog/images', (req, res, next) => {
-    celebrationMultiUpload.array('blogimages', 10)(req, res, (err) => {
+    blogMultiUpload.array('blogimages', 10)(req, res, (err) => {
         if (err) {
             if (err instanceof multer.MulterError) {
                 return res.status(400).json({ success: false, message: err.message });
@@ -1119,27 +1123,32 @@ app.post('/api/blog/images', (req, res, next) => {
     });
 }, (req, res) => {
     try {
+        // const {blogid} = req.params;
         const { blogid } = req.body;
 
-        if (!celebrationid) {
-            return res.status(400).json({ success: false, message: 'celebrationid is required' });
+        if (!blogid) {
+            return res.status(400).json({ success: false, message: 'blogid is required' });
         }
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ success: false, message: 'No files uploaded' });
         }
 
-        const stmt = db.prepare('INSERT INTO celebrationimages (celebrationid, image_path) VALUES (?, ?)');
-        for (const file of req.files) {
-            stmt.run(celebrationid, file.key || file.location || file.filename);
-        }
+        // const stmt = db.prepare('INSERT INTO celebrationimages (celebrationid, image_path) VALUES (?, ?)');
+        // for (const file of req.files) {
+        //     stmt.run(celebrationid, file.key || file.location || file.filename);
+        // }
 
         res.json({
             success: true,
             count: req.files.length,
-            files: req.files.map(f => ({ key: f.key, url: f.location }))
+            links: req.files.map(f => ({ 
+                originalname: f.originalname,
+                key: f.key, 
+                url: f.location 
+            }))
         });
     } catch (err) {
-        console.error('Error uploading celebration images:', err);
+        console.error('Error uploading blog images:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
@@ -1314,6 +1323,22 @@ app.get('/api/blogs',(req,res)=>{
     }
 });
 
+app.put('/api/blog',(req,res)=>{
+    const {blogid,blog}=req.body;
+    try{
+        const stmt = db.prepare('Update blogs set blog=? where id=?')
+        const result = stmt.run(blog,blogid)
+        if(result.changes === 0){
+            res.status(400).json({success:false,message:`The blog could not be saved`})
+        }
+        if(result.changes === 1){
+           res.status(200).json({success:true,message:`The blog was saved successfully`})  
+        }
+    }catch(err){
+        res.status(500).json({success:false,message:`Server error: ${err}`});
+    }
+});
+
 app.get('/api/blogs/:id',(req,res)=>{
     try{
         const {id} = req.params
@@ -1322,8 +1347,8 @@ app.get('/api/blogs/:id',(req,res)=>{
         const blog = stmt.get(id);
         res.json({ blog });
     }catch(err){
-        console.error('Error fetching blogs:', err);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        console.error('Error fetching blogs:', err);;
+        res.status(500).json({ success: false, message: `Server error: ${err}` });
     }
 });
 
