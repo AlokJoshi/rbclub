@@ -4219,8 +4219,24 @@ grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 	cursor: pointer;
 }
 .cards {
+	font-size: 1.3em;
+	font-weight:900;
 	width:100px;
 	display:inline-block;
+	cursor: pointer;
+}
+
+.directiondiv {
+	width:70px;
+	border-radius: 3px;
+	border: 1px solid #888;
+}
+.directiondiv.active{
+	background-color: #667eea;
+}
+
+#spade #heart #diamond #club {
+	cursor: pointer;
 }
 /* added by alok */
 

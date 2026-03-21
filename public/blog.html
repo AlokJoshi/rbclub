@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/assets/css/main.css">
   <script src="assets/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zumer/snapdom/dist/snapdom.min.js"></script>
 
 </head>
 
@@ -78,43 +79,65 @@
           <td><img src="images/gallery/suits/club.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
         </tr>
       </table>
-      <table>
+      <table id="handdisplay">
         <tr><td></td><td>
-          <table id="n" class="active" data-count="0">
-            <tr><td><div id="ns"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="nscards" class="cards"></span></div></td></tr>
-            <tr><td><div id="nh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="nhcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="nd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="ndcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="nc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="nccards" class="cards"></span></div></td></tr>
+          <table id="n" data-count="0">
+            <tr><td><div id="ns"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="nscards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="nh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="nhcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="nd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="ndcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="nc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="nccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
           </table></td><td></td></tr>
         <tr><td>
           <table id="w" data-count="0">
-            <tr><td><div id="ws"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="wscards" class="cards"></span></div></td></tr>
-            <tr><td><div id="wh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="whcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="wd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="wdcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="wc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="wccards" class="cards"></span></div></td></tr>
-          </table></td><td style="border:2px solid grey">
+            <tr><td><div id="ws"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="wscards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="wh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="whcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="wd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="wdcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="wc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="wccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+          </table></td><td style="border:2px solid grey;vertical-align: middle;">
             <!-- here we add a table in the middle with 3 rows and 3 columns -->
-            <table>
-              <tr><td></td><td style="cursor:pointer" onclick="fixdirection('n')">North</td><td></td></tr>
-              <tr><td style="cursor:pointer" onclick="fixdirection('w')">West</td><td></td><td style="cursor:pointer" onclick="fixdirection('e')">East</td></tr>
-              <tr><td></td><td style="cursor:pointer" onclick="fixdirection('s')">South</td><td></td></tr>
-            </table>
+            <!-- <table style="width:100%;height:100%;border-collapse:collapse;text-align:center;table-layout:fixed;">
+              <tr style="height: 33.333%;"><td></td><td style="cursor:pointer" onclick="fixdirection('n')">North</td><td></td></tr>
+              <tr style="height: 33.333%;"><td style="cursor:pointer" onclick="fixdirection('w')">West</td><td></td><td style="cursor:pointer" onclick="fixdirection('e')">East</td></tr>
+              <tr style="height: 33.333%;"><td></td><td style="cursor:pointer" onclick="fixdirection('s')">South</td><td></td></tr>
+            </table> -->
+            <div style="display:grid;height:100%;grid-template-rows: repeat(5, 1fr);">
+
+              <div style="display:grid;grid-template-columns:1fr;align-items:center;justify-items:center;">
+              <div class="directiondiv active" onclick="fixdirection('n')">North</div>
+              </div>
+
+              <div></div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;justify-items:center;">
+                <div class="directiondiv" onclick="fixdirection('w')">West</div>
+                <div></div>
+                <div class="directiondiv" onclick="fixdirection('e')">East</div>
+              </div>
+
+              <div></div>
+
+              <div style="display:grid;grid-template-columns:1fr;align-items:center;justify-items:center;">
+              <div class="directiondiv" onclick="fixdirection('s')">South</div>
+              </div>
+
+             </div>
           </td><td>
           <table id="e" data-count="0">
-            <tr><td><div id="es"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="escards" class="cards"></span></div></td></tr>
-            <tr><td><div id="eh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="ehcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="ed"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="edcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="ec"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="eccards" class="cards"></span></div></td></tr>
+            <tr><td><div id="es"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="escards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="eh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="ehcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="ed"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="edcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="ec"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="eccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
           </table>
           </td></tr>
         <tr><td></td><td><table id="s" data-count="0">
-            <tr><td><div id="ss"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="sscards" class="cards"></span></div></td></tr>
-            <tr><td><div id="sh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="shcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="sd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="sdcards" class="cards"></span></div></td></tr>
-            <tr><td><div id="sc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="sccards" class="cards"></span></div></td></tr>
+            <tr><td><div id="ss"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="sscards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="sh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="shcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="sd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="sdcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
+            <tr><td><div id="sc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="sccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
         </table></td><td></td></tr>
       </table>
     </div>
+    <img id="preview" style="display:none;" src="" alt="">
   </div>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
   <script src="assets/js/jquery.min.js"></script>

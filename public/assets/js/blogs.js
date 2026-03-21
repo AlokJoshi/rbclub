@@ -234,16 +234,35 @@ function tinymcechange() {
 }
 
 function fixdirection(direction) {
-  const tables = document.querySelectorAll('table');
-  tables.forEach(table => {
-    if (table.id === direction) {
-      table.classList.add('active');
+  const divs = document.querySelectorAll('.directiondiv');
+  divs.forEach(div => {
+    if (div.textContent.toLowerCase()[0] === direction.toLowerCase()) {
+      div.classList.add('active');
     } else {
-      table.classList.remove('active');
+      div.classList.remove('active');
     }
   });
 }
-
+function removecards(event){
+  const target = event.target;
+  const id=target.id;
+  if(id && id.endsWith('cards')){
+    //first put the cards back into the card selection area
+    const cards = target.textContent.trim().split('').filter(c => c);
+    suit = id[1] == 'h' ? 'heart' : id[1]==='d' ? 'diamond' : id[1]==='c' ? 'club' : id[1]==='s' ? 'spade' : null;
+    suitrow = document.getElementById(`${suit}`) //suitid should be spade,heart,diamond,club
+    const cardElements = suitrow.querySelectorAll('td');
+    cards.forEach(card => {
+      cardElements.forEach(td => {
+        if (td.textContent.trim() === card) {
+          td.style.visibility = 'visible';
+        }
+      });
+    });
+    target.textContent = ''; //remove cards from the hand
+    target.parentElement.dataset.count = '0'; //reset count of cards in the hand
+  }
+}
 
 function selectcard(event) {
   const target = event.target;
@@ -251,13 +270,8 @@ function selectcard(event) {
     const card = target.textContent.trim();
     const suitElementId = target.parentElement.id;
     const suit = suitElementId ? suitElementId[0].toLowerCase() : '';
-    const cardcode = `${card}${suit}`;
-    console.log(`Selected card: ${cardcode}`);
-    // You can now use the cardcode variable as needed
-    // For example, you could add it to a list of selected cards or display it somewhere on the page
-    // identify the table that is active and add the cardcode to that table's cards span
-    const activeTable = document.querySelector('table.active');
-    const direction = activeTable.id; // n, s, e, w
+    const direction = document.querySelector('.directiondiv.active')?.textContent.trim().toLowerCase()[0];
+    const activeTable = document.querySelector(`#${direction}`);
     if (activeTable && activeTable.dataset.count < 13) { // max 13 cards in a hand
       //decide which row to use
       const cardsSpan = activeTable.querySelector(`#${direction}${suit}cards`);
@@ -282,4 +296,52 @@ function sortcards(cards) {
   return cardArray.join('');
 }
 
+// snapdom related
+// Save as PNG
+function saveAsPNG() {
+  snapdom.download(element, {
+    format: 'png',
+    filename: 'capture-demo',
+  }).catch(function(err) {
+    console.error('Save failed:', err);
+  });
+}
+
+// Save as JPG
+function saveAsJPG() {
+  snapdom.download(element, {
+    format: 'jpg',
+    filename: 'capture-demo',
+    backgroundColor: '#fff',
+    quality: 0.92
+  }).catch(function(err) {
+    console.error('Save failed:', err);
+  });
+}
+
+// Preview image
+function previewImage() {
+
+  //before taking a picture 
+  //remove the active class
+  const activeDiv = document.querySelector('.directiondiv.active');
+  if (activeDiv) {
+    activeDiv.classList.remove('active');
+  }
+
+  const element = document.getElementById('handdisplay');
+  const previewElement = document.getElementById('preview');
+  snapdom.toImg(element, { 
+    format: 'png', 
+    scale: 0.7 
+  }).then(function(img) {
+    previewElement.src = img.src;
+    previewElement.style.display = 'block';
+    tinyMCE.activeEditor.execCommand('mceInsertContent', false, `<img src="${img.src}" style="max-width:100%;height:auto;" />`);
+  }).catch(function(err) {
+    console.error('Preview failed:', err);
+  });
+}
+
+// end of snapdom related
 decideAboutBloggers()

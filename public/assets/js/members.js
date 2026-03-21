@@ -985,7 +985,7 @@ async function PopulateDirectorsTable() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result);
+    // console.log(result);
     const tbody = document.getElementById('directorsTableBody');
     if (!tbody) return console.warn('Table body #directorsTableBody not found');
     tbody.innerHTML = '';
