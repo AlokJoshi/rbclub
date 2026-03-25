@@ -183,10 +183,11 @@ app.get('/blogs', (req, res) => {
     }
 });
 
-app.get('/api/bloglist', (req, res) => {
+app.get('/api/bloglist/:playerid', (req, res) => {
     try {
-        const stmt = db.prepare(`select b.id,p.id as playerid, b.createddate,b.title,concat(p.first,' ',p.last) as author from player as p inner join blogs as b on p.id = b.playerid order by b.createddate desc;`);
-        const blogs = stmt.all();
+        const playerid = req.params.playerid;
+        const stmt = db.prepare(`select b.id,p.id as playerid, b.createddate,b.title,concat(p.first,' ',p.last) as author from player as p inner join blogs as b on p.id = b.playerid where p.id = ? order by b.createddate desc;`);
+        const blogs = stmt.all(playerid);
         res.json({success:true,blogs});
     } catch (err) {
         console.error('Error in /api/blogslist:', err);
@@ -522,9 +523,10 @@ app.get('/get-session-id', (req, res) => {
         const isAdmin = req.session.isAdmin;
         const casuallogin = req.session.casuallogin;
         const fullname = req.session.fullname;
-        console.log('Session ID:', sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname);
+        // console.log('Session ID:', sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname);
         res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname });
     } else {
+        console.log('No session found');  
         res.json({ message: 'No session found' });
     }
 });
@@ -848,7 +850,7 @@ app.get('/api/getplayingintentions/:playerid', (req, res) => {
     try {
         const stmt = db.prepare('SELECT m1, t1, f1, ug FROM player WHERE id = ?;');
         const result = stmt.get(playerId);
-        console.log('Playing intentions for player', playerId, result);
+        // console.log('Playing intentions for player', playerId, result);
         res.json({ success: true, intentions: result });
     } catch (err) {
         console.error('Error fetching playing intentions:', err);
@@ -1098,13 +1100,19 @@ app.post('/api/celebration/images', (req, res, next) => {
     }
 });
 
-app.post('/api/blog',async (req,res) =>{
+app.post('/api/blogtitle',async (req,res) =>{
     try{
         const { blogtitle, playerid} = req.body;
+        //if blogtitle already exists, return the blogid
+        //if blogtitle does not exist, create a new blog with the title and return the new blogid
+        const existingBlog = db.prepare('SELECT id FROM blogs WHERE title = ? and playerid = ?').get(blogtitle, playerid);
+        if(existingBlog) {
+            return res.status(200).json({valid:true,blogid: existingBlog.id, message:'The title already exists. Returning the existing blogid.'});
+        }
         const stmt = db.prepare('INSERT INTO blogs (title, playerid) VALUES (?, ?);');
-        const result = stmt.run(blogtitle, playerid);
-        const blogid = result.changes==0 ? null : result.lastInsertRowid;
-        if(!blogid) return res.status(400).json({valid:false,message:'The title already exists. Change the title and try again.'})
+        const info = stmt.run(blogtitle, playerid);
+        const blogid = info.changes==0 ? null : info.lastInsertRowid;
+        if(!blogid) return res.status(400).json({valid:false,message:'Blog could not be created. Please try again.'})
         return res.status(200).json({valid:true,blogid})
     }catch(err){
         res.status(500).json({success:false,message: `Internal server error: ${err}`})      
@@ -1335,6 +1343,7 @@ app.put('/api/blog',(req,res)=>{
            res.status(200).json({success:true,message:`The blog was saved successfully`})  
         }
     }catch(err){
+        console.log('Error saving blog:', err);
         res.status(500).json({success:false,message:`Server error: ${err}`});
     }
 });
@@ -1349,6 +1358,18 @@ app.get('/api/blogs/:id',(req,res)=>{
     }catch(err){
         console.error('Error fetching blogs:', err);;
         res.status(500).json({ success: false, message: `Server error: ${err}` });
+    }
+});
+
+app.get('/api/blogcomments/:blogid',(req,res)=>{
+    try{
+        const { blogid } = req.params;
+        const stmt = db.prepare(`SELECT bc.*, concat(p.first, ' ', p.last) as commenter FROM blogcomments bc inner join player p on bc.playerid = p.id where bc.blogid = ? order by createddate desc;`);
+        const comments = stmt.all(blogid);
+        res.json({ success: true, comments });
+    }catch(err){
+        console.error('Error fetching blog comments:', err);;
+        res.status(500).json({ success: false, message: `Server error: ${err}` });  
     }
 });
 

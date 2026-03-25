@@ -6,24 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="/assets/css/main.css">
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/js/jquery.scrolly.min.js"></script>
   <script src="assets/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@zumer/snapdom/dist/snapdom.min.js"></script>
 
 </head>
-
-<!-- tinymce.init({
-  selector: 'textarea',
-  setup: function(editor) {
-    editor.on('change', function() {
-      // Get all images
-      var images = editor.dom.select('img');
-      tinymce.each(images, function(image) {
-        console.log('Image Source:', image.src);
-        });
-    });
-  }
-}); -->
 
 <body class="is-preload">
   <div id="wrapper">
@@ -48,14 +37,20 @@
             <option value="" disabled selected>Select a blog to edit</option>
           </select>
           <input type="text" name="blogtitle" id="blogtitleid" placeholder="Blog Title" required />
-          <input type="text" name="blogauthor" id="blogauthorid" placeholder="" readonly />
+          <!-- <input type="text" name="blogauthor" id="blogauthorid" placeholder="" readonly /> -->
           <textarea id="mytextarea" placeholder='Start here..'></textarea>
           <div class="fields">
-            <div class="field half wrap">
-              <button type="button" style="width:stretch" class="button primary" onclick="submitblog()">Submit</button>
+            <div class="field quarter wrap">
+              <button type="button" title= "Save Blog" class="button primary" onclick="submitblog()">Save</button>
             </div>
-            <div class="field half wrap">
-              <button type="button" style="width:stretch" class="button primary" onclick="cancelblog()">Cancel</button>
+            <div class="field quarter wrap">
+              <button type="button" title= "Cancel Blog" class="button primary" onclick="cancelblog()">Cancel</button>
+            </div>
+            <div class="field quarter wrap">
+              <button type="button" title= "Delete Blog" class="button primary" onclick="deleteblog()">Delete</button>
+            </div>
+            <div class="field quarter wrap">
+              <button type="button" title= "Create N/S/E/W Hands" class="button primary" onclick="createhand()">Crt.Hand</button>
             </div>
           </div>
         </form>
@@ -63,83 +58,235 @@
 
     </section>
     <div id="handmodal" class="modal">
-			<span id="closehandmodal" class="close" onclick="closehandmodal()">&times;</span>
+      <span id="closehandmodal" class="close" onclick="closehandmodal()">&times;</span>
       <h2>Create Hand</h2>
       <table onclick="selectcard(event)">
-        <tr id="spade">
-          <td><img src="images/gallery/suits/spade.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        <tr id="spade" data-remaining="13">
+          <td><img src="images/gallery/suits/spade.png" style="width:15px" /></td>
+          <td>A</td>
+          <td>K</td>
+          <td>Q</td>
+          <td>J</td>
+          <td>T</td>
+          <td>9</td>
+          <td>8</td>
+          <td>7</td>
+          <td>6</td>
+          <td>5</td>
+          <td>4</td>
+          <td>3</td>
+          <td>2</td>
         </tr>
-        <tr id="heart">
-          <td><img src="images/gallery/suits/heart.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        <tr id="heart" data-remaining="13">
+          <td><img src="images/gallery/suits/heart.png" style="width:15px" /></td>
+          <td>A</td>
+          <td>K</td>
+          <td>Q</td>
+          <td>J</td>
+          <td>T</td>
+          <td>9</td>
+          <td>8</td>
+          <td>7</td>
+          <td>6</td>
+          <td>5</td>
+          <td>4</td>
+          <td>3</td>
+          <td>2</td>
         </tr>
-        <tr id="diamond">
-          <td><img src="images/gallery/suits/diamond.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        <tr id="diamond" data-remaining="13">
+          <td><img src="images/gallery/suits/diamond.png" style="width:15px" /></td>
+          <td>A</td>
+          <td>K</td>
+          <td>Q</td>
+          <td>J</td>
+          <td>T</td>
+          <td>9</td>
+          <td>8</td>
+          <td>7</td>
+          <td>6</td>
+          <td>5</td>
+          <td>4</td>
+          <td>3</td>
+          <td>2</td>
         </tr>
-        <tr id="club">
-          <td><img src="images/gallery/suits/club.png" style="width:15px"/></td><td>A</td><td>K</td><td>Q</td><td>J</td><td>T</td><td>9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td>
+        <tr id="club" data-remaining="13">
+          <td><img src="images/gallery/suits/club.png" style="width:15px" /></td>
+          <td>A</td>
+          <td>K</td>
+          <td>Q</td>
+          <td>J</td>
+          <td>T</td>
+          <td>9</td>
+          <td>8</td>
+          <td>7</td>
+          <td>6</td>
+          <td>5</td>
+          <td>4</td>
+          <td>3</td>
+          <td>2</td>
         </tr>
       </table>
       <table id="handdisplay">
-        <tr><td></td><td>
-          <table id="n" data-count="0">
-            <tr><td><div id="ns"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="nscards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="nh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="nhcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="nd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="ndcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="nc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="nccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-          </table></td><td></td></tr>
-        <tr><td>
-          <table id="w" data-count="0">
-            <tr><td><div id="ws"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="wscards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="wh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="whcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="wd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="wdcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="wc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="wccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-          </table></td><td style="border:2px solid grey;vertical-align: middle;">
-            <!-- here we add a table in the middle with 3 rows and 3 columns -->
-            <!-- <table style="width:100%;height:100%;border-collapse:collapse;text-align:center;table-layout:fixed;">
-              <tr style="height: 33.333%;"><td></td><td style="cursor:pointer" onclick="fixdirection('n')">North</td><td></td></tr>
-              <tr style="height: 33.333%;"><td style="cursor:pointer" onclick="fixdirection('w')">West</td><td></td><td style="cursor:pointer" onclick="fixdirection('e')">East</td></tr>
-              <tr style="height: 33.333%;"><td></td><td style="cursor:pointer" onclick="fixdirection('s')">South</td><td></td></tr>
-            </table> -->
+        <tr>
+          <td></td>
+          <td>
+            <table id="n" data-count="0">
+              <tr>
+                <td>
+                  <div id="ns"><img src="images/gallery/suits/spade.png" style="width:10px" /><span id="nscards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="nh"><img src="images/gallery/suits/heart.png" style="width:10px" /><span id="nhcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="nd"><img src="images/gallery/suits/diamond.png" style="width:10px" /><span id="ndcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="nc"><img src="images/gallery/suits/club.png" style="width:10px" /><span id="nccards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>
+            <table id="w" data-count="0">
+              <tr>
+                <td>
+                  <div id="ws"><img src="images/gallery/suits/spade.png" style="width:10px" /><span id="wscards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="wh"><img src="images/gallery/suits/heart.png" style="width:10px" /><span id="whcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="wd"><img src="images/gallery/suits/diamond.png" style="width:10px" /><span id="wdcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="wc"><img src="images/gallery/suits/club.png" style="width:10px" /><span id="wccards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td style="border:2px solid grey;vertical-align: middle;">
             <div style="display:grid;height:100%;grid-template-rows: repeat(5, 1fr);">
 
               <div style="display:grid;grid-template-columns:1fr;align-items:center;justify-items:center;">
-              <div class="directiondiv active" onclick="fixdirection('n')">North</div>
+                <div class="directiondiv active" style="text-align:center" onclick="fixdirection('n')">N</div>
               </div>
 
               <div></div>
 
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;justify-items:center;">
-                <div class="directiondiv" onclick="fixdirection('w')">West</div>
+                <div class="directiondiv" style="text-align:center" onclick="fixdirection('w')">W</div>
                 <div></div>
-                <div class="directiondiv" onclick="fixdirection('e')">East</div>
+                <div class="directiondiv" style="text-align:center" onclick="fixdirection('e')">E</div>
               </div>
 
               <div></div>
 
               <div style="display:grid;grid-template-columns:1fr;align-items:center;justify-items:center;">
-              <div class="directiondiv" onclick="fixdirection('s')">South</div>
+                <div class="directiondiv" style="text-align:center" onclick="fixdirection('s')">S</div>
               </div>
 
-             </div>
-          </td><td>
-          <table id="e" data-count="0">
-            <tr><td><div id="es"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="escards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="eh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="ehcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="ed"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="edcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="ec"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="eccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-          </table>
-          </td></tr>
-        <tr><td></td><td><table id="s" data-count="0">
-            <tr><td><div id="ss"><img src="images/gallery/suits/spade.png" style="width:10px"/><span id="sscards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="sh"><img src="images/gallery/suits/heart.png" style="width:10px"/><span id="shcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="sd"><img src="images/gallery/suits/diamond.png" style="width:10px"/><span id="sdcards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-            <tr><td><div id="sc"><img src="images/gallery/suits/club.png" style="width:10px"/><span id="sccards" class="cards" onclick="removecards(event)"></span></div></td></tr>
-        </table></td><td></td></tr>
+            </div>
+          </td>
+          <td>
+            <table id="e" data-count="0">
+              <tr>
+                <td>
+                  <div id="es"><img src="images/gallery/suits/spade.png" style="width:10px" /><span id="escards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="eh"><img src="images/gallery/suits/heart.png" style="width:10px" /><span id="ehcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="ed"><img src="images/gallery/suits/diamond.png" style="width:10px" /><span id="edcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="ec"><img src="images/gallery/suits/club.png" style="width:10px" /><span id="eccards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <table id="s" data-count="0">
+              <tr>
+                <td>
+                  <div id="ss"><img src="images/gallery/suits/spade.png" style="width:10px" /><span id="sscards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="sh"><img src="images/gallery/suits/heart.png" style="width:10px" /><span id="shcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="sd"><img src="images/gallery/suits/diamond.png" style="width:10px" /><span id="sdcards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div id="sc"><img src="images/gallery/suits/club.png" style="width:10px" /><span id="sccards"
+                      class="cards" onclick="removecards(event)"></span></div>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td></td>
+        </tr>
       </table>
+      <form action="">
+        <div class="fields">
+          <div class="field half wrap">
+            <button type="button" style="width:stretch" class="button primary" onclick="pasteImage()">Paste Image</button>
+          </div>
+          <div class="field half wrap">
+            <button type="button" style="width:stretch" class="button primary" onclick="exitHand()">Cancel</button>
+          </div>
+        </div>
+      </form>
     </div>
-    <img id="preview" style="display:none;" src="" alt="">
+    <!-- <img id="preview" style="display:none;" src="" alt=""> -->
   </div>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
   <script src="assets/js/jquery.min.js"></script>
   <script src="assets/js/browser.min.js"></script>
   <script src="assets/js/breakpoints.min.js"></script>
@@ -150,10 +297,25 @@
   <script>
     tinymce.init({
       selector: '#mytextarea',
-      license_key: 'gpl' // gpl for open source, T8LK:... for commercial
-      // setup: function (editor) {
-      //   editor.on('change', tinymcechange);
-      // }
+      license_key: 'gpl', // gpl for open source, T8LK:... for commercial
+      setup: function (editor) {
+        editor.addShortcut('Alt+Shift+S', 'Description', function () {
+          // Custom action here
+          pasteCardImage('Spade');
+        });
+        editor.addShortcut('Alt+Shift+H', 'Description', function () {
+          // Custom action here
+          pasteCardImage('Heart');
+        });
+        editor.addShortcut('Alt+Shift+D', 'Description', function () {
+          // Custom action here
+          pasteCardImage('Diamond');
+        });
+        editor.addShortcut('Alt+Shift+C', 'Description', function () {
+          // Custom action here
+          pasteCardImage('Club');
+        });
+      }
     });
   </script>
 </body>

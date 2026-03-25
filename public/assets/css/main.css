@@ -2942,7 +2942,8 @@ table tbody tr:nth-child(2n + 1) {
 }
 
 table td {
-	padding: 0.25rem 0.25rem;
+	/* change from 0.25rem 0.25rem */
+	padding: 0.1rem 0.1rem;
 }
 
 table th {
@@ -4055,7 +4056,7 @@ body.is-ie #wrapper>section>.content>section {
 	/* Hidden by default */
 	position: fixed;
 	/* Stay in place */
-	z-index: 1;
+	z-index: 2;
 	/* Sit on top */
 	left: 0;
 	top: 0;
@@ -4063,8 +4064,8 @@ body.is-ie #wrapper>section>.content>section {
 	/* Full width */
 	height: 100%;
 	/* Full height */
-	background-color: rgba(0, 0, 0, 0.4);
-	/* Black background with opacity */
+	background-color: rgba(255, 255, 255);
+	/* White background with opacity */
 }
 
 /* Modal Content/Box */
@@ -4237,6 +4238,31 @@ grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 
 #spade #heart #diamond #club {
 	cursor: pointer;
+}
+
+.custom-confirm-button {
+	padding: 10px 20px;
+	background-color: #ab3bc6;
+	color: white;
+	border: none;
+	cursor: pointer;
+	border-radius: 3px;
+}
+
+.blog-comment {
+	border: 1px solid #888;
+	border-radius: 5px;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+
+.blog-commenter-name {
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.blog-comment-text {
+	font-size: 0.9rem;
 }
 /* added by alok */
 

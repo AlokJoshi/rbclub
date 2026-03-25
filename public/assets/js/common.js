@@ -6,21 +6,38 @@ function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
 }
 
-//delay duration in seconds
+//delay duration is not being used
 async function showCustomAlert(message, delayDuration = 3) {
   swal({ 
     title: 'Riverside Bridge Club',
-    text: message 
+    text: message,
+    buttons: {
+      confirm: {
+        text: 'OK',
+        className: 'custom-confirm-button'
+      }
+    }
   });
-  // const alertBox = document.getElementById('customAlert');
-  // const alertMessage = alertBox.querySelector('p');
-  // alertMessage.textContent = message;
-  // alertBox.style.display = 'flex';
-  // await delay(delayDuration * 1000); // Display for the specified duration
-  // // Fade out effect
-  // alertBox.style.transition = 'opacity 0.5s';
-  // alertBox.style.display = 'none';
 }
+
+async function showCustomYesNo(message) {
+  const userConfirmed = await swal({
+    title: 'Riverside Bridge Club',
+    text: message,
+    buttons: {
+      confirm: {
+        text: 'Yes',
+        className: 'custom-confirm-button'
+      },
+      cancel: {
+        text: 'No',
+        className: 'custom-confirm-button'
+      }
+    }
+  });
+  return userConfirmed;
+}
+
 
 async function showCustomConfirmWithInput(message) {
   const expected = 'DELETE';
@@ -31,8 +48,19 @@ async function showCustomConfirmWithInput(message) {
       attributes: {
         placeholder: `Type ${expected} to confirm`,
         autocapitalize: 'off'
-      }
+      },
     },
+    // following is not working to change the button text and style, so using buttons: ['Cancel', 'Confirm'] instead
+    // buttons: {
+    //   confirm: {
+    //     text: 'Confirm',
+    //     className: 'custom-confirm-button'
+    //   },
+    //   cancel: {
+    //     text: 'Cancel',
+    //     className: 'custom-confirm-button'
+    //   }
+    // },
     buttons: ['Cancel', 'Confirm']
   });
 
@@ -106,6 +134,14 @@ async function decide() {
   } else {
     logindetails = `Note that you are not logged in. You must log in with the log-in details sent to you. Alternatively, you can log in by using your full name and phone number. If you are a member and have not received login details, please contact the club.`
     logindetails2 = logindetails
+    const el = document.getElementById('loginBtn');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.setAttribute('tabindex', '-1');
+      el.focus();
+    }else{
+      console.warn('Login button not found to scroll into view and focus.');
+    }
     showCustomAlert(logindetails, 7)
     console.log("User is not logged in.");
   }

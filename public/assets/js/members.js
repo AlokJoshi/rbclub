@@ -13,7 +13,10 @@ function displaynameandphonecheckform() {
 function displayloginform() {
   const loginmodal = document.getElementById('loginmodal')
   loginmodal.style.display = 'block'
-  // loginmodal.style.display='flex'
+  const usernameInput = document.getElementById('username');
+  usernameInput.value=''
+  const passwordInput = document.getElementById('password');
+  passwordInput.value=''
 }
 
 function displaychangepasswordform() {
@@ -651,14 +654,14 @@ function displayaddannouncementform() {
 
 document.addEventListener('DOMContentLoaded', createPlayerTable);
 document.addEventListener('DOMContentLoaded', ClearForm);
-document.addEventListener('DOMContentLoaded',PopulateBlogList);
+document.addEventListener('DOMContentLoaded', PopulateBlogList);
 
 let blogEditorInitPromise = null;
 
-async function PopulateBlogList(){
-  try{
+async function PopulateBlogList() {
+  try {
     const bloglist = document.getElementById('bloglistid');
-    if(!bloglist){
+    if (!bloglist) {
       console.warn('Blog list element with id "bloglistid" not found');
       return;
     }
@@ -687,11 +690,11 @@ async function PopulateBlogList(){
       });
     }
 
-  }catch(err){
+  } catch (err) {
     console.error('Error populating blog list:', err);
     showCustomAlert(`Error populating blog list. ${err}`, 5);
   }
-} 
+}
 
 function ensureBlogEditor() {
   if (typeof tinymce === 'undefined') {
@@ -718,15 +721,18 @@ function ensureBlogEditor() {
   return blogEditorInitPromise;
 }
 
-async function showblog(){
+async function showblog() {
   const bloglist = document.getElementById('bloglistid');
   const selectedOption = bloglist?.selectedOptions[0];
   const blogHtml = selectedOption?.dataset.blog || '';
+  const blogid = selectedOption?.value || '';
 
   try {
     const editor = await ensureBlogEditor();
     if (editor) {
+      editor.mode.set('readonly')
       editor.setContent(blogHtml);
+      displayBlogComments(blogid)
       return;
     }
   } catch (err) {
@@ -738,6 +744,8 @@ async function showblog(){
   if (blogcontent) {
     blogcontent.value = blogHtml;
   }
+
+  displayBlogComments(blogid)
 }
 
 // Add this after your existing DOMContentLoaded listeners
@@ -1126,7 +1134,7 @@ async function PopulateAnnouncements(params) {
           return;
         }
         const result = await showCustomConfirmWithInput(`Type DELETE to confirm deletion of announcement Title:${announcement.title},
-          Announcement:${announcement.announcement}`);
+          Announcement:${announcement.announcement.substr(0, 15)}...`);
         if (result) {
           const res = await fetch(`/api/announcement/${announcement.id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1451,7 +1459,7 @@ function closestComingMonday(date) {
   const day = base.getDay();
   let diff = (8 - day) % 7; //values 0 to 6
   const hours = date.getHours();
-  if (diff===0 && hours>12){
+  if (diff === 0 && hours > 12) {
     diff = 7;
   }
   base.setDate(base.getDate() + diff);
@@ -1463,7 +1471,7 @@ function closestComingTuesday(date) {
   const day = base.getDay();
   let diff = (9 - day) % 7; //values 0 to 6
   const hours = date.getHours();
-  if (diff===0 && hours>12){
+  if (diff === 0 && hours > 12) {
     diff = 7;
   }
   base.setDate(base.getDate() + diff);
@@ -1475,7 +1483,7 @@ function closestComingFriday(date) {
   const day = base.getDay();
   let diff = (12 - day) % 7; //values 0 to 6
   const hours = date.getHours();
-  if (diff===0 && hours>12){
+  if (diff === 0 && hours > 12) {
     diff = 7;
   }
   base.setDate(base.getDate() + diff);
@@ -1547,7 +1555,7 @@ function checkTotalFileSize() {
   // errorMsg.textContent = '';
   submitButton.disabled = false;
 
-  if(input.files.length>10){
+  if (input.files.length > 10) {
     showCustomAlert('You can upload a maximum of 10 files with a total size of 10 MB only at a time.');
     submitButton.disabled = true;
     return;
@@ -1580,10 +1588,42 @@ function setupCelebrationsLazyLoad() {
   select.addEventListener('pointerdown', loadIfNeeded, { once: false });
 }
 
-function createblog(){
-   window.open('/blogs');  
-}
+function displayBlogComments() {
+  const blog = document.getElementById('bloglistid')?.selectedOptions[0];
+  if (!blog) return console.warn('No blog selected');
+  const blogid = blog.value;
+  const blogCommentsSection = document.getElementById('blogComments');
+  if(!blogCommentsSection) return console.warn('Section #blogComments not found');
 
-decide()
+  const res = fetch(`/api/blogcomments/${blogid}`, {
+    method: 'GET'
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+    ).then(result => {
+      blogCommentsSection.innerHTML = '';
+      result.comments.forEach(comment => {
+        const commentDiv = document.createElement('div');
+        commentDiv.className = 'blog-comment';
+        const commenterName = document.createElement('div');
+        commenterName.className = 'blog-commenter-name';
+        commenterName.textContent = `${comment.commenter} says:`;
+        const commentText = document.createElement('div');
+        commentText.className = 'blog-comment-text';
+        commentText.textContent = comment.comment;
+        commentDiv.appendChild(commenterName);
+        commentDiv.appendChild(commentText);
+        blogCommentsSection.appendChild(commentDiv);
+      });
+    });
+  }
 
-displayPlayIntentions()
+  function createblog() {
+    window.open('/blogs');
+  }
+
+  window.addEventListener('DOMContentLoaded', decide)
+
+  displayPlayIntentions()

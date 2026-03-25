@@ -95,10 +95,6 @@
 				<button type="button" id="loginBtn" class="button primary" onclick="displayloginform()">Login</button>
 				<button type="button" id="changePasswordBtn" class="button primary" onclick="displaychangepasswordform()">Change
 					Password</button>
-				<!-- <button type="button" id="addnewplayerBtn" class="button primary" onclick="displayaddnewplayerform()">Add New
-					Player</button>
-				<button type="button" id="defaultlogincredentialsBtn" class="button primary"
-					onclick="displaydefaultlogincredentialsform()">Default Login Credentials</button> -->
 				<button type="button" id="logoutBtn" class="button primary" onclick="logout()">Logout</button>
 			</header>
 			<div class="content">
@@ -316,10 +312,6 @@
 			</div>
 		</section>
 
-		
-
-		
-
 		<!-- Player of the Month Section -->
 		<section>
 			<header>
@@ -399,21 +391,22 @@
 						</div>
 					</div>
 				</form>
-				<form action="" id="celebrationImageForm"">
-				<div class=" fields">
-					<div class="field full">
-						<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
-						<input type="file" id="celebrationImageInput" name="celebrationImageInput" onchange="checkTotalFileSize()"
-							accept="image/*" multiple required>
+				<form action="" id="celebrationImageForm">
+					<div class=" fields">
+						<div class="field full">
+							<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
+							<input type="file" id="celebrationImageInput" name="celebrationImageInput" onchange="checkTotalFileSize()"
+								accept="image/*" multiple required>
+						</div>
+						<div class="field full wrap">
+							<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
+								onclick="uploadCelebrationImage()">
+								Upload Image
+							</button>
+						</div>
 					</div>
-					<div class="field full wrap">
-						<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
-							onclick="uploadCelebrationImage()">
-							Upload Image
-						</button>
-					</div>
+				</form>
 			</div>
-			</form>
 			<div style="display: grid;grid-template-columns: 20fr 1fr 1fr;">
 				<div>
 					<label for="celebrations">Select a Celebration:</label>
@@ -435,30 +428,38 @@
 			<div id="celebrationPhotos">// displayCelebrationPhotos() populates this div
 
 			</div>
-	</div>
-	</section>
+		</section>
 
-	<!-- Blogs section -->
-	 <section>
-			<header>
-				<h2>Blogs</h2>
-						<p>Blogs or articles written by the members. If you like a blog
-							please encourage the author by commenting on the blog. 
-							Click <a onclick="createblog()">here</a> to create a blog. 
-						</p>
-						<button class="button" onclick="createblog()">Create Blog/Edit Your blog</button>
-			</header>
-			<div class="content">
-				<form action="">
-					<select name="bloglist" id="bloglistid" onchange="showblog()"></select>
-					<input type="textarea" id="blogcontent" name="blogcontent" placeholder="Enter your blog content"
-						style="width: 100%; height: 300px;" readonly></input>
-				</form>
-			</div>
-	 </section>
-	<!-- Copyright -->
-	<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
-	</div>
+		<!-- Blogs section -->
+		<section>
+				<header>
+					<h2>Blogs</h2>
+					<p>Blogs or articles written by the members. If you like a blog
+						please encourage the author by commenting on the blog. 
+						Click <a onclick="createblog()"><b>here</b></a> to create a blog. 
+					</p>
+					<button class="button primary" onclick="createblog()">Create Blog/Edit Your blog</button>
+				</header>
+				<div class="content">
+					<form action="">
+						<select name="bloglist" id="bloglistid" onchange="showblog()"></select>
+						<input type="textarea" id="blogcontent" name="blogcontent" placeholder="Blog content will display here..."
+							style="width: 100%; height: 300px;" readonly></input>
+						<label style="margin-top:50px;" for="blogcomment">Comment on the blog:</label>
+							<input type="textarea" id="blogcomment" name="blogcomments" placeholder="Write your comment here..."
+							style="width: 100%; height: 100px;"></input>
+						<div style="display:grid;place-items:center;margin-top: 20px;">
+							<button type="button" class="button primary" onclick="submitComment()">Submit Comment</button>
+						</div>
+						<!-- display blog comments here -->
+						 <div style="margin-top:50px;padding:10px;width:100%;height:400px;overflow:auto;" id="blogComments"></div>
+					</form>
+				</div>
+		</section>
+
+		<!-- Copyright -->
+		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
+		</div>
 
 	</div>
 
@@ -643,16 +644,6 @@
 		</div>
 	</div>
 
-
-
-	<!-- The custom alert box container -->
-	<div id="customAlert" class="alert-container">
-		<div class="alert-content">
-			<h2>Riverside Bridge Club</h2>
-			<p></p>
-		</div>
-	</div>
-
 	<!-- Scripts -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
 	<script src="assets/js/jquery.min.js"></script>
@@ -665,12 +656,6 @@
 	<script src="assets/js/main.js"></script>
   <script src="assets/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 
-	<!-- <script>
-    tinymce.init({
-      selector: '#blogcontent',
-      license_key: 'gpl' // gpl for open source, T8LK:... for commercial
-    });
-  </script> -->
 
 </body>
 
