@@ -213,6 +213,7 @@ async function populateCelebrations() {
     console.log(result);
     celebrations.innerHTML = '';
     const defaultOption = document.createElement('option');
+    defaultOption.value = '';
     defaultOption.textContent = 'Select a celebration';
     celebrations.appendChild(defaultOption);
 
@@ -244,18 +245,22 @@ async function addCelebration() {
     alert('Celebration description element not found');
     return;
   }
-  const res = await fetch('/api/celebration', {
+  const fileInput = document.getElementById('celebrationImageInput');
+  const form = new FormData();
+  form.append('createdByPlayerId', userid);
+  form.append('celebrationDate', cdate.value);
+  form.append('celebrationName', cn.value.trim());
+  form.append('celebrationDescription', cd.value.trim());
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    for (const file of fileInput.files) {
+      form.append('celebrationimages', file);
+    }
+  }
+  const res = await fetch(`/api/celebration2`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(
-      {
-        createdByPlayerId: userid,
-        celebrationDate: cdate.value,
-        celebrationName: cn.value,
-        celebrationDescription: cd.value
-      }
-    )
+    body: form
   });
+  
   if (!res.ok) {
     const result = await res.json();
     showCustomAlert(`Failed to add celebration: ${result.message}`, 5);
@@ -264,13 +269,22 @@ async function addCelebration() {
     const result = await res.json();
     if (result.success) {
       const celebrationid = result.celebrationid;
-      const imageForm = document.getElementById('celebrationImageForm');
-      imageForm.dataset.celebrationid = celebrationid;
-      showCustomAlert('Celebration added successfully. Now add upto 10 pictures (total 10MB) at a time', 5);
+      // const imageForm = document.getElementById('celebrationImageForm');
+      // imageForm.dataset.celebrationid = celebrationid;
+      showCustomAlert('Celebration added successfully. You can add more pictures by selecting this celebration from the drop-down and uploading images.', 5);
       populateCelebrations()
+      //close the celebration creation modal
+      closeCelbrationModal();
     } else {
       showCustomAlert(`Failed to add celebration: ${result.message}`, 5);
     }
+  }
+}
+
+function closeCelbrationModal() {
+  const modal = document.getElementById('addcelebrationmodal');
+  if (modal) {
+    modal.style.display = 'none';
   }
 }
 
@@ -290,13 +304,15 @@ async function deleteCelebrationImage(celebrationImageId) {
   }
 }
 
-async function uploadCelebrationImage() {
-  const form = document.getElementById('celebrationImageForm');
-  const fileInput = document.getElementById('celebrationImageInput');
-  const celebrationid = form?.dataset?.celebrationid;
+async function uploadMoreCelebrationImages() {
+  const form = document.getElementById('moreCelebrationImageForm');
+  const fileInput = document.getElementById('moreCelebrationImageInput');
+  const celebrationsEl = document.getElementById('celebrations');
+  if (!celebrationsEl) return alert('Celebrations element not found');
+  const celebrationid = celebrationsEl.selectedOptions[0]?.value;
 
-  if (!celebrationid) return alert('Missing celebration id');
-  if (!fileInput?.files?.[0]) return alert('Select an image first');
+  if (!celebrationid) return showCustomAlert('Please select a celebration from the drop-down first', 3);
+  if (!fileInput?.files?.[0]) return showCustomAlert('Select an image first', 3);
 
   const formData = new FormData();
   formData.set('celebrationid', celebrationid);
@@ -313,24 +329,42 @@ async function uploadCelebrationImage() {
   if (response.ok) {
     const result = await response.json();
     console.log('Upload result:', result);
-    showCustomAlert('Image uploaded successfully', 3);
-    displayCelebrationPhotos(celebrationid);
+    showCustomAlert('Image(s) uploaded successfully', 3);
+    displayCelebrationPhotos();
   } else {
     const result = await response.json().catch(() => ({}));
-    showCustomAlert(result.message || 'Failed to upload image', 3);
+    showCustomAlert(result.message || 'Failed to upload image(s)', 3);
   }
 }
 
-async function displayCelebrationPhotos(celebrationid) {
+function showCreateCelebrationModal() {
+  const modal = document.getElementById('addcelebrationmodal');
+  if (modal) {
+    modal.style.display = 'block';
+  }
+}
 
-  if (!celebrationid) {
-    const select = document.getElementById('celebrations');
-    celebrationid = select?.value;
-    const description = select?.selectedOptions[0]?.dataset?.description;
-    document.getElementById('celdescdisplay').value = description;
+
+async function displayCelebrationPhotos() {
+
+  const celebrationRelated = document.getElementById('celebrationrelated');
+
+  const select = document.getElementById('celebrations');
+  celebrationid = select?.value;
+  const description = select?.selectedOptions[0]?.dataset?.description;
+  document.getElementById('celdescdisplay').value = description;
+  if (document.getElementById('celebrations').selectedIndex === 0) {
+    if (celebrationRelated) {
+      celebrationRelated.style.display = 'none';
+      return
+    }
   }
 
   try {
+    const celebrationDescriptionEl = document.getElementById('celdescdisplay');
+    if (celebrationDescriptionEl) {
+      celebrationDescriptionEl.style.display = 'block';  
+    }
     const response = await fetch(`/api/celebration/${celebrationid}/images`, {
       method: 'GET'
     });
@@ -344,10 +378,10 @@ async function displayCelebrationPhotos(celebrationid) {
 
       const iDel = document.createElement('i');
       iDel.className = 'fas fa-trash-alt';
-      iDel.style = '[position: relative; top: 5px; right: 5px; cursor: pointer;';
+      iDel.style = 'position: relative; top: 5px; right: 5px; cursor: pointer;';
       iDel.title = 'Delete image';
       iDel.addEventListener('click', () => {
-        if (showCustomConfirm('Are you sure you want to delete this image?')) {
+        if (showCustomYesNo('Are you sure you want to delete this image?')) {
           deleteCelebrationImage(img.id);
         }
       });
@@ -360,6 +394,10 @@ async function displayCelebrationPhotos(celebrationid) {
       imgEl.style.margin = '5px';
       div.appendChild(imgEl);
       container.appendChild(div);
+    }
+
+    if (celebrationRelated) {
+      celebrationRelated.style.display = 'block';
     }
     console.log('Celebration photos:', result);
   } catch (err) {
@@ -1264,7 +1302,7 @@ document.addEventListener('DOMContentLoaded', PopulateAnnouncements);
 document.addEventListener('DOMContentLoaded', PopulatePOTMForm);      //needs to be only once
 document.addEventListener('DOMContentLoaded', displayPOTM);
 document.addEventListener('DOMContentLoaded', setupCelebrationsLazyLoad);
-
+document.addEventListener('DOMContentLoaded', updateVoteInfo);
 
 async function clearAllPOTMCommentsInDatabase() {
   const potmmonth = new Date().getMonth() + 1; // Current month
@@ -1330,25 +1368,26 @@ async function PopulatePOTMForm() {
       phraseDiv.className = 'phrase';
       phraseDiv.textContent = word;
       phraseDiv.onclick = async (event) => {
-        phraseDiv.style.backgroundColor = '#d3d3d3'; // Highlight the selected phrase
+        phraseDiv.dataset.selected = phraseDiv.dataset.selected === 'true' ? 'false' : 'true';
+        phraseDiv.style.backgroundColor = phraseDiv.dataset.selected === 'true' ? '#d3d3d3' : ''; // Highlight the selected phrase
         const phrase = event.target.textContent.trim();
         console.log(`Clicked phrase: ${phrase}`);
         // send this to a backend
-        const potmplayerid = document.getElementById('potm').value;
-        if (!potmplayerid) {
-          showCustomAlert('Please first select a player for Player of the Month.', 5);
-          return;
-        }
-        const potmmonth = new Date().getMonth() + 1; // Current month
-        const potmyear = new Date().getFullYear(); // Current year
-        await fetch('/api/savephrase', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ playerid: userid, potmplayerid, potmmonth, potmyear, potmphrase: phrase }),
-        });
-        console.log(`Phrase \'${phrase}\' saved to database!`);
+        // const potmplayerid = document.getElementById('potm').value;
+        // if (!potmplayerid) {
+        //   showCustomAlert('Please first select a player for Player of the Month.', 5);
+        //   return;
+        // }
+        // const potmmonth = new Date().getMonth() + 1; // Current month
+        // const potmyear = new Date().getFullYear(); // Current year
+        // await fetch('/api/savephrase', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify({ playerid: userid, potmplayerid, potmmonth, potmyear, potmphrase: phrase }),
+        // });
+        // console.log(`Phrase \'${phrase}\' saved to database!`);
       };
       commentPOTM.appendChild(phraseDiv);
     });
@@ -1364,11 +1403,14 @@ async function updatePOTM() {
   const potmplayerid = potmSelect.value;
   const potmmonth = new Date().getMonth() + 1; // Current month
   const potmyear = new Date().getFullYear(); // Current year
+  const commentPOTM = document.getElementById('commentonpotm');
+  if (!commentPOTM) return console.warn('Div element #commentonpotm not found');
+  const selectedPhrases = Array.from(commentPOTM.querySelectorAll('.phrase')).filter(phraseDiv => phraseDiv.dataset.selected === 'true').map(div => div.textContent.trim());
   try {
     const res = await fetch('/api/updatepotm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ potmmonth, potmyear, playerid: userid, potmplayerid })
+      body: JSON.stringify({ potmmonth, potmyear, playerid: userid, potmplayerid, selectedPhrases })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
@@ -1382,7 +1424,75 @@ async function updatePOTM() {
     console.error('Error updating POTM:', err);
     showCustomAlert(`Error updating Player of the Month. ${err}`, 5);
   }
+  closeVotePOTMModal();
+  updateVoteInfo();
 }
+
+async function updateVoteInfo() {
+  await getSessionDetails() // Ensure we have the latest session details before proceeding
+  const potmmonth = new Date().getMonth() + 1; // Current month
+  const potmyear = new Date().getFullYear(); // Current year
+  if (userid > 0) {
+    const res = await fetch(`/api/getvoteinfo/${userid}/${potmmonth}/${potmyear}`, {
+      method: 'GET'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const voteInfoDiv = document.getElementById('voteinfo');
+    if (voteInfoDiv) {
+      voteInfoDiv.textContent = data.message;
+    }
+  }
+}
+
+function updateAvatarsInModal(){
+  const avatarEl = document.getElementById('avatarSelection');
+  const spriteSheet = document.createElement('img');
+  spriteSheet.src = `/images/gallery/card/deck.png`;
+  const startX = 0; // Starting X coordinate of the first avatar in the sprite sheet
+  const startY = 0; // Starting Y coordinate of the first avatar in the sprite sheet
+  const avatarWidth = 206; // Width of each avatar in the sprite sheet
+  const avatarHeight = 281; // Height of each avatar in the sprite sheet
+  const gapX = 1; // Horizontal gap between avatars in the sprite sheet
+  const gapY = 3; // Vertical gap between avatars in the sprite sheet
+  spriteSheet.onload = function() {
+    //create 52 avatar options from the sprite sheet
+    //first rows are C,D,H,S
+    //columns start with Ace and go up to King
+    const suits = ['C', 'D', 'H', 'S'];
+    const ranks = ['A','2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    let index = 0;
+    suits.forEach((suit, suitIndex) => {
+      ranks.forEach((rank, rankIndex) => {
+        const canvas = document.createElement('canvas');  
+        canvas.width = avatarWidth/4;
+        canvas.height = avatarHeight/4;
+        const ctx = canvas.getContext('2d');
+        const x = startX + rankIndex * (avatarWidth + gapX);
+        const y = startY + suitIndex * (avatarHeight + gapY);
+        ctx.drawImage(spriteSheet, x, y, avatarWidth, avatarHeight, 0, 0, avatarWidth/4, avatarHeight/4);
+        const avatarDataUrl = canvas.toDataURL();
+        const img = document.createElement('img');
+        img.src = avatarDataUrl;
+        img.alt = `${rank}${suit}`;
+        img.className = 'avatar-option';
+        img.dataset.avatarValue = `${rank}${suit}`;
+        img.onclick = function() {          // Remove highlight from all avatars
+          document.querySelectorAll('.avatar-option').forEach(img => {
+            img.style.border = '';
+          });
+          // Highlight the selected avatar
+          this.style.border = '2px solid #000';
+        };
+
+        avatarEl.appendChild(img);
+      });
+    });
+  }
+}
+
+//remove this since this is for testing only
+document.addEventListener('DOMContentLoaded', updateAvatarsInModal);
 
 async function displayPOTM() {
   const potmmonth = new Date().getMonth() + 1; // Current month
@@ -1546,8 +1656,38 @@ async function setPlayingIntentions() {
 
 function checkTotalFileSize() {
   //use this function when files are being added
+  const input = document.getElementById('moreCelebrationImageInput');
+  const submitButton = document.getElementById('uploadMoreCelebrationImageId');
+  const maxTotalSize = 10 * 1024 * 1024; // 10 MB limit (adjust as needed)
+  let totalSize = 0;
+
+  // Clear previous error messages
+  // errorMsg.textContent = '';
+  submitButton.disabled = false;
+
+  if (input.files.length > 10) {
+    showCustomAlert('You can upload a maximum of 10 files with a total size of 10 MB only at a time.');
+    submitButton.disabled = true;
+    return;
+  }
+
+  if (input.files.length > 0) {
+    for (const file of input.files) {
+      totalSize += file.size;
+    }
+
+    if (totalSize > maxTotalSize) {
+      const maxSizeMB = maxTotalSize / (1024 * 1024);
+      showCustomAlert(`Total file size (${(totalSize / (1024 * 1024)).toFixed(2)} MB) exceeds the limit of ${maxSizeMB} MB.`);
+      submitButton.disabled = true; // Disable the submit button
+    }
+  }
+}
+
+function checkTotalFileSize2() {
+  //use this function when files are being added
   const input = document.getElementById('celebrationImageInput');
-  const submitButton = document.getElementById('uploadCelebrationImageId');
+  const submitButton = document.getElementById('addcelebration');
   const maxTotalSize = 10 * 1024 * 1024; // 10 MB limit (adjust as needed)
   let totalSize = 0;
 
@@ -1607,18 +1747,92 @@ function displayBlogComments() {
       result.comments.forEach(comment => {
         const commentDiv = document.createElement('div');
         commentDiv.className = 'blog-comment';
+        const iDel = document.createElement('i');
+        iDel.className = 'fas fa-trash';
+        iDel.style= 'position: relative; top: 5px; right: 5px; cursor: pointer;';
+        iDel.title = 'Delete Comment';
+        iDel.addEventListener('click', () => deleteComment(comment.id));
         const commenterName = document.createElement('div');
         commenterName.className = 'blog-commenter-name';
-        commenterName.textContent = `${comment.commenter} says:`;
+        commenterName.textContent = `${comment.createddate} - ${comment.commenter} says:`;
         const commentText = document.createElement('div');
         commentText.className = 'blog-comment-text';
         commentText.textContent = comment.comment;
         commentDiv.appendChild(commenterName);
         commentDiv.appendChild(commentText);
+        commentDiv.appendChild(iDel);
         blogCommentsSection.appendChild(commentDiv);
       });
     });
   }
+
+async function deleteComment(commentId) {
+  const result = await showCustomConfirmWithInput('Type DELETE to confirm deletion of this comment.');
+  if (!result) return;
+
+  try {
+    const res = await fetch(`/api/blogcomment/${commentId}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (!result.success) {
+      showCustomAlert(`Error deleting comment: ${result.message}`, 5);
+      return;
+    }
+    showCustomAlert('Comment deleted successfully!', 3);
+    displayBlogComments();
+  } catch (err) {
+    showCustomAlert(`Error deleting comment: ${err}`, 5);
+  }
+}
+
+async function submitComment() {
+  const blog = document.getElementById('bloglistid')?.selectedOptions[0];
+  if (!blog) return console.warn('No blog selected');
+  const blogid = blog.value;
+  const commentInput = document.getElementById('blogcomment');
+  if (!commentInput) return console.warn('No comment input found');
+  const comment = commentInput.value.trim();
+    if (!comment) return console.warn('Comment is empty');
+
+    try {
+      const res = await fetch(`/api/blogcomment/${blogid}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ playerid:userid,comment })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const result = await res.json();
+      if (!result.success) {
+        showCustomAlert(`Error submitting comment: ${result.message}`, 5);
+        return;
+      }
+      showCustomAlert('Comment submitted successfully!', 3);
+      commentInput.value = '';
+      displayBlogComments();
+    } catch (err) {
+      showCustomAlert(`Error submitting comment: ${err}`, 5);
+    }
+  }
+
+  function showPOTMVoteModal() {
+    const modal = document.getElementById('votePOTM');
+    if (modal) {
+      modal.style.display = 'block';
+      PopulatePOTMForm()
+    }
+  }
+
+  function closeVotePOTMModal() {
+    const modal = document.getElementById('votePOTM');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+
 
   function createblog() {
     window.open('/blogs');

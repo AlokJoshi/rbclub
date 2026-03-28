@@ -71,3 +71,8 @@ notes.txt
 
 default
 riversidebridgeclub.com.conf
+
+# gimp files
+*.xcf
+*.eps
+*.svg

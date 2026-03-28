@@ -33,6 +33,39 @@ async function getblogid() {
     //first create a blogid after ensuring that the title is not duplicte
   }
 }
+
+async function deleteblog() {
+  const blogselect = document.getElementById('blogselectid')
+  const blogselectedoption = blogselect.options[blogselect.selectedIndex] 
+  if (!blogselectedoption || !blogselectedoption.value) {
+    showCustomAlert('Please select a blog to delete.', 3)
+    return
+  }
+  const blogId = blogselectedoption.value
+  const confirmDeletion = await showCustomYesNo('Are you sure you want to delete this blog? This action cannot be undone.') 
+  if (!confirmDeletion) {
+    return
+  }
+  try {
+    const res = await fetch(`/api/blog/${blogId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (!result.success) {
+      showCustomAlert(`Blog could not be deleted: ${result.message}`, 5);
+      return;
+    }
+    showCustomAlert('Blog deleted successfully.', 3);
+    // Optionally, you can remove the deleted blog from the select dropdown
+    blogselect.remove(blogselect.selectedIndex);
+  } catch (err) {
+    showCustomAlert(`Error deleting blog: ${err}`, 5);
+  }
+}
+
+
+
 async function submitblog() {
 
   const blogid = await getblogid()

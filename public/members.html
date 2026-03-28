@@ -316,28 +316,15 @@
 		<section>
 			<header>
 				<h2>Player of the Month</h2>
+				<h3>Please note that you can cast only one vote per month. If you have already voted then 
+					your new vote will replace your old vote.</h3>
+				<br>
+				<h3 id="voteinfo"></h3>
+				<button type="button" class="button primary" onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
 			</header>
 			<div class="content">
 				<form action="">
 					<div class="fields">
-						<div class="field full">
-							<label id="potmlabel" for="potm">My vote for player of the Month goes to:</label>
-							<select name="potm" id="potm" onchange="updatePOTM()">
-							</select>
-						</div>
-						<div class="field full">
-							<label for="commentonpotm">Comment on your choice for Player of the Month</label>
-							<div id="commentonpotm">
-
-							</div>
-							<div style="display:grid;place-items:center;margin-top: 20px;">
-								<button class="button primary" type="button" style="margin-top: 30px;"
-									onclick="clearAllPOTMCommentsInDatabase()">
-									Clear All Comments
-								</button>
-							</div>
-						</div>
-						<br>
 						<h2 id="potmheading" style="margin-top: 20px;">Players of the month</h2>
 						<div class="field full">
 							<div style="border:5px solid #f0f0f0; padding: 10px;">
@@ -365,96 +352,72 @@
 		<section>
 			<header>
 				<h2>Celebrations</h2>
-				<h3>Here we will display pictures of the members' birthdays and any other celebrations.</h3>
+				<h3>Pictures of the members' birthdays and other celebrations.</h3>
+				<button type="button" class="button primary" onclick="showCreateCelebrationModal()">Create New
+					Celebration</button>
 			</header>
-			<div class="content">
-				<form id="celebrationForm" action="">
-					<div class="fields">
-						<div class="field half">
-							<label for="celebrationname">Create a new celebration</label>
-							<input type="text" id="celebrationname" name="celebrationname"
-								placeholder="Enter celebration name(e.g) January Birthdays, Christmas Party etc">
-						</div>
-						<div class="field half">
-							<label for="celebrationdate">Celebration Date</label>
-							<input type="date" id="celebrationdate" name="celebrationdate" placeholder="Enter celebration date">
-						</div>
-						<div class="field full">
-							<label for="celebrationdescription">Description</label>
-							<input type="text" id="celebrationdescription" name="celebrationdescription"
-								placeholder="Enter celebration description">
-						</div>
-						<div class="field full wrap">
-							<button type="button" id="addcelebration" name="addcelebration" onclick="addCelebration()">
-								Add Celebration
-							</button>
-						</div>
-					</div>
-				</form>
-				<form action="" id="celebrationImageForm">
-					<div class=" fields">
-						<div class="field full">
-							<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
-							<input type="file" id="celebrationImageInput" name="celebrationImageInput" onchange="checkTotalFileSize()"
-								accept="image/*" multiple required>
-						</div>
-						<div class="field full wrap">
-							<button type="button" id="uploadCelebrationImageId" name="uploadCelebrationImageId"
-								onclick="uploadCelebrationImage()">
-								Upload Image
-							</button>
-						</div>
-					</div>
-				</form>
-			</div>
-			<div style="display: grid;grid-template-columns: 20fr 1fr 1fr;">
-				<div>
-					<label for="celebrations">Select a Celebration:</label>
-					<select id="celebrations" name="celebrations" onchange="displayCelebrationPhotos()">
-					</select>
+			<div class="content" style="position:relative;">
+				<i class="fas fa-sync" style="position:absolute;top:10px;right:45px;" onclick="populateCelebrations()"
+					aria-hidden="true"></i>
+				<i class="fas fa-trash-alt" style="position:absolute;top:10px;right:20px;" onclick="deleteCelebration()"
+					aria-hidden="true"></i>
+				<label for="celebrations">Select a Celebration:</label>
+				<select id="celebrations" name="celebrations" onchange="displayCelebrationPhotos()">
+				</select>
+				<div id="celebrationrelated" style="display:none;margin-top:20px;">
+					<label for="celdescdisplay">Celebration Description:</label>
 					<input type="textarea" placeholder="Celebration Description" id="celdescdisplay" name="celdescdisplay"
-						style="width: 100%;height: auto" ; readonly>
-				</div>
-				<div>
-					<!-- style="position:relative;top:-5px;right:5px;" -->
-					<i class="fas fa-sync" onclick="populateCelebrations()" aria-hidden="true"></i>
-				</div>
-				<div>
-					<!-- style="position:relative;top:-5px;right:5px;" -->
-					<i class="fas fa-trash-alt" onclick="deleteCelebration()" aria-hidden="true"></i>
-				</div>
-			</div>
-			<p>Photos:</p> <!-- Display uploaded celebration photos here -->
-			<div id="celebrationPhotos">// displayCelebrationPhotos() populates this div
+						style="display:none; width: 100%; height: auto" ; readonly>
+					<p>Photos:</p> <!-- Display uploaded celebration photos here -->
+					<div id="celebrationPhotos">
 
+					</div>
+					<form id="moreCelebrationImageForm" action="">
+						<div class="fields">
+							<div class="field full">
+								<label for="moreCelebrationImageInput">Upload More Celebration Photo/Images for above
+									celebration</label>
+								<input type="file" id="moreCelebrationImageInput" name="moreCelebrationImageInput"
+									onchange="checkTotalFileSize()" accept="image/*" multiple required>
+							</div>
+							<div class="field full wrap">
+								<button type="button" id="uploadMoreCelebrationImageId" name="uploadMoreCelebrationImageId"
+									onclick="uploadMoreCelebrationImages()">
+									Upload More Images
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
 			</div>
 		</section>
 
 		<!-- Blogs section -->
 		<section>
-				<header>
-					<h2>Blogs</h2>
-					<p>Blogs or articles written by the members. If you like a blog
-						please encourage the author by commenting on the blog. 
-						Click <a onclick="createblog()"><b>here</b></a> to create a blog. 
-					</p>
-					<button class="button primary" onclick="createblog()">Create Blog/Edit Your blog</button>
-				</header>
-				<div class="content">
-					<form action="">
-						<select name="bloglist" id="bloglistid" onchange="showblog()"></select>
-						<input type="textarea" id="blogcontent" name="blogcontent" placeholder="Blog content will display here..."
-							style="width: 100%; height: 300px;" readonly></input>
-						<label style="margin-top:50px;" for="blogcomment">Comment on the blog:</label>
-							<input type="textarea" id="blogcomment" name="blogcomments" placeholder="Write your comment here..."
-							style="width: 100%; height: 100px;"></input>
-						<div style="display:grid;place-items:center;margin-top: 20px;">
-							<button type="button" class="button primary" onclick="submitComment()">Submit Comment</button>
-						</div>
-						<!-- display blog comments here -->
-						 <div style="margin-top:50px;padding:10px;width:100%;height:400px;overflow:auto;" id="blogComments"></div>
-					</form>
-				</div>
+			<header>
+				<h2>Blogs</h2>
+				<p>Blogs or articles written by the members. If you like a blog
+					please encourage the author by commenting on the blog.
+					Click <a onclick="createblog()"><b>here</b></a> to create a blog.
+				</p>
+				<button class="button primary" onclick="createblog()">Create Blog/Edit Your blog</button>
+			</header>
+			<div class="content">
+				<form action="">
+					<label for="bloglistid">Select a blog</label>
+					<select name="bloglist" id="bloglistid" onchange="showblog()"></select>
+					<input type="textarea" id="blogcontent" name="blogcontent" placeholder="Blog content will display here..."
+						style="width: 100%; height: 300px;" readonly></input>
+					<label style="margin-top:50px;" for="blogcomment">Comment on the blog:</label>
+					<input type="textarea" id="blogcomment" name="blogcomments" placeholder="Write your comment here..."
+						style="width: 100%; height: 100px;"></input>
+					<div style="display:grid;place-items:center;margin-top: 20px;">
+						<button type="button" class="button primary" onclick="submitComment()">Submit Comment</button>
+					</div>
+					<!-- display blog comments here -->
+					<div style="margin-top:50px;padding:20px;width:100%;height:400px;overflow:auto;" id="blogComments"></div>
+				</form>
+			</div>
 		</section>
 
 		<!-- Copyright -->
@@ -466,7 +429,7 @@
 	<!-- <button id="open-modal-btn">Open Login Form</button> -->
 
 	<!-- The Modal -->
-	<div id="loginmodal"  class="modal">
+	<div id="loginmodal" class="modal">
 
 		<!-- Modal content -->
 		<div class="modal-content" style="height:70%">
@@ -563,8 +526,7 @@
 		</div>
 		<p id="changeasswordError" style="color: red;"></p>
 	</div>
-	
-	<!-- I think we are not using this -->
+
 	<!-- The Modal -->
 	<div id="nameandphonecheck" class="modal wrap">
 		<div class="modal-content">
@@ -592,10 +554,8 @@
 						onclick="DoNameAndPhoneCheck()">Check</button>
 				</div>
 			</div>
-		</div> 
+		</div>
 	</div>
-
-
 
 	<div id="resetPasswordModal" class="modal">
 		<div class="modal-content">
@@ -644,6 +604,101 @@
 		</div>
 	</div>
 
+	<div id="addcelebrationmodal" class="modal">
+		<div class="modal-content" style="position:relative">
+			<i class="fas fa-times" style="position:absolute;top:10px;right:10px" onclick="closeCelbrationModal()"
+				aria-hidden="true"></i>
+			<form id="celebrationForm" action="">
+				<div class="fields">
+					<div class="field half">
+						<label for="celebrationname">Celebration Name</label>
+						<input type="text" id="celebrationname" name="celebrationname"
+							placeholder="Enter celebration name(e.g) January Birthdays, Christmas Party etc">
+					</div>
+					<div class="field half">
+						<label for="celebrationdate">Celebration Date</label>
+						<input type="date" id="celebrationdate" name="celebrationdate" placeholder="Enter celebration date">
+					</div>
+					<div class="field full">
+						<label for="celebrationdescription">Description</label>
+						<input type="text" id="celebrationdescription" name="celebrationdescription"
+							placeholder="Enter celebration description">
+					</div>
+					<div class="field full">
+						<label for="celebrationImageInput">Upload Celebration Photo/Image</label>
+						<input type="file" id="celebrationImageInput" name="celebrationImageInput" onchange="checkTotalFileSize2()"
+							accept="image/*" multiple required>
+					</div>
+					<div class="field full wrap">
+						<button type="button" id="addcelebration" name="addcelebration" onclick="addCelebration()">
+							Add Celebration
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<div id="votePOTM" class="modal">
+		<div class="modal-content" style="position:relative">
+			<i class="fas fa-times" style="position:absolute;top:10px;right:10px" onclick="closeVotePOTMModal()"
+				aria-hidden="true"></i>
+			<form action="">
+				<div class="fields">
+					<div class="field full">
+						<label id="potmlabel"for="potm">Select your choice for Player of the Month</label>
+						<select name="potm" id="potm"></select>
+					</div>
+					<div class="field full">
+						<label for="commentonpotm">Comment on your choice for Player of the Month</label>
+						<div id="commentonpotm" name="commentonpotm">
+							<!-- all potm keywords will be displayed here -->
+						</div>
+					</div>
+					<div class="field half wrap">
+						<button type="button" id="submitPOTMVote" name="submitPOTMVote" onclick="updatePOTM()">
+							Submit Vote
+						</button>
+					</div>
+					<div class="field half wrap">
+						<button type="button" id="closePOTMVote" name="closePOTMVote" onclick="closeVotePOTMModal()">
+							Cancel
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<div id="selectAvatarModal" >
+		<div class="modal-content" style="position:relative">
+			<i class="fas fa-times" style="position:absolute;top:10px;right:10px" onclick="closeSelectAvatarModal()"
+				aria-hidden="true"></i>
+			<form action="">
+				<div class="fields">
+					<div class="field full">
+						<label for="avatarSelection">Select an Avatar</label>
+						<div id="avatarSelection" name="avatarSelection" style="display:flex; flex-wrap:wrap; gap:10px;">
+							<!-- Avatar options will be displayed here -->
+						</div>
+					</div>
+					<div class="half">
+						<button type="button" class="button primary" id="submitAvatarSelection" name="submitAvatarSelection"
+							onclick="submitAvatarSelection()">
+							Submit
+						</button>
+					</div>
+					<div class="half">
+						<button type="button" class="button primary" id="closeAvatarSelection" name="closeAvatarSelection"
+							onclick="closeSelectAvatarModal()">
+							Cancel
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
 	<!-- Scripts -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
 	<script src="assets/js/jquery.min.js"></script>
@@ -651,10 +706,10 @@
 	<script src="assets/js/browser.min.js"></script>
 	<script src="assets/js/breakpoints.min.js"></script>
 	<script src="assets/js/util.js"></script>
-  <script src="assets/js/common.js"></script>
+	<script src="assets/js/common.js"></script>
 	<script src="assets/js/members.js"></script>
 	<script src="assets/js/main.js"></script>
-  <script src="assets/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+	<script src="assets/js/tinymce/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 
 
 </body>

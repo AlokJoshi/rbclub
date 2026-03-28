@@ -876,13 +876,17 @@ app.post('/api/setplayingintentions', (req, res) => {
 });
 
 app.post('/api/updatepotm', (req, res) => {
-    const { potmmonth, potmyear, playerid, potmplayerid } = req.body;
-    const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid) values(
-    ?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid = ?,
-    comment = '' where potmmonth = ? and potmyear =? and playerid = ?;`
+    const { potmmonth, potmyear, playerid, potmplayerid, selectedPhrases } = req.body;
+    const comment = selectedPhrases && selectedPhrases.length > 0 ? selectedPhrases.join(',') : '';
+    const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid, comment) values(
+    ?,?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid = ?,
+    comment = ? where potmmonth = ? and potmyear =? and playerid = ?;`
     try {
         const stmt = db.prepare(sql);
-        stmt.run(potmmonth, potmyear, playerid, potmplayerid, potmplayerid, potmmonth, potmyear, playerid);
+        const info = stmt.run(potmmonth, potmyear, playerid, potmplayerid, comment, potmplayerid, comment, potmmonth, potmyear, playerid);
+        if (info.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Player of the Month entry not found' });
+        }
         res.json({ success: true, message: 'Player of the Month updated successfully' });
     } catch (err) {
         console.error('Error updating Player of the Month:', err);
@@ -966,12 +970,55 @@ app.get('/api/celebrations', (req, res) => {
     }
 });
 
-app.post('/api/celebration', (req, res) => {
-    const { createdByPlayerId, celebrationName, celebrationDate, celebrationDescription } = req.body;
+app.get('/api/getvoteinfo/:playerid/:potmmonth/:potmyear', (req, res) => {
+    const playerId = req.params.playerid;   
+    const potmmonth = req.params.potmmonth;
+    const potmyear = req.params.potmyear;
     try {
-        const stmt = db.prepare('INSERT INTO celebration (createdbyplayerid,celebrationname,celebrationdate, celebrationdescription) VALUES (?, ?, ?, ?)');
+        const stmt = db.prepare('SELECT potmmonth, potmyear, potmplayerid FROM potm WHERE playerid = ? AND potmmonth = ? AND potmyear = ?;');
+        const info = stmt.get(playerId, potmmonth, potmyear);
+        if (!info) {
+            return res.json({ success: true, message: 'You have not voted yet' });
+        }
+        res.json({ success: true, message: 'You have already voted' });
+    } catch (err) {
+        console.error('Error fetching vote info:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+// In this version the celebration images are sent along with the celebration details 
+// So, there is no need to upload images separately. 
+// Accept multipart/form-data with optional file field 'celebrationimages' for updates
+app.post('/api/celebration2', (req, res, next) => {
+    celebrationMultiUpload.array('celebrationimages', 10)(req, res, (err) => {
+        if (err) {
+            console.error('Multer failed:', err);
+            if (err instanceof multer.MulterError) {
+                return res.status(400).json({ success: false, message: err.message });
+            }
+            return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+        }
+        next();
+    });
+}, (req, res) => {
+    // const data = req.body;
+    const { createdByPlayerId, celebrationName, celebrationDate, celebrationDescription } = req.body;
+    let celebrationId;
+    try {
+        const stmt = db.prepare('INSERT INTO celebration (createdbyplayerid, celebrationname, celebrationdate, celebrationdescription) VALUES (?, ?, ?, ?)');
         const result = stmt.run(createdByPlayerId, celebrationName, celebrationDate, celebrationDescription);
-        res.json({ success: true, celebrationid: result.lastInsertRowid, message: 'Celebration added successfully' });
+        if(result.changes === 0) {
+            return res.status(400).json({ success: false, message: 'Failed to create celebration' });
+        }
+        celebrationId = result.lastInsertRowid;
+
+        const stmt2 = db.prepare('INSERT INTO celebrationimages (celebrationid, image_path) VALUES (?, ?)');
+        for (const file of req.files) {
+            stmt2.run(celebrationId, file.key || file.location || file.filename);
+        }
+        const filesadded = req.files ? req.files.map(f => ({ key: f.key, url: f.location })) : [];
+        res.json({ success: true, celebrationid: celebrationId, files: filesadded, message: 'Celebration added successfully' });
     } catch (err) {
         console.error('Error adding celebration:', err);
         if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
@@ -1100,6 +1147,38 @@ app.post('/api/celebration/images', (req, res, next) => {
     }
 });
 
+app.delete('/api/blogcomment/:commentid', (req, res) => {
+    const { commentid } = req.params;
+    try {
+        const stmt = db.prepare('DELETE FROM blogcomments WHERE id = ?');
+        const result = stmt.run(commentid);
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Comment not found or already deleted' });
+        }
+        res.json({ success: true, message: 'Comment deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting comment:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+
+app.delete('/api/blog/:blogid', (req, res) => {
+    const { blogid } = req.params;
+    try {
+        const stmt = db.prepare('DELETE FROM blogs WHERE id = ?');
+        const result = stmt.run(blogid);
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Blog not found or already deleted' });
+        }
+        res.json({ success: true, message: 'Blog deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting blog:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+
 app.post('/api/blogtitle',async (req,res) =>{
     try{
         const { blogtitle, playerid} = req.body;
@@ -1119,6 +1198,22 @@ app.post('/api/blogtitle',async (req,res) =>{
     }
 })
 
+app.post('/api/blogcomment/:blogid', async (req, res) => {
+    const { blogid } = req.params;
+    const { playerid, comment } = req.body;
+    const createdDate = new Date().toDateString();
+    try {
+        const stmt = db.prepare('INSERT INTO blogcomments (blogid, playerid, createddate, comment) VALUES (?, ?, ?, ?);');
+        const result = stmt.run(blogid, playerid, createdDate, comment);
+        if (result.changes === 0) {
+            return res.status(400).json({ success: false, message: 'Failed to add comment. Please try again.' });
+        }
+        res.json({ success: true, message: 'Comment added successfully' });
+    } catch (err) {
+        console.error('Error adding comment:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
 app.post('/api/blog/images', (req, res, next) => {
     blogMultiUpload.array('blogimages', 10)(req, res, (err) => {
         if (err) {
@@ -1186,7 +1281,7 @@ app.post('/api/sendemail', async (req, res) => {
     //save the information in the emails table for record keeping
     //and once it is saved, send the email with information about
     //the emailid so that we can track the email events in the emails table
-    const date = new Date().toISOString();
+    const date = new Date().toDateString();
     const stmt = db.prepare('INSERT INTO emails (senttoemail, sentbyplayerid, subject, emailtext, sentdate) VALUES (?, ?, ?, ?, ?)');
     const numEmails = filteredRecipientEmails.length;
     let savedCount = 0;
@@ -1364,7 +1459,7 @@ app.get('/api/blogs/:id',(req,res)=>{
 app.get('/api/blogcomments/:blogid',(req,res)=>{
     try{
         const { blogid } = req.params;
-        const stmt = db.prepare(`SELECT bc.*, concat(p.first, ' ', p.last) as commenter FROM blogcomments bc inner join player p on bc.playerid = p.id where bc.blogid = ? order by createddate desc;`);
+        const stmt = db.prepare(`SELECT bc.*, concat(p.first, ' ', p.last) as commenter FROM blogcomments bc inner join player p on bc.playerid = p.id where bc.blogid = ? order by id desc;`);
         const comments = stmt.all(blogid);
         res.json({ success: true, comments });
     }catch(err){

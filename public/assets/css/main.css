@@ -3465,7 +3465,7 @@ ul.feature-icons li:nth-child(2) {
 #wrapper>section>header h1:before,
 #wrapper>section>header h2:before {
 	/* background: #43d9b8; Alok 2/4/2026 */
-	background:#667eea;
+	background: #667eea;
 	content: '';
 	display: block;
 	height: 2px;
@@ -3476,7 +3476,7 @@ ul.feature-icons li:nth-child(2) {
 #wrapper>section>header h1:after,
 #wrapper>section>header h2:after {
 	/* background: #43d9b8; Alok 2/4/2026 */
-	background:#667eea;
+	background: #667eea;
 	border-radius: 0.5rem;
 	content: '';
 	display: block;
@@ -4064,8 +4064,8 @@ body.is-ie #wrapper>section>.content>section {
 	/* Full width */
 	height: 100%;
 	/* Full height */
-	background-color: rgba(255, 255, 255);
-	/* White background with opacity */
+	background-color: rgba(0, 0, 0, 0.4);
+	/* Black background with opacity */
 }
 
 /* Modal Content/Box */
@@ -4118,85 +4118,98 @@ form button {
 
 
 .alert-container {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay on top of other content */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5); /* Black background with opacity */
-    justify-content: center;
-    align-items: center;
+	display: none;
+	/* Hidden by default */
+	position: fixed;
+	/* Stay on top of other content */
+	z-index: 1;
+	/* Sit on top */
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	/* Black background with opacity */
+	justify-content: center;
+	align-items: center;
 }
 
 .alert-content {
-    background-color: #fefefe;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 300px;
-    text-align: center;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+	background-color: #fefefe;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 300px;
+	text-align: center;
+	border-radius: 5px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .alert-content h2 {
-    color: #d9534f; /* Example color for a warning */
+	color: #d9534f;
+	/* Example color for a warning */
 }
 
 .alert-content button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 3px;
+	margin-top: 15px;
+	padding: 10px 20px;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	cursor: pointer;
+	border-radius: 3px;
 }
 
 .blurred {
-		filter: blur(5px);
-		pointer-events: none; /* Prevent interaction with blurred content */
+	filter: blur(5px);
+	pointer-events: none;
+	/* Prevent interaction with blurred content */
 }
 
 div#emaillist {
-		z-index: 1; /* Sit on top */
-		left: 0;
-		top: 0;
-		width: 100%;
-		height: 100%;
-		justify-content: center;
-		align-items: center;
-		border:1px solid #888;
-		border-radius: 5px;
+	z-index: 1;
+	/* Sit on top */
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+	border: 1px solid #888;
+	border-radius: 5px;
 }
 
 .announcement-icon {
-  font-size: 12rem;   /* adjust as needed */
-	color:maroon;
-  margin-right: auto;
-  vertical-align: middle;
+	font-size: 12rem;
+	/* adjust as needed */
+	color: maroon;
+	margin-right: auto;
+	vertical-align: middle;
 }
 
 .parent {
-  display: grid;
-  place-items: center; /* both axes */
+	display: grid;
+	place-items: center;
+	/* both axes */
 }
 
 i.fas.fa-bullhorn.announcement-icon {
-  display: flex;
-  justify-content: center; /* Centers horizontally */
-  align-items: center;    /* Centers vertically */
-  /* You might want to remove existing text-align, line-height, etc. that could interfere */
-  text-align: initial; /* Or remove this property if not needed */
-  line-height: initial; /* Or remove this property if not needed */
+	display: flex;
+	justify-content: center;
+	/* Centers horizontally */
+	align-items: center;
+	/* Centers vertically */
+	/* You might want to remove existing text-align, line-height, etc. that could interfere */
+	text-align: initial;
+	/* Or remove this property if not needed */
+	line-height: initial;
+	/* Or remove this property if not needed */
 }
 
 i.fas.fa-bullhorn.announcement-icon::before {
-  /* No specific changes needed here for centering, but ensure it's not overriding flex behavior */
-  /* Remove text-align, line-height if they are not explicitly setting icon size */
-  text-align: initial;
-  line-height: initial;
+	/* No specific changes needed here for centering, but ensure it's not overriding flex behavior */
+	/* Remove text-align, line-height if they are not explicitly setting icon size */
+	text-align: initial;
+	line-height: initial;
 }
 
 td {
@@ -4204,10 +4217,10 @@ td {
 }
 
 #commentonpotm {
-display: grid;
-justify-content: space-around;
-gap: 10px;
-grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+	display: grid;
+	justify-content: space-around;
+	gap: 10px;
+	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
 
 .phrase {
@@ -4219,20 +4232,22 @@ grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 	padding: 5px;
 	cursor: pointer;
 }
+
 .cards {
 	font-size: 1.3em;
-	font-weight:900;
-	width:100px;
-	display:inline-block;
+	font-weight: 900;
+	width: 100px;
+	display: inline-block;
 	cursor: pointer;
 }
 
 .directiondiv {
-	width:70px;
+	width: 70px;
 	border-radius: 3px;
 	border: 1px solid #888;
 }
-.directiondiv.active{
+
+.directiondiv.active {
 	background-color: #667eea;
 }
 
@@ -4264,6 +4279,26 @@ grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 .blog-comment-text {
 	font-size: 0.9rem;
 }
+
+#ns,
+#nh,
+#nd,
+#nc,
+#ss,
+#sh,
+#sd,
+#sc,
+#es,
+#eh,
+#ed,
+#ec,
+#ws,
+#wh,
+#wd,
+#wc {
+	min-width: 75px;
+}
+
 /* added by alok */
 
 @media screen and (max-width: 1280px) {
