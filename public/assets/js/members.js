@@ -447,8 +447,12 @@ async function SubmitChanges() {
   const officerPosition = document.getElementById('officerPosition').value;
   if (officerPosition) form.append('officerPosition', officerPosition);
   const fileInput = document.getElementById('playerImageInput');
+  const playerImageData = document.getElementById('playerImageData').value;
   if (fileInput && fileInput.files && fileInput.files[0]) {
     form.append('playerImage', fileInput.files[0]);
+  } else if (playerImageData) {
+    const blob = await (await fetch(playerImageData)).blob();
+    form.append('playerImage', blob, 'avatar.png'); // give it a filename
   }
   console.log('Submitting changes (multipart)...');
   const res = await fetch(`/api/playerdata/${playerId}`, {
@@ -476,9 +480,11 @@ async function SubmitChanges() {
 
   return res.json(); // updated resource (if returned)  
 }
+
 function CancelChanges() {
   document.getElementById("addoreditplayer").style.display = "none";
 }
+
 async function PopulateFormForEdit(playerId) {
   // Placeholder function to populate form for editing a player
   console.log(`Populate form for editing player with ID: ${playerId}`);
@@ -491,7 +497,8 @@ async function PopulateFormForEdit(playerId) {
     const result = await res.json();
     console.log(result);
     //todo: fix this
-    // document.getElementById('playerImageDisplay').src = result.image_path === null || result.image_path === '' ? 'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${result.image_path} `;
+    const src = result.image_data || result.image_path || '';
+    document.getElementById('playerImageDisplay').src = src === '' ?'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;
     document.getElementById('playerId').value = result.id || '';
     document.getElementById('firstName').value = result.first || '';
     document.getElementById('lastName').value = result.last || '';
@@ -512,10 +519,9 @@ async function PopulateFormForEdit(playerId) {
     // populate image preview if available (supports either image_data or image_path)
     const preview = document.getElementById('playerImagePreview');
     const hidden = document.getElementById('playerImageData');
-    const src = result.image_data || result.image_path || '';
     if (src) {
-      if (preview) { preview.src = src; preview.style.display = 'inline-block'; }
-      if (hidden) hidden.value = src;
+      if (preview) { preview.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;; preview.style.display = 'inline-block'; }
+      if (hidden) hidden.value = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;
     } else {
       if (preview) { preview.src = ''; preview.style.display = 'none'; }
       if (hidden) hidden.value = '';
@@ -532,6 +538,7 @@ async function PopulateFormForEdit(playerId) {
     console.error(`Error populating form for player:${playerId}`, err);
   }
 }
+
 async function DeletePlayer(playerId) {
   // Placeholder function to delete a player
   console.log(`Delete player with ID: ${playerId}`);
@@ -984,6 +991,100 @@ async function resetPassword() {
     showCustomAlert('Error resetting password');
   }
 }
+
+function getAvatar() {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('selectAvatarModal');
+    modal.style.display = 'block';
+    const submitBtn = modal.querySelector('#submitAvatarSelection');
+    const cancelBtn = modal.querySelector('#closeAvatarSelection');
+    const select = modal.querySelector('select');
+
+    const cleanup = (result) => {
+      submitBtn.removeEventListener('click', submitAvatarSelection);
+      cancelBtn.removeEventListener('click', closeSelectAvatarModal);
+      modal.style.display='none';
+      resolve(result);
+    };
+
+    const submitAvatarSelection = () => {
+      cleanup({card:modal.dataset.card,url:modal.dataset.url} || null);
+    }
+    const closeSelectAvatarModal = () => {
+      cleanup(null);
+    } 
+
+    submitBtn.addEventListener('click', submitAvatarSelection);
+    cancelBtn.addEventListener('click', closeSelectAvatarModal);
+    modal.classList.add('open');
+  });
+}
+
+//testing. Remove this in actual code
+
+async function useAvatarSelection() {
+   const result = await getAvatar();
+   if (result) {
+     console.log('Avatar selected:', result);
+     const playerImageData = document.getElementById('playerImageData');
+     const playerImagePreview = document.getElementById('playerImagePreview');  
+      if (playerImageData) {
+        playerImageData.value = result.url;
+      }
+      if (playerImagePreview) {
+        playerImagePreview.src = result.url;
+        playerImagePreview.style.display = 'inline-block';
+      }
+   }
+   console.log('Selected avatar:', result);
+} 
+
+function useAvatarSelection2() {
+  //here we get the input element to figure or the card
+  const avatarTextInput = document.getElementById('avatartext');
+  const text = avatarTextInput.value;
+  const parts = text.toLowerCase().split('');
+  if (parts.length < 2) return
+  
+  const suit = 'cdhs'.includes(parts[0]) ? parts[0] : 'cdhs'.includes(parts[1]) ? parts[1] : null;
+  if (!suit) return;
+
+  const rank = ('ajqjt98765432'.includes(parts[0])) ? parts[0] : ('ajqjt98765432'.includes(parts[1]) ? parts[1] : null);
+  if (!rank) return;
+
+  const spritesheet = document.createElement('img');
+  spritesheet.src = '/images/gallery/card/deck.png';
+  spritesheet.onload = () => {
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const startX = 0; // Starting X coordinate of the first avatar in the sprite sheet
+    const startY = 0; // Starting Y coordinate of the first avatar in the sprite sheet
+    const avatarWidth = 206; // Width of each avatar in the sprite sheet
+    const avatarHeight = 281; // Height of each avatar in the sprite sheet
+    const gapX = 1; // Horizontal gap between avatars in the sprite sheet
+    const gapY = 3; // Vertical gap between avatars in the sprite sheet
+    const suitIndex = 'cdhs'.indexOf(suit);
+    const rankIndex = 'a23456789tjqk'.indexOf(rank);
+    const x = startX + rankIndex * (avatarWidth + gapX);
+    const y = startY + suitIndex * (avatarHeight + gapY);
+    canvas.width = avatarWidth / 4;
+    canvas.height = avatarHeight / 4;
+    ctx.drawImage(spritesheet, x, y, avatarWidth, avatarHeight, 0, 0, avatarWidth/4, avatarHeight/4);
+    const playerImageData = document.getElementById('playerImageData');
+    const playerImagePreview = document.getElementById('playerImagePreview');
+    const dataUrl = canvas.toDataURL('image/png');    
+    if (playerImageData) {
+      playerImageData.value = dataUrl;
+    }
+    if (playerImagePreview) {
+      playerImagePreview.src = dataUrl;
+      playerImagePreview.style.display = 'inline-block';
+    }
+  }
+}
+
+// testAvatarSelection();
 
 // Expose for use in console or other scripts
 window.toggleColumn = toggleColumn;
@@ -1445,7 +1546,32 @@ async function updateVoteInfo() {
   }
 }
 
+function closeSelectAvatarModal() {
+  const modal = document.getElementById('selectAvatarModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function openSelectAvatarModal() {
+  const modal = document.getElementById('selectAvatarModal');
+  if (modal) {
+    updateAvatarsInModal()
+    modal.style.display = 'block';
+    modal.dataset.card="" //reset selected card
+    modal.dataset.selected=false //reset selected card value
+    modal.dataset.url="" //reset selected card url
+  }
+}
+
+function submitAvatarSelection() {
+  const modal = document.getElementById('selectAvatarModal');
+  modal.dataset.selected = true;
+  closeSelectAvatarModal();
+}
+
 function updateAvatarsInModal(){
+  const modal = document.getElementById('selectAvatarModal');
   const avatarEl = document.getElementById('avatarSelection');
   const spriteSheet = document.createElement('img');
   spriteSheet.src = `/images/gallery/card/deck.png`;
@@ -1476,15 +1602,17 @@ function updateAvatarsInModal(){
         img.src = avatarDataUrl;
         img.alt = `${rank}${suit}`;
         img.className = 'avatar-option';
-        img.dataset.avatarValue = `${rank}${suit}`;
         img.onclick = function() {          // Remove highlight from all avatars
           document.querySelectorAll('.avatar-option').forEach(img => {
             img.style.border = '';
           });
           // Highlight the selected avatar
           this.style.border = '2px solid #000';
+          // Store the selected avatar value and URL in the modal's dataset for later use
+          modal.dataset.card = `${rank}${suit}`;
+          modal.dataset.url = avatarDataUrl;
         };
-
+        
         avatarEl.appendChild(img);
       });
     });
