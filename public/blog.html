@@ -20,6 +20,12 @@
       <header class="parent">
         <h1>Welcome</h1>
         <h2>Create a new blog or edit your existing blog</h2>
+        Note that you can add Bridge Diagram or Bridge Hand by clicking on 'Crt. Hand' button to illustrate your point. Also with the following
+				keyboard shortcuts, you will be able to add icons for Suits.
+				<div>Alt-Shift-S: Spades</div>
+				<div>Alt-Shift-H: Hearts</div>
+				<div>Alt-Shift-D: Diamonds</div>
+				<div>Alt-Shift-C: Clubs</div>
       </header>
       <div class="content">
         <form method="">
@@ -36,7 +42,8 @@
           <select name="blogselect" id="blogselectid" style="display:none" onchange="populateblogcontent()">
             <option value="" disabled selected>Select a blog to edit</option>
           </select>
-          <input type="text" name="blogtitle" id="blogtitleid" placeholder="Blog Title" required />
+          <input type="text" name="blogtitle" id="blogtitleid" placeholder="Blog Title" 
+          onkeydown="return handleTitleKey(event)" onblur="checkok(event)" required />
           <!-- <input type="text" name="blogauthor" id="blogauthorid" placeholder="" readonly /> -->
           <textarea id="mytextarea" placeholder='Start here..'></textarea>
           <div class="fields">

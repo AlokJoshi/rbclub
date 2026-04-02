@@ -64,7 +64,94 @@ async function deleteblog() {
   }
 }
 
+// async function checkok() {
 
+//   await populateblogtitles()
+
+//   const titleelement = document.getElementById('blogtitleid');
+//   //ensure that the title is not empty and does not contain only spaces
+//   if (!titleelement || !titleelement.value.trim()) {
+//     showCustomAlert('Blog title cannot be empty or contain only spaces.', 3);
+//     titleelement.setSelectionRange(0, titleelement.value.length);
+//     titleelement.focus();
+//     return false;
+//   }
+//   //ensure that the title does not already exist in the blog list dropdown (case-insensitive check)
+//   const blogselect = document.getElementById('blogselectid');
+//   if (blogselect) {
+//     const options = blogselect.options;
+//     for (let i = 0; i < options.length; i++) {
+//       if (options[i].text.toLowerCase() === titleelement.value.trim().toLowerCase()) {
+//         showCustomAlert('Blog title already exists.', 3);
+//         titleelement.setSelectionRange(0, titleelement.value.length);
+//         titleelement.focus();
+//         return false;
+//       }
+//     }
+//   }
+//   return true;
+// }
+
+async function handleTitleKey(evt) {
+  if (evt.key !== 'Tab' && evt.key !== 'Enter') {
+    titleelement = document.getElementById('blogtitleid');
+    if (titleelement) {
+      titleelement.setCustomValidity('');
+    } 
+    return true;
+  }
+  const valid = await checkok(evt);
+  if (!valid) {
+    evt.preventDefault();
+    evt.target.select();
+    return false;
+  }
+  return true;
+}
+
+// let titleAlertOpen = false;
+
+async function checkok(evt) {
+
+  // if (titleAlertOpen) return false;
+
+  await populateblogtitles();
+  const titleelement = document.getElementById('blogtitleid');
+  const value = titleelement.value.trim().toLowerCase();
+
+  if (!value) {
+    // titleAlertOpen = true;
+    titleelement.setCustomValidity('Blog title cannot be empty or contain only spaces.');
+    titleelement.reportValidity();
+    // titleAlertOpen = false;
+    focusTitle(titleelement);
+    evt?.preventDefault();
+    return false;
+  }
+
+  const duplicate = Array.from(document.getElementById('blogselectid').options)
+    .some(opt => opt.text.toLowerCase() === value);
+
+  if (duplicate) {
+    // titleAlertOpen = true;
+    titleelement.setCustomValidity('Blog title already exists.');
+    titleelement.reportValidity();
+    // titleAlertOpen = false;
+    focusTitle(titleelement);
+    evt?.preventDefault();
+    return false;
+  }
+
+
+  return true;
+}
+
+function focusTitle(el) {
+  requestAnimationFrame(() => {
+    el.focus({ preventScroll: true });
+    el.setSelectionRange(0, el.value.length);
+  });
+}
 
 async function submitblog() {
 
@@ -163,6 +250,22 @@ async function submitblog() {
   if (!result3.success)
     return showCustomAlert(`Error while saving blog: ${result3.message}`)
 
+  //once saved successfully we clear the title and editor content
+    const titleelement = document.getElementById('blogtitleid');
+    if (titleelement) {
+      titleelement.value = '';
+    }
+    const editor = tinymce.activeEditor || tinymce.get('mytextarea');
+    if (editor) {
+      editor.setContent('');
+    } else {
+      const textarea = document.getElementById('mytextarea');
+      if (textarea) {
+        textarea.value = '';
+      } else {
+        console.warn('No editor or textarea found to clear content after saving blog.');
+      }
+    }
   showCustomAlert(`Blog saved successfully!`, 5);
 }
 
@@ -211,7 +314,7 @@ function closehandmodal() {
 }
 
 
-function setupforcreateblog() {
+async function setupforcreateblog() {
   const blogselect = document.getElementById('blogselectid')
   blogselect.style.display = 'none'
   const blogtitle = document.getElementById('blogtitleid')
@@ -223,6 +326,18 @@ async function setupforeditblog() {
   blogselect.style.display = 'block'
   const blogtitle = document.getElementById('blogtitleid')
   blogtitle.style.display = 'none'
+  const bloglist = document.getElementById('blogselectid')
+  try {
+    await populateblogtitles()
+    if (bloglist.options.length === 1) {
+      showCustomAlert('No blogs available to edit probably since you have not created any blogs yet. Please create a blog first.', 5)
+    }
+  } catch (err) {
+    console.error('Error fetching blogs in setupforeditblog:', err)
+  }
+}
+
+async function populateblogtitles() {
   try {
     const response = await fetch(`/api/bloglist/${userid}`, {
       method: 'GET',
@@ -239,11 +354,9 @@ async function setupforeditblog() {
       option.textContent = blog.title
       bloglist.appendChild(option)
     })
-    if (bloglist.options.length === 1) {
-      showCustomAlert('No blogs available to edit probably since you have not created any blogs yet. Please create a blog first.', 5)
-    }
+    
   } catch (err) {
-    console.error('Error fetching blogs:', err)
+    console.error('Error fetching blogs in populateblogtitles:', err)
   }
 }
 
@@ -467,6 +580,10 @@ function saveAsJPG() {
     console.error('Save failed:', err);
   });
 }
+
+document.addEventListener('DOMContentLoaded ', async function () {
+  await populateblogtitles()
+});
 
 // Preview image
 function pasteImage() {

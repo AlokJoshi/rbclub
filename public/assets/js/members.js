@@ -14,9 +14,9 @@ function displayloginform() {
   const loginmodal = document.getElementById('loginmodal')
   loginmodal.style.display = 'block'
   const usernameInput = document.getElementById('username');
-  usernameInput.value=''
+  usernameInput.value = ''
   const passwordInput = document.getElementById('password');
-  passwordInput.value=''
+  passwordInput.value = ''
 }
 
 function displaychangepasswordform() {
@@ -260,7 +260,7 @@ async function addCelebration() {
     method: 'POST',
     body: form
   });
-  
+
   if (!res.ok) {
     const result = await res.json();
     showCustomAlert(`Failed to add celebration: ${result.message}`, 5);
@@ -363,7 +363,7 @@ async function displayCelebrationPhotos() {
   try {
     const celebrationDescriptionEl = document.getElementById('celdescdisplay');
     if (celebrationDescriptionEl) {
-      celebrationDescriptionEl.style.display = 'block';  
+      celebrationDescriptionEl.style.display = 'block';
     }
     const response = await fetch(`/api/celebration/${celebrationid}/images`, {
       method: 'GET'
@@ -498,7 +498,7 @@ async function PopulateFormForEdit(playerId) {
     console.log(result);
     //todo: fix this
     const src = result.image_data || result.image_path || '';
-    document.getElementById('playerImageDisplay').src = src === '' ?'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;
+    document.getElementById('playerImageDisplay').src = src === '' ? 'https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=1' : `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;
     document.getElementById('playerId').value = result.id || '';
     document.getElementById('firstName').value = result.first || '';
     document.getElementById('lastName').value = result.last || '';
@@ -518,13 +518,13 @@ async function PopulateFormForEdit(playerId) {
 
     // populate image preview if available (supports either image_data or image_path)
     const preview = document.getElementById('playerImagePreview');
-    const hidden = document.getElementById('playerImageData');
+    // const hidden = document.getElementById('playerImageData');
     if (src) {
       if (preview) { preview.src = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;; preview.style.display = 'inline-block'; }
-      if (hidden) hidden.value = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;
+      // if (hidden) hidden.value = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${src}`;
     } else {
       if (preview) { preview.src = ''; preview.style.display = 'none'; }
-      if (hidden) hidden.value = '';
+      // if (hidden) hidden.value = '';
     }
 
     // Focus on the first name field for convenience
@@ -644,6 +644,7 @@ async function createPlayerTable() {
 
       //add a button for editing
       const tdEdit = document.createElement('td');
+      tdEdit.style = 'text-align: center;';
       const iEdit = document.createElement('i');
       iEdit.className = 'fas fa-edit';
       iEdit.title = 'Edit Player';
@@ -660,6 +661,7 @@ async function createPlayerTable() {
 
       //add a button for deleting
       const tdDel = document.createElement('td');
+      tdDel.style = 'text-align: center;';
       const iDelete = document.createElement('i');
       iDelete.className = 'fas fa-trash';
       iDelete.title = 'Delete Player';
@@ -994,50 +996,50 @@ async function resetPassword() {
 
 function getAvatar() {
   return new Promise((resolve) => {
+    updateCardAvatarsInModal();
+    updatePeopleAvatarsInModal();
     const modal = document.getElementById('selectAvatarModal');
     modal.style.display = 'block';
     const submitBtn = modal.querySelector('#submitAvatarSelection');
     const cancelBtn = modal.querySelector('#closeAvatarSelection');
-    const select = modal.querySelector('select');
 
     const cleanup = (result) => {
       submitBtn.removeEventListener('click', submitAvatarSelection);
       cancelBtn.removeEventListener('click', closeSelectAvatarModal);
-      modal.style.display='none';
+      modal.style.display = 'none';
       resolve(result);
     };
 
     const submitAvatarSelection = () => {
-      cleanup({card:modal.dataset.card,url:modal.dataset.url} || null);
+      cleanup({ url: modal.dataset.url } || null);
     }
     const closeSelectAvatarModal = () => {
       cleanup(null);
-    } 
+    }
 
     submitBtn.addEventListener('click', submitAvatarSelection);
     cancelBtn.addEventListener('click', closeSelectAvatarModal);
-    modal.classList.add('open');
   });
 }
 
 //testing. Remove this in actual code
 
 async function useAvatarSelection() {
-   const result = await getAvatar();
-   if (result) {
-     console.log('Avatar selected:', result);
-     const playerImageData = document.getElementById('playerImageData');
-     const playerImagePreview = document.getElementById('playerImagePreview');  
-      if (playerImageData) {
-        playerImageData.value = result.url;
-      }
-      if (playerImagePreview) {
-        playerImagePreview.src = result.url;
-        playerImagePreview.style.display = 'inline-block';
-      }
-   }
-   console.log('Selected avatar:', result);
-} 
+  const result = await getAvatar();
+  if (result) {
+    console.log('Avatar selected:', result);
+    const playerImageData = document.getElementById('playerImageData');
+    const playerImagePreview = document.getElementById('playerImagePreview');
+    if (playerImageData) {
+      playerImageData.value = result.url;
+    }
+    if (playerImagePreview) {
+      playerImagePreview.src = result.url;
+      playerImagePreview.style.display = 'inline-block';
+    }
+  }
+  console.log('Selected avatar:', result);
+}
 
 function useAvatarSelection2() {
   //here we get the input element to figure or the card
@@ -1045,7 +1047,7 @@ function useAvatarSelection2() {
   const text = avatarTextInput.value;
   const parts = text.toLowerCase().split('');
   if (parts.length < 2) return
-  
+
   const suit = 'cdhs'.includes(parts[0]) ? parts[0] : 'cdhs'.includes(parts[1]) ? parts[1] : null;
   if (!suit) return;
 
@@ -1070,10 +1072,10 @@ function useAvatarSelection2() {
     const y = startY + suitIndex * (avatarHeight + gapY);
     canvas.width = avatarWidth / 4;
     canvas.height = avatarHeight / 4;
-    ctx.drawImage(spritesheet, x, y, avatarWidth, avatarHeight, 0, 0, avatarWidth/4, avatarHeight/4);
+    ctx.drawImage(spritesheet, x, y, avatarWidth, avatarHeight, 0, 0, avatarWidth / 4, avatarHeight / 4);
     const playerImageData = document.getElementById('playerImageData');
     const playerImagePreview = document.getElementById('playerImagePreview');
-    const dataUrl = canvas.toDataURL('image/png');    
+    const dataUrl = canvas.toDataURL('image/png');
     if (playerImageData) {
       playerImageData.value = dataUrl;
     }
@@ -1084,7 +1086,75 @@ function useAvatarSelection2() {
   }
 }
 
-// testAvatarSelection();
+function updatePeopleAvatarsInModal() {
+  //here we get the input element to figure or the card
+  // const avatarTextInput = document.getElementById('avatartext');
+  // const text = avatarTextInput.value;
+  // const parts = text.toLowerCase().split('');
+  // if (parts.length < 2) return
+
+  // const suit = 'cdhs'.includes(parts[0]) ? parts[0] : 'cdhs'.includes(parts[1]) ? parts[1] : null;
+  // if (!suit) return;
+
+  // const rank = ('ajqjt98765432'.includes(parts[0])) ? parts[0] : ('ajqjt98765432'.includes(parts[1]) ? parts[1] : null);
+  // if (!rank) return;
+  const modal = document.getElementById('selectAvatarModal');
+  const spritesheet = document.createElement('img');
+  spritesheet.src = '/images/gallery/people/people.png';
+  spritesheet.onload = () => {
+    const avatarSelection = document.getElementById('avatarSelection');
+    const startX = 25; // Starting X coordinate of the first avatar in the sprite sheet
+    const startY = 25; // Starting Y coordinate of the first avatar in the sprite sheet
+    const avatarWidth = 100; // Width of each avatar in the sprite sheet
+    const avatarHeight = 250; // Height of each avatar in the sprite sheet
+    const gapX = 0; // Horizontal gap between avatars in the sprite sheet
+    const gapY = 0; // Vertical gap between avatars in the sprite sheet
+    for (let row = 0; row < 6; row++) {
+      for (let col = 0; col < 15; col++) {
+        console.log(`row=${row}, col=${col}`);
+        const canvas = document.createElement('canvas');
+        canvas.className = 'avatar-option';
+        const ctx = canvas.getContext('2d');
+        const x = startX + col * (avatarWidth + gapX);
+        const y = startY + row * (avatarHeight + gapY);
+        canvas.width = avatarWidth / 2;
+        canvas.height = avatarHeight / 4;
+        ctx.drawImage(spritesheet, x, y, avatarWidth, avatarHeight/2, 0, 0, avatarWidth / 2, avatarHeight / 4);
+        canvas.onclick = function () {          // Remove highlight from all avatars
+          document.querySelectorAll('.avatar-option').forEach(canvas => {
+            canvas.style.borderRadius = '';
+          });
+          // Highlight the selected avatar
+          this.style.borderRadius = '20px';
+          // Store the selected avatar value and URL in the modal's dataset for later use
+          // modal.dataset.card = `${rank}${suit}`;
+          modal.dataset.url = canvas.toDataURL('image/png'); // Store the data URL of the selected avatar
+        };
+        avatarSelection.appendChild(canvas);
+      }
+    }
+  }
+}
+
+function showAvatarSelectionModal() {
+  const modal = document.getElementById('selectAvatarModal');
+  modal.style.display = 'block';
+  getAvatar().then(result => {
+    if (result) {
+      console.log('Avatar selected:', result);
+      const playerImageData = document.getElementById('playerImageData');
+      const playerImagePreview = document.getElementById('playerImagePreview');
+      if (playerImageData) {
+        playerImageData.value = result.url;
+      }
+      if (playerImagePreview) {
+        playerImagePreview.src = result.url;
+        playerImagePreview.style.display = 'inline-block';
+      }
+    }
+    console.log('Selected avatar:', result);
+  });
+}
 
 // Expose for use in console or other scripts
 window.toggleColumn = toggleColumn;
@@ -1395,15 +1465,18 @@ async function addAnnouncement() {
     });
 }
 
+document.addEventListener('DOMContentLoaded', async () => {
+  await PopulateDirectorsTable();
+  await PopulateOfficersTable();
+  await PopulateAnnouncements();
+  await PopulatePOTMForm();
+  await displayPOTM();
+  await setupCelebrationsLazyLoad();
+  await updateVoteInfo();
 
+});
 
-document.addEventListener('DOMContentLoaded', PopulateDirectorsTable);
-document.addEventListener('DOMContentLoaded', PopulateOfficersTable);
-document.addEventListener('DOMContentLoaded', PopulateAnnouncements);
-document.addEventListener('DOMContentLoaded', PopulatePOTMForm);      //needs to be only once
-document.addEventListener('DOMContentLoaded', displayPOTM);
-document.addEventListener('DOMContentLoaded', setupCelebrationsLazyLoad);
-document.addEventListener('DOMContentLoaded', updateVoteInfo);
+// Ks
 
 async function clearAllPOTMCommentsInDatabase() {
   const potmmonth = new Date().getMonth() + 1; // Current month
@@ -1553,16 +1626,16 @@ function closeSelectAvatarModal() {
   }
 }
 
-function openSelectAvatarModal() {
-  const modal = document.getElementById('selectAvatarModal');
-  if (modal) {
-    updateAvatarsInModal()
-    modal.style.display = 'block';
-    modal.dataset.card="" //reset selected card
-    modal.dataset.selected=false //reset selected card value
-    modal.dataset.url="" //reset selected card url
-  }
-}
+// function openSelectAvatarModal() {
+//   const modal = document.getElementById('selectAvatarModal');
+//   if (modal) {
+//     updateCardAvatarsInModal()
+//     modal.style.display = 'block';
+//     modal.dataset.card = "" //reset selected card
+//     modal.dataset.selected = false //reset selected card value
+//     modal.dataset.url = "" //reset selected card url
+//   }
+// }
 
 function submitAvatarSelection() {
   const modal = document.getElementById('selectAvatarModal');
@@ -1570,7 +1643,7 @@ function submitAvatarSelection() {
   closeSelectAvatarModal();
 }
 
-function updateAvatarsInModal(){
+function updateCardAvatarsInModal() {
   const modal = document.getElementById('selectAvatarModal');
   const avatarEl = document.getElementById('avatarSelection');
   const spriteSheet = document.createElement('img');
@@ -1581,46 +1654,43 @@ function updateAvatarsInModal(){
   const avatarHeight = 281; // Height of each avatar in the sprite sheet
   const gapX = 1; // Horizontal gap between avatars in the sprite sheet
   const gapY = 3; // Vertical gap between avatars in the sprite sheet
-  spriteSheet.onload = function() {
+  spriteSheet.onload = function () {
     //create 52 avatar options from the sprite sheet
     //first rows are C,D,H,S
     //columns start with Ace and go up to King
     const suits = ['C', 'D', 'H', 'S'];
-    const ranks = ['A','2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
     let index = 0;
     suits.forEach((suit, suitIndex) => {
       ranks.forEach((rank, rankIndex) => {
-        const canvas = document.createElement('canvas');  
-        canvas.width = avatarWidth/4;
-        canvas.height = avatarHeight/4;
+        const canvas = document.createElement('canvas');
+        canvas.width = avatarWidth / 4;
+        canvas.height = avatarHeight / 4;
         const ctx = canvas.getContext('2d');
         const x = startX + rankIndex * (avatarWidth + gapX);
         const y = startY + suitIndex * (avatarHeight + gapY);
-        ctx.drawImage(spriteSheet, x, y, avatarWidth, avatarHeight, 0, 0, avatarWidth/4, avatarHeight/4);
+        ctx.drawImage(spriteSheet, x, y, avatarWidth, avatarHeight, 0, 0, avatarWidth / 4, avatarHeight / 4);
         const avatarDataUrl = canvas.toDataURL();
         const img = document.createElement('img');
         img.src = avatarDataUrl;
         img.alt = `${rank}${suit}`;
         img.className = 'avatar-option';
-        img.onclick = function() {          // Remove highlight from all avatars
+        img.onclick = function () {          // Remove highlight from all avatars
           document.querySelectorAll('.avatar-option').forEach(img => {
-            img.style.border = '';
+            img.style.borderRadius = '';
           });
           // Highlight the selected avatar
-          this.style.border = '2px solid #000';
+          this.style.borderRadius = '20px';
           // Store the selected avatar value and URL in the modal's dataset for later use
           modal.dataset.card = `${rank}${suit}`;
           modal.dataset.url = avatarDataUrl;
         };
-        
+
         avatarEl.appendChild(img);
       });
     });
   }
 }
-
-//remove this since this is for testing only
-document.addEventListener('DOMContentLoaded', updateAvatarsInModal);
 
 async function displayPOTM() {
   const potmmonth = new Date().getMonth() + 1; // Current month
@@ -1861,7 +1931,7 @@ function displayBlogComments() {
   if (!blog) return console.warn('No blog selected');
   const blogid = blog.value;
   const blogCommentsSection = document.getElementById('blogComments');
-  if(!blogCommentsSection) return console.warn('Section #blogComments not found');
+  if (!blogCommentsSection) return console.warn('Section #blogComments not found');
 
   const res = fetch(`/api/blogcomments/${blogid}`, {
     method: 'GET'
@@ -1877,7 +1947,7 @@ function displayBlogComments() {
         commentDiv.className = 'blog-comment';
         const iDel = document.createElement('i');
         iDel.className = 'fas fa-trash';
-        iDel.style= 'position: relative; top: 5px; right: 5px; cursor: pointer;';
+        iDel.style = 'position: relative; top: 5px; right: 5px; cursor: pointer;';
         iDel.title = 'Delete Comment';
         iDel.addEventListener('click', () => deleteComment(comment.id));
         const commenterName = document.createElement('div');
@@ -1892,7 +1962,7 @@ function displayBlogComments() {
         blogCommentsSection.appendChild(commentDiv);
       });
     });
-  }
+}
 
 async function deleteComment(commentId) {
   const result = await showCustomConfirmWithInput('Type DELETE to confirm deletion of this comment.');
@@ -1922,50 +1992,50 @@ async function submitComment() {
   const commentInput = document.getElementById('blogcomment');
   if (!commentInput) return console.warn('No comment input found');
   const comment = commentInput.value.trim();
-    if (!comment) return console.warn('Comment is empty');
+  if (!comment) return console.warn('Comment is empty');
 
-    try {
-      const res = await fetch(`/api/blogcomment/${blogid}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ playerid:userid,comment })
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const result = await res.json();
-      if (!result.success) {
-        showCustomAlert(`Error submitting comment: ${result.message}`, 5);
-        return;
-      }
-      showCustomAlert('Comment submitted successfully!', 3);
-      commentInput.value = '';
-      displayBlogComments();
-    } catch (err) {
-      showCustomAlert(`Error submitting comment: ${err}`, 5);
+  try {
+    const res = await fetch(`/api/blogcomment/${blogid}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ playerid: userid, comment })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (!result.success) {
+      showCustomAlert(`Error submitting comment: ${result.message}`, 5);
+      return;
     }
+    showCustomAlert('Comment submitted successfully!', 3);
+    commentInput.value = '';
+    displayBlogComments();
+  } catch (err) {
+    showCustomAlert(`Error submitting comment: ${err}`, 5);
   }
+}
 
-  function showPOTMVoteModal() {
-    const modal = document.getElementById('votePOTM');
-    if (modal) {
-      modal.style.display = 'block';
-      PopulatePOTMForm()
-    }
+function showPOTMVoteModal() {
+  const modal = document.getElementById('votePOTM');
+  if (modal) {
+    modal.style.display = 'block';
+    PopulatePOTMForm()
   }
+}
 
-  function closeVotePOTMModal() {
-    const modal = document.getElementById('votePOTM');
-    if (modal) {
-      modal.style.display = 'none';
-    }
+function closeVotePOTMModal() {
+  const modal = document.getElementById('votePOTM');
+  if (modal) {
+    modal.style.display = 'none';
   }
+}
 
 
-  function createblog() {
-    window.open('/blogs');
-  }
+function createblog() {
+  window.open('/blogs');
+}
 
-  window.addEventListener('DOMContentLoaded', decide)
+window.addEventListener('DOMContentLoaded', decide)
 
-  displayPlayIntentions()
+displayPlayIntentions()

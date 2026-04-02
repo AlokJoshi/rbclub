@@ -143,10 +143,13 @@
 						<div class="field half">
 							<input type="file" id="playerImageInput" accept="image/*">
 							<input type="hidden" id="playerImageData" name="playerImageData" value="">
+							<button type="button" id="selectAvatarButton" onclick="showAvatarSelectionModal()" class="button primary"
+								style="margin-top:10px;">Select Avatar</button>
 							<!-- <p style="font-size:0.9em;color:#555;margin-top:5px;">Click <a href="#" onclick="useAvatarSelection()">here</a> to select a playing card to work as the image instead.</p> -->
-							<label for="avatartext">Or enter text to select a playing card as avatar (e.g. "AS" for Ace of Spades, "TH" for Ten of Hearts):</label>
+							<!-- <label for="avatartext">Or enter text to select a playing card as avatar (e.g. "AS" for Ace of Spades,
+								"TH" for Ten of Hearts):</label>
 							<input type="text" id="avatartext" maxlength="2" style="width:100
-							px" title="Use One of SHCD for suit and one of AKQJT98765432 for rank" oninput="useAvatarSelection2()">
+							px" title="Use One of SHCD for suit and one of AKQJT98765432 for rank" oninput="useAvatarSelection2()"> -->
 							<div class="imagePreview">
 								<img id="playerImagePreview" src="" alt="Player photo preview"
 									style="max-width:120px; max-height:120px; border:1px solid #ccc; padding:4px;">
@@ -269,16 +272,16 @@
 			</div>
 		</section>
 
-		
+
 		<!-- Player of the Month Section -->
 		<section>
 			<header>
 				<h2>Player of the Month</h2>
-				<h3>Please note that you can cast only one vote per month. If you have already voted then 
+				<h3>Please note that you can cast only one vote per month. If you have already voted then
 					your new vote will replace your old vote.</h3>
-					<br>
-					<h3 id="voteinfo"></h3>
-					<button type="button" class="button primary" onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
+				<br>
+				<h3 id="voteinfo"></h3>
+				<button type="button" class="button primary" onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
 			</header>
 			<div class="content">
 				<form action="">
@@ -315,9 +318,9 @@
 					Celebration</button>
 			</header>
 			<div class="content" style="position:relative;">
-				<i class="fas fa-sync" style="position:absolute;top:10px;right:45px;" onclick="populateCelebrations()"
+				<i class="fas fa-sync" style="position:absolute;top:10px;right:45px;cursor:pointer" onclick="populateCelebrations()"
 					aria-hidden="true"></i>
-				<i class="fas fa-trash-alt" style="position:absolute;top:10px;right:20px;" onclick="deleteCelebration()"
+				<i class="fas fa-trash-alt" style="position:absolute;top:10px;right:20px;cursor:pointer" onclick="deleteCelebration()"
 					aria-hidden="true"></i>
 				<label for="celebrations">Select a Celebration:</label>
 				<select id="celebrations" name="celebrations" onchange="displayCelebrationPhotos()">
@@ -328,14 +331,14 @@
 						style="display:none; width: 100%; height: auto" ; readonly>
 					<p>Photos:</p> <!-- Display uploaded celebration photos here -->
 					<div id="celebrationPhotos">
-						
+
 					</div>
 					<form id="moreCelebrationImageForm" action="">
 						<div class="fields">
 							<div class="field full">
 								<label for="moreCelebrationImageInput">Upload More Celebration Photo/Images for above
 									celebration</label>
-									<input type="file" id="moreCelebrationImageInput" name="moreCelebrationImageInput"
+								<input type="file" id="moreCelebrationImageInput" name="moreCelebrationImageInput"
 									onchange="checkTotalFileSize()" accept="image/*" multiple required>
 							</div>
 							<div class="field full wrap">
@@ -354,15 +357,21 @@
 		<section>
 			<header>
 				<h2>Blogs</h2>
-				<p>Blogs or articles written by the members. If you like a blog
-					please encourage the author by commenting on the blog.
-					Click <a onclick="createblog()"><b>here</b></a> to create a blog.
-				</p>
+				Blogs or articles written by the members. If you like a blog
+				please encourage the author by commenting on the blog. Note that your blog will allow
+				you to add Bridge Diagram or Bridge Hand to illustrate your point. You will do this by clicking
+				on the appropriate button in the blog editing screen. Also with the following
+				keyboard shortcuts, you will be able to add icons for Suits.
+				<div>Alt-Shift-S: Spades</div>
+				<div>Alt-Shift-H: Hearts</div>
+				<div>Alt-Shift-D: Diamonds</div>
+				<div>Alt-Shift-C: Clubs</div>
+
 				<button class="button primary" onclick="createblog()">Create Blog/Edit Your blog</button>
 			</header>
 			<div class="content">
 				<form action="">
-					<label for="bloglistid">Select a blog</label>
+					<label for="bloglistid">Select a blog to view:</label>
 					<select name="bloglist" id="bloglistid" onchange="showblog()"></select>
 					<input type="textarea" id="blogcontent" name="blogcontent" placeholder="Blog content will display here..."
 						style="width: 100%; height: 300px;" readonly></input>
@@ -377,7 +386,7 @@
 				</form>
 			</div>
 		</section>
-		
+
 		<!-- Directors Section -->
 		<section>
 			<header>
@@ -651,7 +660,7 @@
 			<form action="">
 				<div class="fields">
 					<div class="field full">
-						<label id="potmlabel"for="potm">Select your choice for Player of the Month</label>
+						<label id="potmlabel" for="potm">Select your choice for Player of the Month</label>
 						<select name="potm" id="potm"></select>
 					</div>
 					<div class="field full">
@@ -675,7 +684,7 @@
 		</div>
 	</div>
 
-	<div id="selectAvatarModal" data-card="" data-url="" class="modal" >
+	<div id="selectAvatarModal" class="modal" data-card="" data-url="">
 		<div class="modal-content" style="position:relative">
 			<i class="fas fa-times" style="position:absolute;top:10px;right:10px" onclick="closeSelectAvatarModal()"
 				aria-hidden="true"></i>
@@ -688,14 +697,12 @@
 						</div>
 					</div>
 					<div class="half">
-						<button type="button" class="button primary" id="submitAvatarSelection" name="submitAvatarSelection"
-							>
+						<button type="button" class="button primary" id="submitAvatarSelection" name="submitAvatarSelection">
 							Select
 						</button>
 					</div>
 					<div class="half">
-						<button type="button" class="button primary" id="closeAvatarSelection" name="closeAvatarSelection"
-							>
+						<button type="button" class="button primary" id="closeAvatarSelection" name="closeAvatarSelection">
 							Cancel
 						</button>
 					</div>
