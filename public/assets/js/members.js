@@ -686,8 +686,8 @@ async function createPlayerTable() {
 }
 
 function displayaddannouncementform() {
-  const addannouncementform = document.getElementById('addupdateannouncements')
-  addannouncementform.style.display = 'grid'
+  const auaform = document.getElementById('addupdateannouncements')
+  auaform.style.display = 'grid'
   //clear the form
   document.getElementById('announcementId').value = ''
   document.getElementById('announcementtitle').value = ''
@@ -696,6 +696,14 @@ function displayaddannouncementform() {
   document.getElementById('priority').value = ''
   document.getElementById('btnNewContainer').style.display = 'block'
   document.getElementById('btnUpdateContainer').style.display = 'none'
+
+  if (auaform) {
+    auaform.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    auaform.setAttribute('tabindex', '-1');
+    auaform.focus();
+  } else {
+    console.warn('Login button not found to scroll into view and focus.');
+  }
 }
 
 
@@ -1119,7 +1127,7 @@ function updatePeopleAvatarsInModal() {
         const y = startY + row * (avatarHeight + gapY);
         canvas.width = avatarWidth / 2;
         canvas.height = avatarHeight / 4;
-        ctx.drawImage(spritesheet, x, y, avatarWidth, avatarHeight/2, 0, 0, avatarWidth / 2, avatarHeight / 4);
+        ctx.drawImage(spritesheet, x, y, avatarWidth, avatarHeight / 2, 0, 0, avatarWidth / 2, avatarHeight / 4);
         canvas.onclick = function () {          // Remove highlight from all avatars
           document.querySelectorAll('.avatar-option').forEach(canvas => {
             canvas.style.borderRadius = '';
@@ -1312,14 +1320,19 @@ async function PopulateAnnouncements(params) {
       iEdit.style.margin = '0 5px';
 
       iEdit.addEventListener('click', () => {
-        if ((isAdmin && securelogin) || ((userid === announcement.playerid) && securelogin)) {
-          // User is authorized to edit this announcement
-        } else {
+        const adminOrCreator = (isAdmin && securelogin) || ((userid === announcement.playerid) && securelogin);
+        if(!adminOrCreator) {
           showCustomAlert('You must be securely logged in as Admin or as the creator of the announcement to update this announcement.', 10);
           return;
         }
+        // User is authorized to edit this announcement
         // Copy the data to the addAnnouncement form and enable the update button
-        document.getElementById('addupdateannouncements').style.display = 'grid';
+        const auaform = document.getElementById('addupdateannouncements')
+        if (!auaform) {
+          console.warn('addunpdateannouncements form not found');
+          return;
+        }
+        auaform.style.display = 'grid';
         document.getElementById('announcementId').value = announcement.id;
         document.getElementById('announcementtitle').value = announcement.title || '';
         document.getElementById('announcementtext').value = announcement.announcement || '';
@@ -1327,6 +1340,9 @@ async function PopulateAnnouncements(params) {
         document.getElementById('priority').value = announcement.priority;
         document.getElementById('btnNewContainer').style.display = 'none';
         document.getElementById('btnUpdateContainer').style.display = 'block';
+        auaform.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        auaform.setAttribute('tabindex', '-1');
+        auaform.focus();
       });
       editCell.appendChild(iEdit);
       // row.appendChild(editCell);
@@ -1399,23 +1415,28 @@ async function updateAnnouncement() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(announcementData)
   })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
-    .then(result => {
-      if (result.success) {
-        showCustomAlert('Announcement updated successfully.', 2);
-        document.getElementById('addupdateannouncements').style.display = 'none';
-        PopulateAnnouncements();
-      } else {
-        showCustomAlert(`Error updating announcement. ${result.message}`, 5);
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  })
+  .then(result => {
+    if (result.success) {
+      showCustomAlert('Announcement updated successfully.', 2);
+      CancelAnnouncement();
+      PopulateAnnouncements();
+      // scroll the announcements into view
+      const announcementsTable = document.getElementById('announcementtable');
+      if (announcementsTable) {
+        announcementsTable.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    })
-    .catch(err => {
-      console.error('Error updating announcement:', err);
-      showCustomAlert(`Error updating announcement. ${err}`, 5);
-    });
+    } else {
+      showCustomAlert(`Error updating announcement. ${result.message}`, 5);
+    }
+  })
+  .catch(err => {
+    console.error('Error updating announcement:', err);
+    showCustomAlert(`Error updating announcement. ${err}`, 5);
+  });
 }
 
 async function addAnnouncement() {
@@ -1446,23 +1467,30 @@ async function addAnnouncement() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(announcementData)
   })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
-    .then(result => {
-      if (result.success) {
-        showCustomAlert('Announcement added successfully.', 2);
-        document.getElementById('addupdateannouncements').style.display = 'none';
-        PopulateAnnouncements();
-      } else {
-        showCustomAlert(`Error adding announcement. ${result.message}`, 5);
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  })
+  .then(result => {
+    if (result.success) {
+      showCustomAlert('Announcement added successfully.', 2);
+      PopulateAnnouncements();
+      //close the add/edit announcement form
+      CancelAnnouncement()
+      // scroll the announcements into view
+      const announcementsTable = document.getElementById('announcementtable');
+      if (announcementsTable) {
+        announcementsTable.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    })
-    .catch(err => {
-      console.error('Error adding announcement:', err);
-      showCustomAlert(`Error adding announcement. ${err}`, 5);
-    });
+    } else {
+      showCustomAlert(`Error adding announcement. ${result.message}`, 5);
+    }
+  })
+  .catch(err => {
+    console.error('Error adding announcement:', err);
+    showCustomAlert(`Error adding announcement. ${err}`, 5);
+  });
+
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
