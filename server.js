@@ -16,29 +16,29 @@ const multer = require('multer');
 // getMessageEvents('alokjoshiofaarmax@gmail.com');
 
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
 const express = require('express');
 const sqlite = require('better-sqlite3');
 const session = require('express-session')
 const SQLiteStore = require('connect-sqlite3')(session);
 const bcrypt = require('bcrypt');
 // Email transporter configuration
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
-});
+// const transporter = nodemailer.createTransport({
+//     host: process.env.EMAIL_HOST,
+//     port: process.env.EMAIL_PORT,
+//     secure: false,
+//     auth: {
+//         user: process.env.EMAIL_USER,
+//         pass: process.env.EMAIL_PASSWORD
+//     }
+// });
 
 
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const { avtarUpload, emailReplyUpload, 
+const { avtarUpload, emailReplyUpload,
     celebrationMultiUpload, blogMultiUpload } = require('./helper');
 
 const { userExists, login, changePassword,
@@ -48,7 +48,7 @@ const { userExists, login, changePassword,
     updateMailingList, getMailingListRecipients, getMailingListEmails, isPlayer,
     saveGuestInquiry, getNonMailingListRecipients,
     addRecipientToMailingList, formatDateToYYYYMMDD,
-    getPOTMWords,getEmails } = require('./credentials')
+    getPOTMWords, getEmails } = require('./credentials')
 
 
 
@@ -188,7 +188,7 @@ app.get('/api/bloglist/:playerid', (req, res) => {
         const playerid = req.params.playerid;
         const stmt = db.prepare(`select b.id,p.id as playerid, b.createddate,b.title,concat(p.first,' ',p.last) as author from player as p inner join blogs as b on p.id = b.playerid where p.id = ? order by b.createddate desc;`);
         const blogs = stmt.all(playerid);
-        res.json({success:true,blogs});
+        res.json({ success: true, blogs });
     } catch (err) {
         console.error('Error in /api/blogslist:', err);
         res.status(500).send(`Server error: ${err.message}`);
@@ -526,7 +526,7 @@ app.get('/get-session-id', (req, res) => {
         // console.log('Session ID:', sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname);
         res.json({ sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname });
     } else {
-        console.log('No session found');  
+        console.log('No session found');
         res.json({ message: 'No session found' });
     }
 });
@@ -642,22 +642,60 @@ app.post('/reset-password', async (req, res) => {
 app.post('/api/guest-inquiry', async (req, res) => {
     const { firstName, lastName, email, phone, acbl, visitDate, message } = req.body;
     try {
-        //save the guest inquiry to the database or send an email
+        //save the guest inquiry to the database and send an email to the board members with the details of the inquiry
         saveGuestInquiry(firstName, lastName, email, phone, acbl, visitDate, message);
         const mailingList = getMailingListAddresses('boardmembers');
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: mailingList,
-            subject: 'New Guest Inquiry',
-            text: `Our web site has received a new guest inquiry from 
-            \nFirst Name:${firstName} Last Name: ${lastName} 
-            \nPhone:${phone} Email:(${email}) 
-            \nExpressing interest in visiting club on:${visitDate}.
-            \n\nMessage: ${message}
-            \n\nPresident will reach out to the guest or assign someone to reach out to the guest.
-            \n\nThis email was sent automatically from the website to all board members.`
-        });
-        res.json({ success: true, message: 'Inquiry received. We will contact you soon.' });
+        if (mailingList.length === 0) {
+            console.warn('No email addresses found for boardmembers mailing list. Guest inquiry email will not be sent.');
+            
+            if (!process.env.ADMIN_IDS || process.env.ADMIN_IDS.length === 0) {
+                console.warn('No admin email addresses found. Guest inquiry email will not be sent.');
+                res.json({ success: true, message: 'Inquiry received. We will contact you soon. However, no board members are currently set to receive email notifications.' });
+                return;
+            }
+
+            const adminIds = process.env.ADMIN_IDS?JSON.parse(process.env.ADMIN_IDS):[];
+            let adminEmails = '' 
+            adminIds.forEach((adminId) => {
+                const stmt = db.prepare('SELECT email FROM player WHERE id = ?');
+                const result = stmt.get(adminId);
+                adminEmails += result.email;
+                if (adminIds.indexOf(adminId) < adminIds.length - 1) {
+                    adminEmails += ',';
+                }
+            });
+            sendEmail(
+                {
+                    addresses: adminEmails,
+                    subject: 'New Guest Inquiry',
+                    text: `Our web site has received a new guest inquiry from
+                    \nFirst Name:${firstName} Last Name: ${lastName} 
+                    \nPhone:${phone} Email:(${email}) 
+                    \nExpressing interest in visiting club on:${visitDate}.
+                    \n\nMessage: ${message}
+                    \n\nPresident will reach out to the guest or assign someone to reach out to the guest.
+                    \n\nThis email was sent automatically from the website to all board members.
+                    \n\n\n
+                    This email is normally sent to the board members but since no board members are configured to receive emails, it is being sent to all admins.
+                    Please note that a mailinglist named boardmembers should be created for this purpose.`
+
+                });
+            res.json({ success: true, message: 'Inquiry received. We will contact you soon.' });
+        } else {
+            sendEmail(
+                {
+                    addresses: mailingList,
+                    subject: 'New Guest Inquiry',
+                    text: `Our web site has received a new guest inquiry from
+                    \nFirst Name:${firstName} Last Name: ${lastName}
+                    \nPhone:${phone} Email:(${email})
+                    \nExpressing interest in visiting club on:${visitDate}.
+                    \n\nMessage: ${message} 
+                    \n\nPresident will reach out to the guest or assign someone to reach out to the guest.
+                    \n\nThis email was sent automatically from the website to all board members.`
+                }); 
+            res.json({ success: true, message: 'Inquiry received. We will contact you soon.' });
+        }
     } catch (err) {
         console.error('Error handling guest inquiry:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
@@ -971,7 +1009,7 @@ app.get('/api/celebrations', (req, res) => {
 });
 
 app.get('/api/getvoteinfo/:playerid/:potmmonth/:potmyear', (req, res) => {
-    const playerId = req.params.playerid;   
+    const playerId = req.params.playerid;
     const potmmonth = req.params.potmmonth;
     const potmyear = req.params.potmyear;
     try {
@@ -1008,7 +1046,7 @@ app.post('/api/celebration2', (req, res, next) => {
     try {
         const stmt = db.prepare('INSERT INTO celebration (createdbyplayerid, celebrationname, celebrationdate, celebrationdescription) VALUES (?, ?, ?, ?)');
         const result = stmt.run(createdByPlayerId, celebrationName, celebrationDate, celebrationDescription);
-        if(result.changes === 0) {
+        if (result.changes === 0) {
             return res.status(400).json({ success: false, message: 'Failed to create celebration' });
         }
         celebrationId = result.lastInsertRowid;
@@ -1179,22 +1217,22 @@ app.delete('/api/blog/:blogid', (req, res) => {
 });
 
 
-app.post('/api/blogtitle',async (req,res) =>{
-    try{
-        const { blogtitle, playerid} = req.body;
+app.post('/api/blogtitle', async (req, res) => {
+    try {
+        const { blogtitle, playerid } = req.body;
         //if blogtitle already exists, return the blogid
         //if blogtitle does not exist, create a new blog with the title and return the new blogid
         const existingBlog = db.prepare('SELECT id FROM blogs WHERE title = ? and playerid = ?').get(blogtitle, playerid);
-        if(existingBlog) {
-            return res.status(200).json({valid:true,blogid: existingBlog.id, message:'The title already exists. Returning the existing blogid.'});
+        if (existingBlog) {
+            return res.status(200).json({ valid: true, blogid: existingBlog.id, message: 'The title already exists. Returning the existing blogid.' });
         }
         const stmt = db.prepare('INSERT INTO blogs (title, playerid) VALUES (?, ?);');
         const info = stmt.run(blogtitle, playerid);
-        const blogid = info.changes==0 ? null : info.lastInsertRowid;
-        if(!blogid) return res.status(400).json({valid:false,message:'Blog could not be created. Please try again.'})
-        return res.status(200).json({valid:true,blogid})
-    }catch(err){
-        res.status(500).json({success:false,message: `Internal server error: ${err}`})      
+        const blogid = info.changes == 0 ? null : info.lastInsertRowid;
+        if (!blogid) return res.status(400).json({ valid: false, message: 'Blog could not be created. Please try again.' })
+        return res.status(200).json({ valid: true, blogid })
+    } catch (err) {
+        res.status(500).json({ success: false, message: `Internal server error: ${err}` })
     }
 })
 
@@ -1244,10 +1282,10 @@ app.post('/api/blog/images', (req, res, next) => {
         res.json({
             success: true,
             count: req.files.length,
-            links: req.files.map(f => ({ 
+            links: req.files.map(f => ({
                 originalname: f.originalname,
-                key: f.key, 
-                url: f.location 
+                key: f.key,
+                url: f.location
             }))
         });
     } catch (err) {
@@ -1286,7 +1324,7 @@ app.post('/api/sendemail', async (req, res) => {
     const numEmails = filteredRecipientEmails.length;
     let savedCount = 0;
     let sentCount = 0;
-    
+
     await Promise.all(filteredRecipientEmails.map(async email => {
         console.log('Email sent to:', email);
         const result = stmt.run(email, playerid, subject, text, date);
@@ -1326,7 +1364,7 @@ app.post('/emailaccepted', checkAuthenticity, (req, res) => {
         const emailid = uservariable ? uservariable.emailid : null;
         const messageId = req.body['event-data'].message.headers['message-id'] || null;
         const storageKey = req.body['event-data'].storage ? req.body['event-data'].storage.key : null;
-        if(!emailid || !messageId) {
+        if (!emailid || !messageId) {
             return res.status(400).json({ message: 'Email ID or Message ID not found in user variables' });
         }
         //now we can update the emails table to set the status of the email to accepted based on the emailid    if (emailid) {
@@ -1370,7 +1408,7 @@ app.post('/emaildelivered', checkAuthenticity, (req, res) => {
         const uservariable = req.body['event-data']['user-variables'];
         const emailid = uservariable ? uservariable.emailid : null;
         const storageKey = req.body['event-data'].storage ? req.body['event-data'].storage.key : null;
-        if(!emailid) {
+        if (!emailid) {
             return res.status(400).json({ message: 'Email ID not found in user variables' });
         }
         //now we can update the emails table to set the status of the email to delivered based on the emailid    if (emailid) {
@@ -1390,7 +1428,7 @@ app.post('/emailreplies', emailReplyUpload.any(), checkAuthenticity, (req, res) 
     const messageId = req.body['In-Reply-To'] ? req.body['In-Reply-To'].slice(1, -1) : null;
     const reply = req.body['body-plain'] || null;
 
-    if(!messageId || !reply) {
+    if (!messageId || !reply) {
         console.error('Message ID or reply body not found in email replies event');
         return res.status(400).json({ message: 'Message ID or reply body not found' });
     }
@@ -1399,72 +1437,72 @@ app.post('/emailreplies', emailReplyUpload.any(), checkAuthenticity, (req, res) 
     stmt.run(reply, messageId);
 
     res.json({ sucess: true })
-    
+
 });
 // End of email replies handling
 
 app.get('/api/emails', (req, res) => {
-    try{
+    try {
         const result = getEmails();
-        if(!result.success){
-            return res.status(500).json({success: false, message: result.message});
+        if (!result.success) {
+            return res.status(500).json({ success: false, message: result.message });
         }
         return res.status(200).json(result);
-    }catch(err){
+    } catch (err) {
         res.status(500).json({ success: false, message: err });
     }
 });
 
-app.get('/api/blogs',(req,res)=>{
-    try{
+app.get('/api/blogs', (req, res) => {
+    try {
         const stmt = db.prepare(`SELECT b.*, concat(p.first, ' ', p.last) as author FROM blogs b inner join player p on b.playerid = p.id order by createddate desc;`);
         const blogs = stmt.all();
         res.json({ success: true, blogs });
-    }catch(err){
+    } catch (err) {
         console.error('Error fetching blogs:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
 
-app.put('/api/blog',(req,res)=>{
-    const {blogid,blog}=req.body;
-    try{
+app.put('/api/blog', (req, res) => {
+    const { blogid, blog } = req.body;
+    try {
         const stmt = db.prepare('Update blogs set blog=? where id=?')
-        const result = stmt.run(blog,blogid)
-        if(result.changes === 0){
-            res.status(400).json({success:false,message:`The blog could not be saved`})
+        const result = stmt.run(blog, blogid)
+        if (result.changes === 0) {
+            res.status(400).json({ success: false, message: `The blog could not be saved` })
         }
-        if(result.changes === 1){
-           res.status(200).json({success:true,message:`The blog was saved successfully`})  
+        if (result.changes === 1) {
+            res.status(200).json({ success: true, message: `The blog was saved successfully` })
         }
-    }catch(err){
+    } catch (err) {
         console.log('Error saving blog:', err);
-        res.status(500).json({success:false,message:`Server error: ${err}`});
+        res.status(500).json({ success: false, message: `Server error: ${err}` });
     }
 });
 
-app.get('/api/blogs/:id',(req,res)=>{
-    try{
-        const {id} = req.params
+app.get('/api/blogs/:id', (req, res) => {
+    try {
+        const { id } = req.params
         const stmt = db.prepare(`SELECT b.*, concat(p.first, ' ', p.last) as author FROM blogs b inner join player p on b.playerid = p.id where b.id = ?;`);
 
         const blog = stmt.get(id);
         res.json({ blog });
-    }catch(err){
+    } catch (err) {
         console.error('Error fetching blogs:', err);;
         res.status(500).json({ success: false, message: `Server error: ${err}` });
     }
 });
 
-app.get('/api/blogcomments/:blogid',(req,res)=>{
-    try{
+app.get('/api/blogcomments/:blogid', (req, res) => {
+    try {
         const { blogid } = req.params;
         const stmt = db.prepare(`SELECT bc.*, concat(p.first, ' ', p.last) as commenter FROM blogcomments bc inner join player p on bc.playerid = p.id where bc.blogid = ? order by id desc;`);
         const comments = stmt.all(blogid);
         res.json({ success: true, comments });
-    }catch(err){
+    } catch (err) {
         console.error('Error fetching blog comments:', err);;
-        res.status(500).json({ success: false, message: `Server error: ${err}` });  
+        res.status(500).json({ success: false, message: `Server error: ${err}` });
     }
 });
 

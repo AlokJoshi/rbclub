@@ -16,7 +16,8 @@ const verify = ({ signingKey, timestamp, token, signature }) => {
 
 async function sendEmail({addresses, subject, text, html='',emailid=''}) {
   // emailid is an optional parameter that can be used to track the email in the database
-  // this requires that we first save the data in the emails table and then pass the emailid to this function to include in the email headers or body for tracking purposes
+  // this requires that we first save the data in the emails table and then pass the 
+  // emailid to this function to include in the email headers or body for tracking purposes
   
   const mailgun = new Mailgun(FormData);
   const mg = mailgun.client({
