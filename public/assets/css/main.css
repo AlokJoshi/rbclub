@@ -2666,7 +2666,8 @@ ol {
 }
 
 ol li {
-	padding-left: 0.25rem;
+	/* padding-left: 0.25rem; */
+	padding-left: 0.5rem;
 }
 
 ul {
@@ -2676,7 +2677,8 @@ ul {
 }
 
 ul li {
-	padding-left: 0.325rem;
+	/* padding-left: 0.325rem; */
+	padding-left: 0.5rem;
 }
 
 ul.alt {

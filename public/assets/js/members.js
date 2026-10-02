@@ -506,7 +506,7 @@ async function PopulateFormForEdit(playerId) {
     document.getElementById('phone').value = result.phone || '';
     document.getElementById('dobMonth').value = result.dob_month || '';
     document.getElementById('dobDate').value = result.dob_date || '';
-    document.getElementById('acblnumber').value = result.acblNumber || '';
+    document.getElementById('acblnumber').value = result.acblnumber || '';
     document.getElementById('ice_phone').value = result.ice_phone || '';
     document.getElementById('ice_relation').value = result.ice_relation || '';
     document.getElementById('m1').checked = result.m1 || false;
@@ -1004,6 +1004,7 @@ async function resetPassword() {
 
 function getAvatar() {
   return new Promise((resolve) => {
+    clearAllAvatarsFromModal();
     updateCardAvatarsInModal();
     updatePeopleAvatarsInModal();
     const modal = document.getElementById('selectAvatarModal');
@@ -1095,17 +1096,6 @@ function useAvatarSelection2() {
 }
 
 function updatePeopleAvatarsInModal() {
-  //here we get the input element to figure or the card
-  // const avatarTextInput = document.getElementById('avatartext');
-  // const text = avatarTextInput.value;
-  // const parts = text.toLowerCase().split('');
-  // if (parts.length < 2) return
-
-  // const suit = 'cdhs'.includes(parts[0]) ? parts[0] : 'cdhs'.includes(parts[1]) ? parts[1] : null;
-  // if (!suit) return;
-
-  // const rank = ('ajqjt98765432'.includes(parts[0])) ? parts[0] : ('ajqjt98765432'.includes(parts[1]) ? parts[1] : null);
-  // if (!rank) return;
   const modal = document.getElementById('selectAvatarModal');
   const spritesheet = document.createElement('img');
   spritesheet.src = '/images/gallery/people/people.png';
@@ -1669,6 +1659,13 @@ function submitAvatarSelection() {
   const modal = document.getElementById('selectAvatarModal');
   modal.dataset.selected = true;
   closeSelectAvatarModal();
+}
+
+function clearAllAvatarsFromModal() {
+  const avatarEl = document.getElementById('avatarSelection');
+  if (avatarEl) {
+    avatarEl.innerHTML = '';
+  }
 }
 
 function updateCardAvatarsInModal() {
