@@ -1564,22 +1564,6 @@ async function PopulatePOTMForm() {
         phraseDiv.style.backgroundColor = phraseDiv.dataset.selected === 'true' ? '#d3d3d3' : ''; // Highlight the selected phrase
         const phrase = event.target.textContent.trim();
         console.log(`Clicked phrase: ${phrase}`);
-        // send this to a backend
-        // const potmplayerid = document.getElementById('potm').value;
-        // if (!potmplayerid) {
-        //   showCustomAlert('Please first select a player for Player of the Month.', 5);
-        //   return;
-        // }
-        // const potmmonth = new Date().getMonth() + 1; // Current month
-        // const potmyear = new Date().getFullYear(); // Current year
-        // await fetch('/api/savephrase', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify({ playerid: userid, potmplayerid, potmmonth, potmyear, potmphrase: phrase }),
-        // });
-        // console.log(`Phrase \'${phrase}\' saved to database!`);
       };
       commentPOTM.appendChild(phraseDiv);
     });
