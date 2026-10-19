@@ -140,7 +140,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-//when I added this, the post(/api/celebration/images) started working!!
+//when I added this, the post(/celebration/images) started working!!
 //otherwise I was getting 404 Not Found in the front-end!!
 // app.use((req, res, next) => {
 //   console.log('REQ', req.method, req.originalUrl);
@@ -183,14 +183,14 @@ app.get('/blogs', (req, res) => {
     }
 });
 
-app.get('/api/bloglist/:playerid', (req, res) => {
+app.get('/bloglist/:playerid', (req, res) => {
     try {
         const playerid = req.params.playerid;
         const stmt = db.prepare(`select b.id,p.id as playerid, b.createddate,b.title,concat(p.first,' ',p.last) as author from player as p inner join blogs as b on p.id = b.playerid where p.id = ? order by b.createddate desc;`);
         const blogs = stmt.all(playerid);
         res.json({ success: true, blogs });
     } catch (err) {
-        console.error('Error in /api/blogslist:', err);
+        console.error('Error in /blogslist:', err);
         res.status(500).send(`Server error: ${err.message}`);
     }
 });
@@ -336,7 +336,7 @@ app.post('/changepassword', async (req, res) => {
 
 
 
-app.get('/api/registeredusers', async (req, res) => {
+app.get('/registeredusers', async (req, res) => {
     const users = registeredUsers();
     res.json({ users });
 });
@@ -348,9 +348,9 @@ app.post('/isadmin', async (req, res) => {
 });
 
 
-app.get('/api/directorsdata', (req, res) => {
+app.get('/directorsdata', (req, res) => {
     try {
-        const stmt = db.prepare('SELECT first,last,phone,email FROM player where director=1 order by last;');
+        const stmt = db.prepare('SELECT image_path as savedImagePath, first, last, phone, email FROM player where director=1 order by last;');
         const result = stmt.all();
         res.json(result);
     } catch (err) {
@@ -359,18 +359,18 @@ app.get('/api/directorsdata', (req, res) => {
     }
 });
 
-app.get('/api/officersdata', (req, res) => {
+app.get('/officersdata', (req, res) => {
     try {
-        const stmt = db.prepare(`SELECT first,last,phone,email,position FROM player where position is not null order by last;`);
+        const stmt = db.prepare(`SELECT image_path as savedImagePath, first, last, phone, email, position FROM player where position is not null order by last;`);
         const result = stmt.all();
         res.json(result);
     } catch (err) {
-        console.error('Error fetching director data:', err);
+        console.error('Error fetching officer data:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-app.get('/api/playerdata', (req, res) => {
+app.get('/playerdata', (req, res) => {
 
     try {
         const stmt = db.prepare(
@@ -400,7 +400,7 @@ app.get('/api/playerdata', (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-app.get('/api/playerdata/:id', (req, res) => {
+app.get('/playerdata/:id', (req, res) => {
     const playerId = req.params.id;
     try {
         const stmt = db.prepare('SELECT * FROM player where id = ?;');
@@ -412,9 +412,9 @@ app.get('/api/playerdata/:id', (req, res) => {
     }
 });
 
-app.get('/api/attendance/:day', async (req, res) => {
+app.get('/attendance/:day', async (req, res) => {
     const day = req.params.day;
-    const stmt = db.prepare(`SELECT first, last, phone, email FROM player where ${day} order by first;`);
+    const stmt = db.prepare(`SELECT image_path as savedImagePath, first, last, phone, email FROM player where ${day} order by first;`);
     try {
         const result = stmt.all();
         res.json(result);
@@ -443,12 +443,20 @@ app.put('/getdefaultlogincredentials', async (req, res) => {
 });
 
 // Accept multipart/form-data with optional file field 'playerImage' for updates
-app.put('/api/playerdata/:id', avtarUpload.single('playerImage'), async (req, res) => {
+app.put('/playerdata/:id', avtarUpload.single('playerImage'), async (req, res) => {
     const playerId = req.params.id;
     const data = req.body;
-    console.log('Updating player:', playerId, { body: data, file: req.file?.filename });
-    const filename = req.newFileName
+    console.log('Updating player:', playerId, { body: data, file: req.file?.key });
     try {
+        const currentPlayer = db.prepare('SELECT image_path FROM player WHERE id = ?').get(playerId);
+        if (!currentPlayer) {
+            return res.status(404).json({ error: 'Player not found' });
+        }
+
+        const uploadedImagePath = req.file && typeof req.file.key === 'string'
+            ? req.file.key
+            : null;
+        const imagePathToSave = uploadedImagePath || currentPlayer.image_path || null;
 
         const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, dob_date=?, 
                                  acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, 
@@ -467,7 +475,7 @@ app.put('/api/playerdata/:id', avtarUpload.single('playerImage'), async (req, re
             (data.t1 === true || data.t1 === 'true' || data.t1 === 'on') ? 1 : 0,
             (data.f1 === true || data.f1 === 'true' || data.f1 === 'on') ? 1 : 0,
             (data.ug === true || data.ug === 'true' || data.ug === 'on') ? 1 : 0,
-            filename,
+            imagePathToSave,
             (data.isDirector === true || data.isDirector === 'true' || data.isDirector === 'on') ? 1 : 0,
             (!data.officerPosition || data.officerPosition === 'None') ? null : data.officerPosition,
             playerId);
@@ -479,7 +487,7 @@ app.put('/api/playerdata/:id', avtarUpload.single('playerImage'), async (req, re
     }
 });
 
-app.delete('/api/playerdata/:id', async (req, res) => {
+app.delete('/playerdata/:id', async (req, res) => {
     if (!req.session.isAdmin) {
         return res.status(403).json({ error: 'Forbidden. Admin access required to delete player.' });
     }
@@ -497,7 +505,7 @@ app.delete('/api/playerdata/:id', async (req, res) => {
     }
 });
 
-app.delete(`/api/mailinglist/:mailingListDetailsId/removerecipient`, async (req, res) => {
+app.delete(`/mailinglist/:mailingListDetailsId/removerecipient`, async (req, res) => {
     const mailingListDetailsId = req.params.mailingListDetailsId;
     try {
         const result = db.prepare('DELETE FROM mailinglistdetails WHERE id = ?;').run(mailingListDetailsId);
@@ -639,7 +647,7 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-app.post('/api/guest-inquiry', async (req, res) => {
+app.post('/guest-inquiry', async (req, res) => {
     const { firstName, lastName, email, phone, acbl, visitDate, message } = req.body;
     try {
         //save the guest inquiry to the database and send an email to the board members with the details of the inquiry
@@ -702,7 +710,7 @@ app.post('/api/guest-inquiry', async (req, res) => {
     }
 });
 
-app.get('/api/mailinglists', async (req, res) => {
+app.get('/mailinglists', async (req, res) => {
     try {
         const mailingLists = getMailingLists();
         res.json({ success: true, mailingLists });
@@ -712,7 +720,7 @@ app.get('/api/mailinglists', async (req, res) => {
     }
 });
 
-app.get('/api/mailinglist/:listname', async (req, res) => {
+app.get('/mailinglist/:listname', async (req, res) => {
     const listName = req.params.listname;
     try {
         const emails = getMailingListAddresses(listName);
@@ -723,7 +731,7 @@ app.get('/api/mailinglist/:listname', async (req, res) => {
     }
 });
 
-app.delete('/api/mailinglist/:listid', async (req, res) => {
+app.delete('/mailinglist/:listid', async (req, res) => {
     const listId = req.params.listid;
     try {
         deleteMailingList(listId);
@@ -734,7 +742,7 @@ app.delete('/api/mailinglist/:listid', async (req, res) => {
     }
 });
 
-app.post('/api/mailinglists', async (req, res) => {
+app.post('/mailinglists', async (req, res) => {
     const { name, description } = req.body;
     try {
         if (existsMailingList(name)) {
@@ -749,7 +757,7 @@ app.post('/api/mailinglists', async (req, res) => {
     }
 });
 
-app.put('/api/mailinglists', async (req, res) => {
+app.put('/mailinglists', async (req, res) => {
     const { id, name, description } = req.body;
     try {
         if (existsMailingList(name)) {
@@ -764,7 +772,7 @@ app.put('/api/mailinglists', async (req, res) => {
     }
 });
 
-app.get(`/api/mailinglist/:mailinglistid/recipients`, async (req, res) => {
+app.get(`/mailinglist/:mailinglistid/recipients`, async (req, res) => {
     const mailingListId = req.params.mailinglistid;
     try {
         const result = getMailingListRecipients(mailingListId);
@@ -775,7 +783,7 @@ app.get(`/api/mailinglist/:mailinglistid/recipients`, async (req, res) => {
     }
 });
 
-app.get(`/api/nonemailrecipients/:mailinglistid`, async (req, res) => {
+app.get(`/nonemailrecipients/:mailinglistid`, async (req, res) => {
     const mailingListId = req.params.mailinglistid;
     try {
         const result = getNonMailingListRecipients(mailingListId);
@@ -786,7 +794,7 @@ app.get(`/api/nonemailrecipients/:mailinglistid`, async (req, res) => {
     }
 });
 
-app.post('/api/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
+app.post('/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
     const mailingListId = req.params.mailinglistid;
     const { memberid } = req.body;
     try {
@@ -797,7 +805,7 @@ app.post('/api/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-// app.post('/api/sendemail', async (req, res) => {
+// app.post('/sendemail', async (req, res) => {
 //     const { mailinglistId, memberid, subject, text } = req.body;
 //     const recipients = mailinglistId ? getMailingListRecipients(mailinglistId).recipients : [];
 //     const recipientEmails = recipients.map(r => r.email)
@@ -828,7 +836,7 @@ async function playerExists(first, last) {
     }
 }
 
-app.get('/api/announcements', (req, res) => {
+app.get('/announcements', (req, res) => {
     try {
         const today = formatDateToYYYYMMDD(new Date()); // Get current date in YYYY-MM-DD format
         const stmt = db.prepare(`select a.*,p.image_path, concat(p.first, ' ', p.last) as fromname  from announcement a inner join player p on 
@@ -840,7 +848,7 @@ app.get('/api/announcements', (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-app.put('/api/announcement/:id', (req, res) => {
+app.put('/announcement/:id', (req, res) => {
     const announcementId = req.params.id;
     const { title, announcement, playerid, displaytill, priority } = req.body;
     try {
@@ -856,7 +864,7 @@ app.put('/api/announcement/:id', (req, res) => {
     }
 });
 
-app.post('/api/announcement', (req, res) => {
+app.post('/announcement', (req, res) => {
     const { title, announcement, playerid, displaytill, priority } = req.body;
     try {
         const stmt = db.prepare('INSERT INTO announcement (title, announcement, playerid, displaytill, priority, del) VALUES (?, ?, ?, ?, ?, ?);');
@@ -868,7 +876,7 @@ app.post('/api/announcement', (req, res) => {
     }
 });
 
-app.delete('/api/announcement/:id', (req, res) => {
+app.delete('/announcement/:id', (req, res) => {
     const announcementId = req.params.id;
     try {
         const stmt = db.prepare('UPDATE announcement SET del = 1 WHERE id = ?;');
@@ -883,7 +891,7 @@ app.delete('/api/announcement/:id', (req, res) => {
     }
 });
 
-app.get('/api/getplayingintentions/:playerid', (req, res) => {
+app.get('/getplayingintentions/:playerid', (req, res) => {
     const playerId = req.params.playerid;
     try {
         const stmt = db.prepare('SELECT m1, t1, f1, ug FROM player WHERE id = ?;');
@@ -896,7 +904,7 @@ app.get('/api/getplayingintentions/:playerid', (req, res) => {
     }
 });
 
-app.post('/api/setplayingintentions', (req, res) => {
+app.post('/setplayingintentions', (req, res) => {
     const { playerId, day, intention } = req.body;
     try {
         const sql = `UPDATE player SET ${day} = ? WHERE id = ?;`;
@@ -913,7 +921,7 @@ app.post('/api/setplayingintentions', (req, res) => {
     }
 });
 
-app.post('/api/updatepotm', (req, res) => {
+app.post('/updatepotm', (req, res) => {
     const { potmmonth, potmyear, playerid, potmplayerid, selectedPhrases } = req.body;
     const comment = selectedPhrases && selectedPhrases.length > 0 ? selectedPhrases.join(',') : '';
     const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid, comment) values(
@@ -932,7 +940,7 @@ app.post('/api/updatepotm', (req, res) => {
     }
 });
 
-app.get('/api/getpotm/:potmmonth/:potmyear', (req, res) => {
+app.get('/getpotm/:potmmonth/:potmyear', (req, res) => {
     const { potmmonth, potmyear } = req.params;
     try {
         // const stmt = db.prepare(`SELECT player.id, player.first, player.last, player.image_path, 
@@ -955,7 +963,7 @@ app.get('/api/getpotm/:potmmonth/:potmyear', (req, res) => {
     }
 });
 
-app.get('/api/getpotmwords', (req, res) => {
+app.get('/getpotmwords', (req, res) => {
     try {
         const result = getPOTMWords();
         res.json(result);
@@ -965,7 +973,7 @@ app.get('/api/getpotmwords', (req, res) => {
     }
 });
 
-app.post('/api/savephrase', (req, res) => {
+app.post('/savephrase', (req, res) => {
     const { playerid, potmplayerid, potmmonth, potmyear, potmphrase } = req.body;
     try {
         const stmt1 = db.prepare('SELECT comment FROM potm WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
@@ -985,7 +993,7 @@ app.post('/api/savephrase', (req, res) => {
     }
 });
 
-app.post('/api/clearpotmcomments/:potmmonth/:potmyear/:playerid', (req, res) => {
+app.post('/clearpotmcomments/:potmmonth/:potmyear/:playerid', (req, res) => {
     const { potmmonth, potmyear, playerid } = req.params;
     try {
         const stmt = db.prepare('UPDATE potm SET comment = \'\' WHERE playerid = ? AND potmmonth = ? AND potmyear = ?');
@@ -997,7 +1005,7 @@ app.post('/api/clearpotmcomments/:potmmonth/:potmyear/:playerid', (req, res) => 
     }
 });
 
-app.get('/api/celebrations', (req, res) => {
+app.get('/celebrations', (req, res) => {
     try {
         const stmt = db.prepare('SELECT * FROM celebration where archive = 0');
         const celebrations = stmt.all();
@@ -1008,7 +1016,7 @@ app.get('/api/celebrations', (req, res) => {
     }
 });
 
-app.get('/api/getvoteinfo/:playerid/:potmmonth/:potmyear', (req, res) => {
+app.get('/getvoteinfo/:playerid/:potmmonth/:potmyear', (req, res) => {
     const playerId = req.params.playerid;
     const potmmonth = req.params.potmmonth;
     const potmyear = req.params.potmyear;
@@ -1028,7 +1036,7 @@ app.get('/api/getvoteinfo/:playerid/:potmmonth/:potmyear', (req, res) => {
 // In this version the celebration images are sent along with the celebration details 
 // So, there is no need to upload images separately. 
 // Accept multipart/form-data with optional file field 'celebrationimages' for updates
-app.post('/api/celebration2', (req, res, next) => {
+app.post('/celebration2', (req, res, next) => {
     celebrationMultiUpload.array('celebrationimages', 10)(req, res, (err) => {
         if (err) {
             console.error('Multer failed:', err);
@@ -1067,7 +1075,7 @@ app.post('/api/celebration2', (req, res, next) => {
     }
 });
 
-app.delete('/api/celebration/:celebrationid', (req, res) => {
+app.delete('/celebration/:celebrationid', (req, res) => {
     const { celebrationid } = req.params;
     try {
         const stmt = db.prepare('Update celebration SET archive = 1 WHERE id = ?');
@@ -1082,7 +1090,7 @@ app.delete('/api/celebration/:celebrationid', (req, res) => {
     }
 });
 
-app.delete('/api/celebration/image/:id', (req, res) => {
+app.delete('/celebration/image/:id', (req, res) => {
     const { id } = req.params;
     try {
         const stmt = db.prepare('Update celebrationimages SET archive = 1 WHERE Id = ?');
@@ -1099,7 +1107,7 @@ app.delete('/api/celebration/image/:id', (req, res) => {
 
 
 //using the version suggested by GPT
-// app.post('/api/celebration/image',celebrationUpload.single('playerImage'), (req, res) => {
+// app.post('/celebration/image',celebrationUpload.single('playerImage'), (req, res) => {
 //     const { celebrationid } = req.body;
 //     try {
 //         const image_path = req.newfilename;
@@ -1113,7 +1121,7 @@ app.delete('/api/celebration/image/:id', (req, res) => {
 // });
 
 // Following works but uploads only one file
-// app.post('/api/celebration/image', (req, res, next) => {
+// app.post('/celebration/image', (req, res, next) => {
 //     celebrationUpload.single('playerImage')(req, res, (err) => {
 //         if (err) {
 //             console.error('Multer failed:', err);
@@ -1148,7 +1156,7 @@ app.delete('/api/celebration/image/:id', (req, res) => {
 // Above works but uploads only one file
 
 
-app.post('/api/celebration/images', (req, res, next) => {
+app.post('/celebration/images', (req, res, next) => {
     celebrationMultiUpload.array('celebrationImages', 10)(req, res, (err) => {
         if (err) {
             if (err instanceof multer.MulterError) {
@@ -1185,7 +1193,7 @@ app.post('/api/celebration/images', (req, res, next) => {
     }
 });
 
-app.delete('/api/blogcomment/:commentid', (req, res) => {
+app.delete('/blogcomment/:commentid', (req, res) => {
     const { commentid } = req.params;
     try {
         const stmt = db.prepare('DELETE FROM blogcomments WHERE id = ?');
@@ -1201,7 +1209,7 @@ app.delete('/api/blogcomment/:commentid', (req, res) => {
 });
 
 
-app.delete('/api/blog/:blogid', (req, res) => {
+app.delete('/blog/:blogid', (req, res) => {
     const { blogid } = req.params;
     try {
         const stmt = db.prepare('DELETE FROM blogs WHERE id = ?');
@@ -1217,7 +1225,7 @@ app.delete('/api/blog/:blogid', (req, res) => {
 });
 
 
-app.post('/api/blogtitle', async (req, res) => {
+app.post('/blogtitle', async (req, res) => {
     try {
         const { blogtitle, playerid } = req.body;
         //if blogtitle already exists, return the blogid
@@ -1236,7 +1244,7 @@ app.post('/api/blogtitle', async (req, res) => {
     }
 })
 
-app.post('/api/blogcomment/:blogid', async (req, res) => {
+app.post('/blogcomment/:blogid', async (req, res) => {
     const { blogid } = req.params;
     const { playerid, comment } = req.body;
     const createdDate = new Date().toDateString();
@@ -1252,7 +1260,7 @@ app.post('/api/blogcomment/:blogid', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-app.post('/api/blog/images', (req, res, next) => {
+app.post('/blog/images', (req, res, next) => {
     blogMultiUpload.array('blogimages', 10)(req, res, (err) => {
         if (err) {
             if (err instanceof multer.MulterError) {
@@ -1294,7 +1302,7 @@ app.post('/api/blog/images', (req, res, next) => {
     }
 });
 
-app.get('/api/celebration/:celebrationid/images', async (req, res) => {
+app.get('/celebration/:celebrationid/images', async (req, res) => {
     const { celebrationid } = req.params;
     try {
         const stmt = db.prepare('SELECT id, image_path FROM celebrationimages WHERE celebrationid = ? and archive = 0');
@@ -1307,7 +1315,7 @@ app.get('/api/celebration/:celebrationid/images', async (req, res) => {
 });
 
 // send email
-app.post('/api/sendemail', async (req, res) => {
+app.post('/sendemail', async (req, res) => {
     //playerid is the id of the sender
     const { mailinglistId, individualEmails, playerid, subject, text } = req.body;
     const recipientEmails = mailinglistId ? getMailingListEmails(mailinglistId).emails : individualEmails;
@@ -1441,7 +1449,7 @@ app.post('/emailreplies', emailReplyUpload.any(), checkAuthenticity, (req, res) 
 });
 // End of email replies handling
 
-app.get('/api/emails', (req, res) => {
+app.get('/emails', (req, res) => {
     try {
         const result = getEmails();
         if (!result.success) {
@@ -1453,7 +1461,7 @@ app.get('/api/emails', (req, res) => {
     }
 });
 
-app.get('/api/blogs', (req, res) => {
+app.get('/blogs', (req, res) => {
     try {
         const stmt = db.prepare(`SELECT b.*, concat(p.first, ' ', p.last) as author FROM blogs b inner join player p on b.playerid = p.id order by createddate desc;`);
         const blogs = stmt.all();
@@ -1464,7 +1472,7 @@ app.get('/api/blogs', (req, res) => {
     }
 });
 
-app.put('/api/blog', (req, res) => {
+app.put('/blog', (req, res) => {
     const { blogid, blog } = req.body;
     try {
         const stmt = db.prepare('Update blogs set blog=? where id=?')
@@ -1481,7 +1489,7 @@ app.put('/api/blog', (req, res) => {
     }
 });
 
-app.get('/api/blogs/:id', (req, res) => {
+app.get('/blogs/:id', (req, res) => {
     try {
         const { id } = req.params
         const stmt = db.prepare(`SELECT b.*, concat(p.first, ' ', p.last) as author FROM blogs b inner join player p on b.playerid = p.id where b.id = ?;`);
@@ -1494,7 +1502,7 @@ app.get('/api/blogs/:id', (req, res) => {
     }
 });
 
-app.get('/api/blogcomments/:blogid', (req, res) => {
+app.get('/blogcomments/:blogid', (req, res) => {
     try {
         const { blogid } = req.params;
         const stmt = db.prepare(`SELECT bc.*, concat(p.first, ' ', p.last) as commenter FROM blogcomments bc inner join player p on bc.playerid = p.id where bc.blogid = ? order by id desc;`);

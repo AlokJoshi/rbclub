@@ -37,10 +37,12 @@
 			$body.addClass('is-mobile');
 
 	// Scrolly.
-		$('.scrolly')
-			.scrolly({
-				offset: 100
-			});
+		if (typeof $.fn.scrolly === 'function') {
+			$('.scrolly')
+				.scrolly({
+					offset: 100
+				});
+		}
 
 	// Polyfill: Object fit.
 		if (!browser.canUse('object-fit')) {

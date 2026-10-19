@@ -100,7 +100,7 @@ async function PopulateIndividualEmails(){
   const select = document.getElementById('toEmailIndividualSelect');
   if(!select) return console.warn('Select element #toEmailIndividual not found');
   try {
-    const res = await fetch('/api/playerdata', { 
+    const res = await fetch('/playerdata', { 
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -128,7 +128,7 @@ async function PopulateEmailList() {
 
   tbody.innerHTML = '';
 
-  const res = await fetch('/api/mailinglists', {
+  const res = await fetch('/mailinglists', {
     method: 'GET'
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -174,7 +174,7 @@ async function PopulateEmailList() {
     iDelete.addEventListener('click', async () => {
       // Implement delete functionality here
       console.log(`Delete mailing list with ID: ${row.id}`);
-      const res = await fetch(`/api/mailinglist/${row.id}`, {
+      const res = await fetch(`/mailinglist/${row.id}`, {
         method: 'DELETE'
       });
       if (!res.ok) {
@@ -205,7 +205,7 @@ async function UpdateMailingList() {
   }
 
   try {
-    const res = await fetch('/api/mailinglists', {
+    const res = await fetch('/mailinglists', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -241,7 +241,7 @@ async function AddMailingList() {
   }
 
   try {
-    const res = await fetch('/api/mailinglists', {
+    const res = await fetch('/mailinglists', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -265,7 +265,7 @@ async function AddMailingList() {
 
 async function PopulateMailingLists() {
   try {
-    const res = await fetch('/api/mailinglists', {
+    const res = await fetch('/mailinglists', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -310,7 +310,7 @@ async function loadEmailRecipients() {
     return;
   }
   try {
-    const res = await fetch(`/api/mailinglist/${mailingListId}/recipients`, {
+    const res = await fetch(`/mailinglist/${mailingListId}/recipients`, {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -334,7 +334,7 @@ async function loadEmailRecipients() {
       deleteCell.addEventListener('click', async () => {
         // Implement delete functionality here
         const mailingListDetailsId = recipient.mailinglistdetailsid;
-        const res = await fetch(`/api/mailinglist/${mailingListDetailsId}/removerecipient`, {
+        const res = await fetch(`/mailinglist/${mailingListDetailsId}/removerecipient`, {
           method: 'DELETE',
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -362,7 +362,7 @@ async function loadEmailRecipients() {
 async function populateNonEmailRecipients() {
   try {
     const mailingListId = document.getElementById('mailingListSelect').value;
-    const res = await fetch(`/api/nonemailrecipients/${mailingListId}`, {
+    const res = await fetch(`/nonemailrecipients/${mailingListId}`, {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -377,7 +377,7 @@ async function populateNonEmailRecipients() {
       div.onclick = async () => {
         // Handle click to include recipient
         const memberid = recipient.playerid;
-        const res = await fetch(`/api/mailinglist/${mailingListId}/addrecipient`, {
+        const res = await fetch(`/mailinglist/${mailingListId}/addrecipient`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ memberid })
@@ -438,7 +438,7 @@ function sendEmail() {
     playerid: userid // Assuming userid is available in this scope
   };
   // Send the email using fetch or any other method
-  fetch('/api/sendemail', {
+  fetch('/sendemail', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(emailData)
@@ -493,7 +493,7 @@ async function displayEmails() {
     const emailsbody = document.getElementById('emailsbody');
     if (!emailsbody) return console.warn('Table body #emailsbody not found');
     emailsbody.innerHTML = '';
-    const res = await fetch('/api/emails', {
+    const res = await fetch('/emails', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

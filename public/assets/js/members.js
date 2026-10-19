@@ -10,6 +10,38 @@ function displaynameandphonecheckform() {
   nameandphonecheckmodal.style.display = 'block'
 }
 
+function resetPasswordFieldVisibility(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.type = 'password';
+
+  const toggleButton = document.querySelector(`.password-toggle[data-target="${inputId}"]`);
+  if (!toggleButton) return;
+  toggleButton.textContent = '👁';
+  toggleButton.setAttribute('aria-pressed', 'false');
+  toggleButton.setAttribute('aria-label', 'Show password');
+  toggleButton.setAttribute('title', 'Show password');
+}
+
+function setupPasswordToggles() {
+  const toggleButtons = document.querySelectorAll('.password-toggle');
+  toggleButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('data-target');
+      if (!targetId) return;
+      const passwordInput = document.getElementById(targetId);
+      if (!passwordInput) return;
+
+      const showingPassword = passwordInput.type === 'password';
+      passwordInput.type = showingPassword ? 'text' : 'password';
+      button.textContent = showingPassword ? '🙈' : '👁';
+      button.setAttribute('aria-pressed', showingPassword ? 'true' : 'false');
+      button.setAttribute('aria-label', showingPassword ? 'Hide password' : 'Show password');
+      button.setAttribute('title', showingPassword ? 'Hide password' : 'Show password');
+    });
+  });
+}
+
 function displayloginform() {
   const loginmodal = document.getElementById('loginmodal')
   loginmodal.style.display = 'block'
@@ -17,6 +49,7 @@ function displayloginform() {
   usernameInput.value = ''
   const passwordInput = document.getElementById('password');
   passwordInput.value = ''
+  resetPasswordFieldVisibility('password');
 }
 
 function displaychangepasswordform() {
@@ -25,6 +58,13 @@ function displaychangepasswordform() {
   changepasswordusername.value = ''
   const currentpassword = document.getElementById('currentpassword')
   currentpassword.value = ''
+  const newpassword1 = document.getElementById('newpassword1')
+  newpassword1.value = ''
+  const newpassword2 = document.getElementById('newpassword2')
+  newpassword2.value = ''
+  resetPasswordFieldVisibility('currentpassword');
+  resetPasswordFieldVisibility('newpassword1');
+  resetPasswordFieldVisibility('newpassword2');
   changepasswordmodal.style.display = 'block'
 }
 
@@ -66,6 +106,8 @@ function closeResetPasswordModal() {
   const resetPasswordModal = document.getElementById('resetPasswordModal');
   if (resetPasswordModal) {
     resetPasswordModal.style.display = 'none';
+    resetPasswordFieldVisibility('newPassword');
+    resetPasswordFieldVisibility('confirmPassword');
     // Clear the token from URL
     window.history.replaceState({}, document.title, '/');
   }
@@ -141,32 +183,48 @@ async function changePassword() {
 
 async function showAttendance(day) {
   try {
-    console.log(`Showing attendance for ${day}`);
-    const res = await fetch(`/api/attendance/${day}`, {
+    const res = await fetch(`/attendance/${day}`, {
       method: 'GET'
     });
+
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result);
+
+    const tbody = document.getElementById('attendanceTableBody');
+    if (!tbody) return console.warn('Table body #attendanceTableBody not found');
+    tbody.innerHTML = '';
+
+    if (!Array.isArray(result)) {
+      console.error('Expected /attendance to return an array, got:', result);
+      return;
+    }
 
     const el = document.getElementById('attendanceTable');
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     el.setAttribute('tabindex', '-1');
     el.focus();
-    // create expectedlistofplayers table here
-    const tbody = document.getElementById('attendanceTableBody');
-    if (!tbody) return console.warn('Table body #attendanceTableBody not found');
-    tbody.innerHTML = '';
-    result.forEach(row => {
-      const tr = document.createElement('tr');
-      // append cells in the order the server returned them
-      // query returns only first, last, and phone and email
-      Object.values(row).forEach(val => {
-        const td = document.createElement('td');
-        td.textContent = val == null ? '' : val;
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
+
+    result.forEach((value,index) => {
+      console.log(index,value);
+        const tr = document.createElement('tr');
+        // append cells in the order the server returned them
+        Object.entries(value).forEach(([key,val]) => {
+          let td,imgSrc;
+          if (key === 'savedImagePath') {
+            if (val === null || val === '') {
+              imgSrc = `https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=${index}`;
+            } else {
+              imgSrc = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${val}`;
+            }
+            td = document.createElement('td');
+            td.innerHTML = `<img src="${imgSrc}" alt="Director Image" style="width:50px;height:50px;border-radius:50%;">`;
+          }else{
+            td = document.createElement('td');
+            td.textContent = val == null ? '' : val;
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
     });
 
   } catch (err) {
@@ -205,7 +263,7 @@ function DisableSubmitButton(disable) {
 async function populateCelebrations() {
   const celebrations = document.getElementById('celebrations');
   try {
-    const res = await fetch('/api/celebrations', {
+    const res = await fetch('/celebrations', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -256,7 +314,7 @@ async function addCelebration() {
       form.append('celebrationimages', file);
     }
   }
-  const res = await fetch(`/api/celebration2`, {
+  const res = await fetch(`/celebration2`, {
     method: 'POST',
     body: form
   });
@@ -292,7 +350,7 @@ async function deleteCelebrationImage(celebrationImageId) {
   if (!celebrationImageId) return alert('Missing celebration image id');
   // if (!confirm('Are you sure you want to delete this image?')) return;
   // if (!showCustomConfirm('Are you sure you want to delete this image?')) return;
-  const response = await fetch(`/api/celebration/image/${celebrationImageId}`, {
+  const response = await fetch(`/celebration/image/${celebrationImageId}`, {
     method: 'DELETE'
   });
   if (response.ok) {
@@ -321,7 +379,7 @@ async function uploadMoreCelebrationImages() {
   }
   // formData.set('playerImage', fileInput.files); // now we are uploading multiple files
 
-  const response = await fetch('/api/celebration/images', {
+  const response = await fetch('/celebration/images', {
     method: 'POST',
     body: formData
   });
@@ -365,7 +423,7 @@ async function displayCelebrationPhotos() {
     if (celebrationDescriptionEl) {
       celebrationDescriptionEl.style.display = 'block';
     }
-    const response = await fetch(`/api/celebration/${celebrationid}/images`, {
+    const response = await fetch(`/celebration/${celebrationid}/images`, {
       method: 'GET'
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -412,7 +470,7 @@ async function deleteCelebration() {
   const result = await showCustomConfirmWithInput('Are you sure you want to delete this celebration? Type DELETE to confirm.');
   if (!result) return;
 
-  const response = await fetch(`/api/celebration/${celebrationid}`, {
+  const response = await fetch(`/celebration/${celebrationid}`, {
     method: 'DELETE'
   });
 
@@ -455,7 +513,7 @@ async function SubmitChanges() {
     form.append('playerImage', blob, 'avatar.png'); // give it a filename
   }
   console.log('Submitting changes (multipart)...');
-  const res = await fetch(`/api/playerdata/${playerId}`, {
+  const res = await fetch(`/playerdata/${playerId}`, {
     method: 'PUT',
     body: form
   });
@@ -490,7 +548,7 @@ async function PopulateFormForEdit(playerId) {
   console.log(`Populate form for editing player with ID: ${playerId}`);
   try {
     DisableSubmitButton(false)
-    const res = await fetch(`/api/playerdata/${playerId}`, {
+    const res = await fetch(`/playerdata/${playerId}`, {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -543,7 +601,7 @@ async function DeletePlayer(playerId) {
   // Placeholder function to delete a player
   console.log(`Delete player with ID: ${playerId}`);
   try {
-    const res = await fetch(`/api/playerdata/${playerId}`, {
+    const res = await fetch(`/playerdata/${playerId}`, {
       method: 'DELETE'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -570,7 +628,7 @@ async function createPlayerTable() {
     const show_ice = document.getElementById('ICE').checked;
 
     var col_index = 0;
-    const res = await fetch('/api/playerdata');
+    const res = await fetch('/playerdata');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     const tbody = document.getElementById('mainTableBody');
@@ -710,6 +768,7 @@ function displayaddannouncementform() {
 document.addEventListener('DOMContentLoaded', createPlayerTable);
 document.addEventListener('DOMContentLoaded', ClearForm);
 document.addEventListener('DOMContentLoaded', PopulateBlogList);
+document.addEventListener('DOMContentLoaded', setupPasswordToggles);
 
 let blogEditorInitPromise = null;
 
@@ -720,7 +779,7 @@ async function PopulateBlogList() {
       console.warn('Blog list element with id "bloglistid" not found');
       return;
     }
-    const res = await fetch('/api/blogs', {
+    const res = await fetch('/blogs', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -814,7 +873,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     displayResetPasswordModal(token);
     console.log('Displaying reset password modal with token:', token);
   } else {
-    console.log('No reset token found in URL.');
+    console.log('No reset token found in URL (This is an error only if user is resetting their password).');
   }
 });
 
@@ -1195,24 +1254,43 @@ var loginModal = document.getElementById("loginmodal");
 
 async function PopulateDirectorsTable() {
   try {
-    const res = await fetch('api/directorsdata', {
+    const res = await fetch('/directorsdata', {
       method: 'GET'
     });
+
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    // console.log(result);
+
     const tbody = document.getElementById('directorsTableBody');
     if (!tbody) return console.warn('Table body #directorsTableBody not found');
     tbody.innerHTML = '';
-    result.forEach(row => {
-      const tr = document.createElement('tr');
-      // append cells in the order the server returned them
-      Object.values(row).forEach(val => {
-        const td = document.createElement('td');
-        td.textContent = val == null ? '' : val;
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
+
+    if (!Array.isArray(result)) {
+      console.error('Expected /directorsdata to return an array, got:', result);
+      return;
+    }
+
+    result.forEach((value,index) => {
+      console.log(index,value);
+        const tr = document.createElement('tr');
+        // append cells in the order the server returned them
+        Object.entries(value).forEach(([key,val]) => {
+          let td,imgSrc;
+          if (key === 'savedImagePath') {
+            if (val === null || val === '') {
+              imgSrc = `https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=${index}`;
+            } else {
+              imgSrc = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${val}`;
+            }
+            td = document.createElement('td');
+            td.innerHTML = `<img src="${imgSrc}" alt="Director Image" style="width:50px;height:50px;border-radius:50%;">`;
+          }else{
+            td = document.createElement('td');
+            td.textContent = val == null ? '' : val;
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
     });
   } catch (err) {
     console.error('API error:', err);
@@ -1221,23 +1299,43 @@ async function PopulateDirectorsTable() {
 
 async function PopulateOfficersTable() {
   try {
-    const res = await fetch('api/officersdata', {
+    const res = await fetch('/officersdata', {
       method: 'GET'
     });
+
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    console.log(result.mailingLists);
+
     const tbody = document.getElementById('officersTableBody');
     if (!tbody) return console.warn('Table body #officersTableBody not found');
     tbody.innerHTML = '';
-    result.forEach(row => {
-      const tr = document.createElement('tr');
-      for (const val of Object.values(row)) {
-        const td = document.createElement('td');
-        td.textContent = val == null ? '' : val;
-        tr.appendChild(td);
-      }
-      tbody.appendChild(tr);
+
+    if (!Array.isArray(result)) {
+      console.error('Expected /officersdata to return an array, got:', result);
+      return;
+    }
+
+    result.forEach((value,index) => {
+      console.log(index,value);
+        const tr = document.createElement('tr');
+        // append cells in the order the server returned them
+        Object.entries(value).forEach(([key,val]) => {
+          let td,imgSrc;
+          if (key === 'savedImagePath') {
+            if (val === null || val === '') {
+              imgSrc = `https://generative-placeholders.stefanbohacek.com/image?width=40&height=40&img=${index}`;
+            } else {
+              imgSrc = `https://rbcstorage.sfo3.cdn.digitaloceanspaces.com/${val}`;
+            }
+            td = document.createElement('td');
+            td.innerHTML = `<img src="${imgSrc}" alt="Officer Image" style="width:50px;height:50px;border-radius:50%;">`;
+          }else{
+            td = document.createElement('td');
+            td.textContent = val == null ? '' : val;
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
     });
   } catch (err) {
     console.error('API error:', err);
@@ -1253,7 +1351,7 @@ function CancelAnnouncement() {
 
 async function PopulateAnnouncements(params) {
   try {
-    const res = await fetch('/api/announcements', {
+    const res = await fetch('/announcements', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1351,7 +1449,7 @@ async function PopulateAnnouncements(params) {
         const result = await showCustomConfirmWithInput(`Type DELETE to confirm deletion of announcement Title:${announcement.title},
           Announcement:${announcement.announcement.substr(0, 15)}...`);
         if (result) {
-          const res = await fetch(`/api/announcement/${announcement.id}`, { method: 'DELETE' });
+          const res = await fetch(`/announcement/${announcement.id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const result = await res.json();
           if (result.success) {
@@ -1400,7 +1498,7 @@ async function updateAnnouncement() {
     priority,
     playerid: userid
   };
-  fetch(`/api/announcement/${announcementId}`, {
+  fetch(`/announcement/${announcementId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(announcementData)
@@ -1452,7 +1550,7 @@ async function addAnnouncement() {
   };
 
   // Send the announcement data using fetch or any other method
-  fetch('/api/announcement', {
+  fetch('/announcement', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(announcementData)
@@ -1502,7 +1600,7 @@ async function clearAllPOTMCommentsInDatabase() {
   const playerid = userid;
 
   try {
-    const res = await fetch(`/api/clearpotmcomments/${potmmonth}/${potmyear}/${playerid}`, {
+    const res = await fetch(`/clearpotmcomments/${potmmonth}/${potmyear}/${playerid}`, {
       method: 'POST',
     });
     console.log('All POTM comments cleared from the database.');
@@ -1529,7 +1627,7 @@ async function PopulatePOTMForm() {
     potmlabel.textContent = `My vote for Player of the Month for ${potmmonth} ${potmyear} goes to:`;
   }
   try {
-    const res = await fetch('/api/registeredusers', {
+    const res = await fetch('/registeredusers', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1548,7 +1646,7 @@ async function PopulatePOTMForm() {
     const commentPOTM = document.getElementById('commentonpotm');
     if (!commentPOTM) return console.warn('Div element #commentonpotm not found');
     commentPOTM.innerHTML = '';
-    const resWords = await fetch('/api/getpotmwords', {
+    const resWords = await fetch('/getpotmwords', {
       method: 'GET'
     });
     if (!resWords.ok) throw new Error(`HTTP ${resWords.status}`);
@@ -1583,7 +1681,7 @@ async function updatePOTM() {
   if (!commentPOTM) return console.warn('Div element #commentonpotm not found');
   const selectedPhrases = Array.from(commentPOTM.querySelectorAll('.phrase')).filter(phraseDiv => phraseDiv.dataset.selected === 'true').map(div => div.textContent.trim());
   try {
-    const res = await fetch('/api/updatepotm', {
+    const res = await fetch('/updatepotm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ potmmonth, potmyear, playerid: userid, potmplayerid, selectedPhrases })
@@ -1609,7 +1707,7 @@ async function updateVoteInfo() {
   const potmmonth = new Date().getMonth() + 1; // Current month
   const potmyear = new Date().getFullYear(); // Current year
   if (userid > 0) {
-    const res = await fetch(`/api/getvoteinfo/${userid}/${potmmonth}/${potmyear}`, {
+    const res = await fetch(`/getvoteinfo/${userid}/${potmmonth}/${potmyear}`, {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1705,7 +1803,7 @@ async function displayPOTM() {
   const potmmonth = new Date().getMonth() + 1; // Current month
   const potmyear = new Date().getFullYear(); // Current year
   try {
-    const res = await fetch(`/api/getpotm/${potmmonth}/${potmyear}`, {
+    const res = await fetch(`/getpotm/${potmmonth}/${potmyear}`, {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1746,7 +1844,7 @@ async function playing(day) {
   const isChecked = checkbox.checked;
   // Here you can send the isChecked value to the server or handle it as needed
   try {
-    const res = await fetch('/api/setplayingintentions', {
+    const res = await fetch('/setplayingintentions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -1849,7 +1947,7 @@ async function displayPlayIntentions() {
 
 async function setPlayingIntentions() {
   // we need to set the current value of the checkboxes based on the user's current intentions for those days, which we can get from the server
-  const res = await fetch(`/api/getplayingintentions/${userid}`, {
+  const res = await fetch(`/getplayingintentions/${userid}`, {
     method: 'GET'
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1942,7 +2040,7 @@ function displayBlogComments() {
   const blogCommentsSection = document.getElementById('blogComments');
   if (!blogCommentsSection) return console.warn('Section #blogComments not found');
 
-  const res = fetch(`/api/blogcomments/${blogid}`, {
+  const res = fetch(`/blogcomments/${blogid}`, {
     method: 'GET'
   })
     .then(res => {
@@ -1978,7 +2076,7 @@ async function deleteComment(commentId) {
   if (!result) return;
 
   try {
-    const res = await fetch(`/api/blogcomment/${commentId}`, {
+    const res = await fetch(`/blogcomment/${commentId}`, {
       method: 'DELETE'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2004,7 +2102,7 @@ async function submitComment() {
   if (!comment) return console.warn('Comment is empty');
 
   try {
-    const res = await fetch(`/api/blogcomment/${blogid}`, {
+    const res = await fetch(`/blogcomment/${blogid}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

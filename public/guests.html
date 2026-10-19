@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <meta name="description" content="Riverside Bridge Club Guest Information" />
     <meta name="keywords" content="bridge, club, riverside, guests" />
+    <link rel="icon" type="image/svg+xml" href="/images/gallery/icon/rbc.png" />
     <link rel="stylesheet" href="/assets/css/main.css" />
 </head>
 <body class="is-preload">
@@ -179,7 +180,7 @@
             };
             
             try {
-                const response = await fetch('/api/guest-inquiry', {
+                const response = await fetch('/guest-inquiry', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

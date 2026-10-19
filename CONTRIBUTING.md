@@ -132,7 +132,7 @@ npm install
 ### Adding a New Route
 ```javascript
 // In server.js
-app.get('/api/your-route', (req, res) => {
+app.get('/your-route', (req, res) => {
     try {
         // Your logic here
         res.json({ success: true, data: yourData });

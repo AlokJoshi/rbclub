@@ -2866,6 +2866,14 @@ ul.actions.fit.stacked {
 
 }
 
+button.password-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+	margin-top: 0;
+	box-shadow: none;
+}
+
 /* Icons */
 
 ul.icons {
@@ -3374,7 +3382,7 @@ ul.feature-icons li:nth-child(2) {
 #wrapper {
 	position: relative;
 	width: 100vw;
-	padding: 0 0 10rem 0;
+	padding: 10px 10px 10px 10px;
 }
 
 #wrapper:before {
@@ -3711,7 +3719,7 @@ ul.feature-icons li:nth-child(2) {
 @media screen and (max-width: 1152px) {
 
 	#wrapper {
-		padding: 0;
+		padding: 10px 10px 10px 10px;
 	}
 
 	#wrapper:before {
@@ -3882,7 +3890,7 @@ ul.feature-icons li:nth-child(2) {
 @media screen and (max-width: 736px) {
 
 	#wrapper section {
-		margin: 3rem 0 0 0;
+		margin: 10px 10px 10px 10px;
 	}
 
 	#wrapper>section {

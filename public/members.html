@@ -8,7 +8,30 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
+	<link rel="icon" type="image/svg+xml" href="/images/gallery/icon/rbc.png" />
 	<link rel="stylesheet" href="/assets/css/main.css" />
+	<style>
+		.password-field {
+			position: relative;
+		}
+
+		.password-field input {
+			padding-right: 3rem;
+		}
+
+		.password-toggle {
+			position: absolute;
+			right: 0.6rem;
+			top: 50%;
+			transform: translateY(-50%);
+			border: 0;
+			background: transparent;
+			cursor: pointer;
+			font-size: 1.1rem;
+			line-height: 1;
+			padding: 0.25rem;
+		}
+	</style>
 </head>
 
 <body class="is-preload">
@@ -244,19 +267,22 @@
 			<header>
 				<h2>Expected Attendance</h2>
 			</header>
-			<div class="content">
+			<div class="content" style="overflow-x:auto;">
 				<p><strong>Select Expected Attendanc For:</strong></p>
+				<div style="display:flex;align-items:center;justify-content:space-between">
 				<input type="radio" id="m1_day" name="attendance" onclick="showAttendance('m1');"><label
-					for="m1_day">Monday</label>
+					for="m1_day">Mon</label>
 				<input type="radio" id="t1_day" name="attendance" onclick="showAttendance('t1');"><label
-					for="t1_day">Tuesday</label>
+					for="t1_day">Tue</label>
 				<input type="radio" id="f1_day" name="attendance" onclick="showAttendance('f1');"><label
-					for="f1_day">Friday</label>
+					for="f1_day">Fri</label>
 				<input type="radio" id="ug_day" name="attendance" onclick="showAttendance('ug');"><label for="ug_day">Unit
-					Game</label>
+					Gm</label>
+				</div>
 				<table id="attendanceTable">
 					<thead>
 						<tr>
+							<th>Picture</th>
 							<th>First</th>
 							<th>Last</th>
 							<th>Phone</th>
@@ -265,13 +291,12 @@
 					</thead>
 					<tbody id="attendanceTableBody">
 						<tr>
-							<td colspan="4">Select one of the days to view attendance</td>
+							<td colspan="5">Select one of the days to view attendance</td>
 						</tr>
 					</tbody>
 				</table>
 			</div>
 		</section>
-
 
 		<!-- Player of the Month Section -->
 		<section>
@@ -283,7 +308,7 @@
 				<h3 id="voteinfo"></h3>
 				<button type="button" class="button primary" onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
 			</header>
-			<div class="content">
+			<div class="content" style="overflow-x:auto;">
 				<form action="">
 					<div class="fields">
 						<h2 id="potmheading" style="margin-top: 20px;">Players of the month</h2>
@@ -392,10 +417,11 @@
 			<header>
 				<h2>Directors</h2>
 			</header>
-			<div class="content">
+			<div class="content" style="overflow-x:auto;">
 				<table id="directorsTable">
 					<thead>
 						<tr>
+							<th>Picture</th>
 							<th>First</th>
 							<th>Last</th>
 							<th>Phone</th>
@@ -415,10 +441,11 @@
 			<header>
 				<h2>Officers</h2>
 			</header>
-			<div class="content">
+			<div class="content" style="overflow-x:auto;">
 				<table id="officersTable">
 					<thead>
 						<tr>
+							<th>Picture</th>
 							<th>First</th>
 							<th>Last</th>
 							<th>Phone</th>
@@ -463,7 +490,11 @@
 						<label for="password">
 							Password:
 						</label>
-						<input type="password" id="password" name="password" placeholder="Enter your Password" required>
+						<div class="password-field">
+							<input type="password" id="password" name="password" placeholder="Enter your Password" required>
+							<button type="button" class="password-toggle" data-target="password" aria-label="Show password"
+								title="Show password" aria-pressed="false">👁</button>
+						</div>
 					</div>
 
 					<div class="field full wrap">
@@ -513,21 +544,33 @@
 						<label for="currentpassword">
 							Current Password:
 						</label>
-						<input type="password" id="currentpassword" name="currentpassword" placeholder="Enter your CurrentPassword"
-							required>
+						<div class="password-field">
+							<input type="password" id="currentpassword" name="currentpassword" placeholder="Enter your CurrentPassword"
+								required>
+							<button type="button" class="password-toggle" data-target="currentpassword" aria-label="Show password"
+								title="Show password" aria-pressed="false">👁</button>
+						</div>
 					</div>
 					<div class="field half">
 						<label for="newpassword1">
 							New Password:
 						</label>
-						<input type="password" id="newpassword1" name="newpassword1" placeholder="Enter your New Password" required>
+						<div class="password-field">
+							<input type="password" id="newpassword1" name="newpassword1" placeholder="Enter your New Password" required>
+							<button type="button" class="password-toggle" data-target="newpassword1" aria-label="Show password"
+								title="Show password" aria-pressed="false">👁</button>
+						</div>
 					</div>
 					<div class="field half">
 						<label for="newpassword2">
 							New Password:
 						</label>
-						<input type="password" id="newpassword2" name="newpassword2" placeholder="Enter your New Password again"
-							required>
+						<div class="password-field">
+							<input type="password" id="newpassword2" name="newpassword2" placeholder="Enter your New Password again"
+								required>
+							<button type="button" class="password-toggle" data-target="newpassword2" aria-label="Show password"
+								title="Show password" aria-pressed="false">👁</button>
+						</div>
 					</div>
 
 					<div class="field full wrap">
@@ -577,10 +620,18 @@
 			<h2>Reset Password</h2>
 			<div class="fields">
 				<div class="field full">
-					<input type="password" id="newPassword" placeholder="New Password (min 6 characters)">
+					<div class="password-field">
+						<input type="password" id="newPassword" placeholder="New Password (min 6 characters)">
+						<button type="button" class="password-toggle" data-target="newPassword" aria-label="Show password"
+							title="Show password" aria-pressed="false">👁</button>
+					</div>
 				</div>
 				<div class="field full">
-					<input type="password" id="confirmPassword" placeholder="Confirm Password">
+					<div class="password-field">
+						<input type="password" id="confirmPassword" placeholder="Confirm Password">
+						<button type="button" class="password-toggle" data-target="confirmPassword" aria-label="Show password"
+							title="Show password" aria-pressed="false">👁</button>
+					</div>
 				</div>
 				<div class="field full wrap">
 					<button onclick="resetPassword()">Reset Password</button>

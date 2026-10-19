@@ -12,7 +12,7 @@ async function getblogid() {
       return;
     }
     const blogtitle = titleelement.value;
-    const res = await fetch('/api/blogtitle', {
+    const res = await fetch('/blogtitle', {
       method: 'POST',
       body: JSON.stringify({ blogtitle, playerid: userid }),
       headers: {
@@ -47,7 +47,7 @@ async function deleteblog() {
     return
   }
   try {
-    const res = await fetch(`/api/blog/${blogId}`, {
+    const res = await fetch(`/blog/${blogId}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -209,7 +209,7 @@ async function submitblog() {
       formData.append('blogimages', blob, `image-${idx}.${extension}`);
     }));
     formData.append('blogid', blogid)
-    const res = await fetch(`/api/blog/images`, {
+    const res = await fetch(`/blog/images`, {
       method: 'POST',
       body: formData
     })
@@ -235,7 +235,7 @@ async function submitblog() {
 
   //result.links is an object that returns the new image src for each old image src. 
   // We will replace the old image src with the new image src in the tinymce editor content
-  const res2 = await fetch('/api/blog', {
+  const res2 = await fetch('/blog', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
@@ -339,7 +339,7 @@ async function setupforeditblog() {
 
 async function populateblogtitles() {
   try {
-    const response = await fetch(`/api/bloglist/${userid}`, {
+    const response = await fetch(`/bloglist/${userid}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -370,7 +370,7 @@ async function populateblogcontent() {
   }
   const blogId = blogselectedoption.value
   try {
-    const response = await fetch(`/api/blogs/${blogId}`, {
+    const response = await fetch(`/blogs/${blogId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
