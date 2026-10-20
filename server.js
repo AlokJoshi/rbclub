@@ -1461,7 +1461,7 @@ app.get('/emails', (req, res) => {
     }
 });
 
-app.get('/blogs', (req, res) => {
+app.get('/blogsdata', (req, res) => {
     try {
         const stmt = db.prepare(`SELECT b.*, concat(p.first, ' ', p.last) as author FROM blogs b inner join player p on b.playerid = p.id order by createddate desc;`);
         const blogs = stmt.all();

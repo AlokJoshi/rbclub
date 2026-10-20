@@ -779,10 +779,15 @@ async function PopulateBlogList() {
       console.warn('Blog list element with id "bloglistid" not found');
       return;
     }
-    const res = await fetch('/blogs', {
+    const res = await fetch('/blogsdata', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const responseText = await res.text();
+      throw new Error(`Expected JSON but received ${contentType || 'unknown content type'}: ${responseText.slice(0, 120)}`);
+    }
     const result = await res.json();
     bloglist.innerHTML = '';
     if (result.success) {
