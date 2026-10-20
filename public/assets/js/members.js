@@ -438,8 +438,8 @@ async function displayCelebrationPhotos() {
       iDel.className = 'fas fa-trash-alt';
       iDel.style = 'position: relative; top: 5px; right: 5px; cursor: pointer;';
       iDel.title = 'Delete image';
-      iDel.addEventListener('click', () => {
-        if (showCustomYesNo('Are you sure you want to delete this image?')) {
+      iDel.addEventListener('click', async () => {
+        if (await showCustomYesNo('Are you sure you want to delete this image?')) {
           deleteCelebrationImage(img.id);
         }
       });
