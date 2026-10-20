@@ -388,7 +388,7 @@ app.get('/playerdata', (req, res) => {
             When dob_month=10 Then 'Oct.'
             When dob_month=11 Then 'Nov.'
             When dob_month=12 Then 'Dec.'
-            Else '' End, ' ', dob_date) AS dob,
+            Else '' End, ' ', Case when dob_date is null or dob_date = '0' then '' else dob_date end) AS dob,
             Case concat(ice_relation, ice_phone) when '' then '' else Concat(ice_relation,'(', ice_phone, ')') end AS ice
             FROM player order by last;`
         );
