@@ -6,9 +6,8 @@ function delay(durationInMilliseconds) {
   return new Promise(resolve => setTimeout(resolve, durationInMilliseconds));
 }
 
-//delay duration is not being used
-async function showCustomAlert(message, delayDuration = 3) {
-  swal({ 
+function showCustomAlert(message) {
+  return swal({ 
     title: 'Riverside Bridge Club',
     text: message,
     buttons: {
