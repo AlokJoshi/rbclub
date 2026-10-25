@@ -499,7 +499,7 @@ app.put('/playerdata/:id', avtarUpload.single('playerImage'), async (req, res) =
         const imagePathToSave = uploadedImagePath || currentPlayer.image_path || null;
 
         const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, dob_date=?, 
-                                 acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?, ug=?, 
+                                 acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?,   
                                  image_path=?, director=?, position=? WHERE id = ?;`);
 
         const result = stmt.run(data.first,
