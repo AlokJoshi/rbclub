@@ -249,7 +249,7 @@ function ClearForm() {
   document.getElementById('m1').checked = false;
   document.getElementById('t1').checked = false;
   document.getElementById('f1').checked = false;
-  document.getElementById('ug').checked = false;
+  // document.getElementById('ug').checked = false;
   document.getElementById('playerImageInput').value = '';
   document.getElementById('playerImageData').value = '';
   document.getElementById('isDirector').checked = false;
