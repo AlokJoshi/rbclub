@@ -131,7 +131,7 @@ async function decide() {
     logindetails2 = `${fullname} : You are logged in as an Admin and can view and edit all data.`
     showCustomAlert(logindetails, 7)
   } else {
-    logindetails = `Note that you are not logged in. You must log in with the log-in details sent to you. Alternatively, you can log in by using your full name and phone number. If you are a member and have not received login details, please contact the club.`
+    logindetails = `Note that you are not logged in. You must log in with your email and password. Alternatively, you can log in by using your email and phone number, though this will only allow limited access.`
     logindetails2 = logindetails
     const el = document.getElementById('loginBtn');
     if (el) {

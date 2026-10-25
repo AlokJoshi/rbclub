@@ -234,21 +234,22 @@ app.put('/register', (req, res) => {
     res.json(registrationresult)
 })
 
-app.put('/checkfullnameandphone', async (req, res) => {
-    const player = await isPlayer(req.body.fullname, req.body.phone)
+app.put('/checkemailandphone', async (req, res) => {
+    const player = await isPlayer(req.body.email, req.body.phone)
     const valid = player.exists
     const id = player.id
-    const username = player.username
+    const email = player.email
     const fullname = player.fullname
     console.log('isPlayer response:', player);
     req.session.casuallogin = valid
     req.session.securelogin = false
     req.session.userid = id
     req.session.isAdmin = false
-    req.session.username = username
+    req.session.username = email
+    req.session.email = email
     req.session.fullname = fullname
     res.json({
-        valid, id, fullname,
+        valid, id, email, fullname,
         message: valid ? 'Member of the club but you can only view the data.' : 'Not a member of the club. Sorry no access.'
     },
     )
@@ -265,9 +266,9 @@ app.post('/logout', async (req, res) => {
 })
 
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    const result = await login(username, password);
+    const result = await login(email, password);
     if (!result.valid) {
         return res.json({ valid: false, message: result.message });
     }
@@ -276,7 +277,7 @@ app.post('/login', async (req, res) => {
     req.session.securelogin = result.securelogin
     req.session.insecurelogin = !result.securelogin
     req.session.casuallogin = false
-    req.session.username = username
+    req.session.username = email
     req.session.userid = userId
     req.session.isAdmin = admin
     req.session.fullname = result.fullname
@@ -311,26 +312,65 @@ app.post('/addnewplayer', async (req, res) => {
 });
 
 app.post('/changepassword', async (req, res) => {
-    const { username, oldPassword, newPassword } = req.body;
-    const userExistsFlag = await userExists(username);
+    const { email, oldPassword, newPassword } = req.body;
+    const requestEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const requesterIp = req.ip || req.socket?.remoteAddress || 'unknown';
+    console.log(`[changepassword] Request received for email=${requestEmail || '<missing>'} from ip=${requesterIp}`);
+
+    if (!requestEmail || typeof oldPassword !== 'string' || typeof newPassword !== 'string') {
+        console.warn(`[changepassword] Invalid request payload for email=${requestEmail || '<missing>'}`);
+        return res.status(400).json({ success: false, message: 'Invalid request payload' });
+    }
+    //does user exist
+    const userExistsFlag = await userExists(requestEmail);
     if (!userExistsFlag) {
+        console.warn(`[changepassword] User does not exist for email=${requestEmail}`);
         return res.status(400).json({ success: false, message: 'User does not exist' });
     }
-    const match = await passwordMatches(username, oldPassword);
-    if (!match.valid) {
-        return res.status(400).json({ success: false, message: match.message });
+    // get phone and password from the database to check if there an old password in the database?
+    const userStmt = db.prepare('SELECT id, phone, password FROM player WHERE email = ?');
+    const userRow = userStmt.get(requestEmail);
+    if (!userRow) {
+        console.warn(`[changepassword] Missing player row after userExists check for email=${requestEmail}`);
+        return res.status(400).json({ success: false, message: 'User does not exist' });
     }
-    const success = await changePassword(username, newPassword);
-    if (success) {
-        req.session.securelogin = true
-        req.session.insecurelogin = false
-        req.session.casuallogin = false
-        req.session.username = username
-        req.session.userid = match.id
-        req.session.isAdmin = isAdmin(match.id)
-        res.json({ success: true, message: 'Password changed successfully' });
+    if (!userRow.password && !userRow.phone) {
+        // if both password and phone are not found, return an error
+        console.warn(`[changepassword] No password or phone on file for email=${requestEmail}`);
+        return res.status(400).json({ success: false, message: 'Phone number not found in the database' });
+    }
+    let proceed = false;
+    let userId = userRow.id;
+    if (!userRow.password) {
+        proceed = oldPassword == userRow.phone;
+        if (!proceed) {
+            console.warn(`[changepassword] Phone fallback verification failed for email=${requestEmail}`);
+        }
     } else {
-        res.status(500).json({ success: false, message: 'Failed to change password' });
+        const match = await passwordMatches(requestEmail, oldPassword);
+        proceed = match.valid;
+        if (proceed) {
+            userId = match.id;
+        } else {
+            console.warn(`[changepassword] Old password verification failed for email=${requestEmail}`);
+        }
+    }
+    if (!proceed) {
+        return res.status(400).json({ success: false, message: 'Old password does not match or phone number is incorrect' });
+    }
+    const success = await changePassword(requestEmail, newPassword);
+    if (success) {
+        req.session.securelogin = true;
+        req.session.insecurelogin = false;
+        req.session.casuallogin = false;
+        req.session.username = requestEmail;
+        req.session.userid = userId;
+        req.session.isAdmin = isAdmin(userId);
+        console.log(`[changepassword] Password updated successfully for email=${requestEmail}, userId=${userId}`);
+        res.json({ success: true, message: 'Password created or changed successfully' });
+    } else {
+        console.error(`[changepassword] Failed to update password in storage for email=${requestEmail}`);
+        res.status(500).json({ success: false, message: 'Failed to create orchange password' });
     }
 });
 

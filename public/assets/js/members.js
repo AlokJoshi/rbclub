@@ -6,7 +6,7 @@
 
 
 function displaynameandphonecheckform() {
-  const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
+  const nameandphonecheckmodal = document.getElementById('emailandphonecheck')
   nameandphonecheckmodal.style.display = 'block'
 }
 
@@ -54,8 +54,8 @@ function displayloginform() {
 
 function displaychangepasswordform() {
   const changepasswordmodal = document.getElementById('changepasswordmodal')
-  const changepasswordusername = document.getElementById('changepasswordusername')
-  changepasswordusername.value = ''
+  const changepasswordemail = document.getElementById('changepasswordemail')
+  changepasswordemail.value = ''
   const currentpassword = document.getElementById('currentpassword')
   currentpassword.value = ''
   const newpassword1 = document.getElementById('newpassword1')
@@ -69,7 +69,7 @@ function displaychangepasswordform() {
 }
 
 function closeNameAndPhoneCheck() {
-  const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
+  const nameandphonecheckmodal = document.getElementById('emailandphonecheck')
   nameandphonecheckmodal.style.display = 'none'
 }
 
@@ -114,7 +114,7 @@ function closeResetPasswordModal() {
 }
 
 async function login() {
-  const user_name = document.getElementById('username').value;
+  const email = document.getElementById('username').value;
   const password = document.getElementById('password').value;
   try {
     const res = await fetch('/login', {
@@ -122,7 +122,7 @@ async function login() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ username: user_name, password })
+      body: JSON.stringify({ email, password })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
@@ -130,11 +130,11 @@ async function login() {
       showCustomAlert(`Login failed: ${result.message}`, 5);
       return;
     } else {
-      console.log('Login successful for user:', user_name,
+      console.log('Login successful for user:', email,
         'User ID:', result.userId, 'Is Admin:', result.isAdmin, 'Full Name:', result.fullname,
         'Secure Login:', result.securelogin, 'Insecure Login:', result.insecurelogin, 'Casual Login:', result.casuallogin);
       console.log(result);
-      username = user_name;
+      username = email;
       userid = result.userId;
       isAdmin = result.isAdmin;
       securelogin = result.securelogin
@@ -153,7 +153,7 @@ async function login() {
 }
 
 async function changePassword() {
-  const username = document.getElementById('changepasswordusername').value;
+  const email = document.getElementById('changepasswordemail').value;
   const currentpassword = document.getElementById('currentpassword').value;
   const newpassword1 = document.getElementById('newpassword1').value;
   const newpassword2 = document.getElementById('newpassword2').value;
@@ -167,8 +167,9 @@ async function changePassword() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ username, oldPassword: currentpassword, newPassword: newpassword1 })
+      body: JSON.stringify({ email, oldPassword: currentpassword, newPassword: newpassword1 })
     });
+    console.log('Change password response status:', res.status);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result);
@@ -943,34 +944,34 @@ function toggleColumn(tableSelector, colIndex) {
   });
 }
 
-async function DoNameAndPhoneCheck() {
-  const myname = document.getElementById('myname')
-  const name = myname.value
-  const fullname = name.replace(/\s+/g, ' ').trim().toLowerCase()
+async function DoEmailAndPhoneCheck() {
+  const myemail = document.getElementById('myemail')
+  // const name = myemail.value
+  // const fullname = name.replace(/\s+/g, ' ').trim().toLowerCase()
   const phone = document.getElementById('myphone').value.replaceAll('-', '')
-  const nameandphonecheckresult = document.getElementById('nameandphonecheckresult')
+  const emailandphonecheckresult = document.getElementById('emailandphonecheckresult')
   let ok
   //hide nameandphonechecksection, show termcheck
   // document.getElementById('nameandphonechecksection').style.display = 'none'
   try {
 
-    const res = await fetch('/checkfullnameandphone', {
+    const res = await fetch('/checkemailandphone', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ fullname, phone })
+      body: JSON.stringify({ email: myemail.value, phone })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const result = await res.json()
     if (result.valid) {
       casuallogin = true
       showCustomAlert(result.message, 3)
-      // nameandphonecheckresult.innerText = "Correct! You seem to be a member of the club."
+      emailandphonecheckresult.innerText = "Welcome! Create a strong password as soon as possible."
       ok = true
     } else {
       showCustomAlert(result.message, 3)
-      // nameandphonecheckresult.innerText = `Sorry ${fullname}! you are not from our club`
+      emailandphonecheckresult.innerText = `Sorry ${myemail.value}! you are not from our club`
       casuallogin = false
       ok = false
     }
@@ -983,7 +984,7 @@ async function DoNameAndPhoneCheck() {
   }
   delay(5000)
   if (ok) {
-    const nameandphonecheckmodal = document.getElementById('nameandphonecheck')
+    const nameandphonecheckmodal = document.getElementById('emailandphonecheck')
     nameandphonecheckmodal.style.display = 'none'
     decide()
     // } else {
@@ -1942,8 +1943,8 @@ async function displayPlayIntentions() {
       lblplayingt1.innerText = `Tue. (${closestComingTuesday(new Date()).toLocaleDateString()})`;
       const lblplayingf1 = document.getElementById('lblplayingf1');
       lblplayingf1.innerText = `Fri. (${closestComingFriday(new Date()).toLocaleDateString()})`;
-      const lblplayingug = document.getElementById('lblplayingug');
-      lblplayingug.innerText = `Sun. (${closestComing4thSundayOfMonth(new Date()).toLocaleDateString()})`;
+      // const lblplayingug = document.getElementById('lblplayingug');
+      // lblplayingug.innerText = `Sun. (${closestComing4thSundayOfMonth(new Date()).toLocaleDateString()})`;
 
       await setPlayingIntentions() // Set the current value of the checkboxes based on the user's current intentions for those days
     }
@@ -1961,7 +1962,7 @@ async function setPlayingIntentions() {
   document.getElementById('playingm1').checked = (intentions.m1 == 1);
   document.getElementById('playingt1').checked = (intentions.t1 == 1);
   document.getElementById('playingf1').checked = (intentions.f1 == 1);
-  document.getElementById('playingug').checked = (intentions.ug == 1);
+  // document.getElementById('playingug').checked = (intentions.ug == 1);
 }
 
 function checkTotalFileSize() {

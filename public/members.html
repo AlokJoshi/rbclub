@@ -115,16 +115,17 @@
 				<h1>Riverside Bridge Club (Unit 537)</h1>
 				<button type="button" id="nameandphonecheckBtn" class="button primary"
 					onclick="displaynameandphonecheckform()">Temporary Login</button>
+				<button type="button" id="changePasswordBtn" class="button primary" onclick="displaychangepasswordform()">
+					Password - Create or Change</button>
 				<button type="button" id="loginBtn" class="button primary" onclick="displayloginform()">Login</button>
-				<button type="button" id="changePasswordBtn" class="button primary" onclick="displaychangepasswordform()">Change
-					Password</button>
 				<button type="button" id="logoutBtn" class="button primary" onclick="logout()">Logout</button>
 			</header>
 			<div class="content">
 				<h2 id="listofplayers">List of players:</h2>
 				<input type="checkbox" id="Email" onclick="toggleColumn('#playertable', 4);"><label for="Email">Email</label>
 				<input type="checkbox" id="DOB" onclick="toggleColumn('#playertable', 6);"><label for="DOB">DOB</label>
-				<input type="checkbox" id="ICE" onclick="toggleColumn('#playertable', 7);"><label for="ICE">Emergency Contact</label>
+				<input type="checkbox" id="ICE" onclick="toggleColumn('#playertable', 7);"><label for="ICE">Emergency
+					Contact</label>
 				<!-- <span class="image fill" data-position="center"><img src="images/pic01.jpg" alt="" /></span> -->
 				<table id="playertable">
 					<thead>
@@ -269,7 +270,7 @@
 			</header>
 			<div class="content" style="overflow-x:auto;">
 				<p><strong>Select Expected Attendanc For:</strong></p>
-					<div style="display:flex;align-items:center;justify-content:space-between">
+				<div style="display:flex;align-items:center;justify-content:space-between">
 					<input type="radio" id="m1_day" name="attendance" onclick="showAttendance('m1');"><label
 						for="m1_day">Mon</label>
 					<input type="radio" id="t1_day" name="attendance" onclick="showAttendance('t1');"><label
@@ -277,7 +278,7 @@
 					<input type="radio" id="f1_day" name="attendance" onclick="showAttendance('f1');"><label
 						for="f1_day">Fri</label>
 					<input type="radio" id="ug_day" name="attendance" onclick="showAttendance('ug');"><label for="ug_day">Unit
-					Gm</label>
+						Gm</label>
 				</div>
 				<table id="attendanceTable">
 					<thead>
@@ -315,17 +316,20 @@
 						<div class="field full">
 							<div style="border:5px solid #f0f0f0; padding: 10px;">
 								<h2 id="potmName1"></h2>
-								<img id="potmImage1" style="width:50vw;height:50vh;object-fit:contain" src="" alt="Player of the Month 1">
+								<img id="potmImage1" style="width:50vw;height:50vh;object-fit:contain" src=""
+									alt="Player of the Month 1">
 								<h3 id="potmComment1"></h3>
 							</div>
 							<div style="border:5px solid #f0f0f0; padding: 10px;">
 								<h2 id="potmName2"></h2>
-								<img id="potmImage2" style="width:50vw;height:50vh;object-fit:contain" src="" alt="Player of the Month 2">
+								<img id="potmImage2" style="width:50vw;height:50vh;object-fit:contain" src=""
+									alt="Player of the Month 2">
 								<h3 id="potmComment2"></h3>
 							</div>
 							<div style="border:5px solid #f0f0f0; padding: 10px;">
 								<h2 id="potmName3"></h2>
-								<img id="potmImage3" style="width:50vw;height:50vh;object-fit:contain" src="" alt="Player of the Month 3">
+								<img id="potmImage3" style="width:50vw;height:50vh;object-fit:contain" src=""
+									alt="Player of the Month 3">
 								<h3 id="potmComment3"></h3>
 							</div>
 						</div>
@@ -343,10 +347,10 @@
 					Celebration</button>
 			</header>
 			<div class="content" style="position:relative;">
-				<i class="fas fa-sync" style="position:absolute;top:10px;right:45px;cursor:pointer" onclick="populateCelebrations()"
-					aria-hidden="true"></i>
-				<i class="fas fa-trash-alt" style="position:absolute;top:10px;right:20px;cursor:pointer" onclick="deleteCelebration()"
-					aria-hidden="true"></i>
+				<i class="fas fa-sync" style="position:absolute;top:10px;right:45px;cursor:pointer"
+					onclick="populateCelebrations()" aria-hidden="true"></i>
+				<i class="fas fa-trash-alt" style="position:absolute;top:10px;right:20px;cursor:pointer"
+					onclick="deleteCelebration()" aria-hidden="true"></i>
 				<label for="celebrations">Select a Celebration:</label>
 				<select id="celebrations" name="celebrations" onchange="displayCelebrationPhotos()">
 				</select>
@@ -481,9 +485,9 @@
 
 					<div class="field half">
 						<label for="username">
-							Username:
+							Email:
 						</label>
-						<input type="text" id="username" name="username" placeholder="Enter your Username" required>
+						<input type="text" id="username" name="username" placeholder="Enter your Email" required>
 					</div>
 
 					<div class="field half">
@@ -529,23 +533,24 @@
 		<!-- Modal content -->
 		<div class="modal-content">
 			<span id="closeChangePasswordModal" class="close" onclick="closeChangePasswordModal()">&times;</span>
-			<h2>Change Password</h2>
+			<h2>Password - Create or Change</h2>
 			<form action="">
 				<div class="fields">
 
 					<div class="field half">
-						<label for="changepasswordusername">
-							Username:
+						<label for="changepasswordemail">
+							Email:
 						</label>
-						<input type="text" id="changepasswordusername" name="changepasswordusername"
-							placeholder="Enter your Username" required>
+						<input type="text" id="changepasswordemail" name="changepasswordemail" placeholder="Enter your Email"
+							required>
 					</div>
 					<div class="field half">
 						<label for="currentpassword">
-							Current Password:
+							Current Password or Phone Number (if creating a strong password for the first time):
 						</label>
 						<div class="password-field">
-							<input type="password" id="currentpassword" name="currentpassword" placeholder="Enter your CurrentPassword"
+							<input type="password" id="currentpassword" name="currentpassword"
+								placeholder="Enter your Current Password or Phone Number (only is you have not set a strong password yet)"
 								required>
 							<button type="button" class="password-toggle" data-target="currentpassword" aria-label="Show password"
 								title="Show password" aria-pressed="false">👁</button>
@@ -556,7 +561,8 @@
 							New Password:
 						</label>
 						<div class="password-field">
-							<input type="password" id="newpassword1" name="newpassword1" placeholder="Enter your New Password" required>
+							<input type="password" id="newpassword1" name="newpassword1" placeholder="Enter your New Password"
+								required>
 							<button type="button" class="password-toggle" data-target="newpassword1" aria-label="Show password"
 								title="Show password" aria-pressed="false">👁</button>
 						</div>
@@ -575,7 +581,7 @@
 
 					<div class="field full wrap">
 						<button class="button primary" type="button" style="margin-top: 30px;" onclick="changePassword()">
-							Change Password
+							 Password - Create or Change
 						</button>
 					</div>
 				</div>
@@ -585,30 +591,30 @@
 	</div>
 
 	<!-- The Modal -->
-	<div id="nameandphonecheck" class="modal wrap">
+	<div id="emailandphonecheck" class="modal wrap">
 		<div class="modal-content">
 			<span class="close" onclick="closeNameAndPhoneCheck()">&times;</span>
 			<h2>Riverside Bridge Club (Unit 537)</h2>
-			<h3 id="nameandphonecheckresult"></h3>
-			<div class="fields" id="nameandphonechecksection" style="display:block">
+			<h3 id="emailandphonecheckresult"></h3>
+			<div class="fields" style="display:block">
 
 				<div class="field full">
-					<label for="myname">
-						We will check if you are part of our club. What is your name? e.g. John Smith
+					<label for="myemail">
+						Enter your email? e.g. john@example.com
 					</label>
-					<input type="text" name="myname" id="myname">
+					<input type="email" name="myemail" id="myemail">
 				</div>
 
 				<div class="field full">
-					<label for="myname">
-						And your phone number?
+					<label for="myphone">
+						And your 10 digitphone number?
 					</label>
 					<input type="tel" name="myphone" id="myphone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="555-555-5555">
 				</div>
 
 				<div class="field full wrap">
 					<button type="button" class="button primary" style="margin-top: 30px;"
-						onclick="DoNameAndPhoneCheck()">Check</button>
+						onclick="DoEmailAndPhoneCheck()">Get Limited Access</button>
 				</div>
 			</div>
 		</div>
@@ -645,23 +651,23 @@
 			<span class="close" onclick="closeplayingModal()">&times;</span>
 			<h2>Planning to Play?</h2>
 			<div class="fields">
-				<div class="field fourth ">
+				<div class="field third ">
 					<input type="checkbox" style="height:auto;display:inline" id="playingm1" onchange="playing('m1')">
 					<label id="lblplayingm1" for="playingm1">Monday</label>
 				</div>
-				<div class="field fourth ">
+				<div class="field third ">
 					<input type="checkbox" style="height:auto;display:inline" id="playingt1" onchange="playing('t1')">
 					<label id="lblplayingt1" for="playingt1">Tuesday</label>
 				</div>
-				<div class="field fourth ">
+				<div class="field third ">
 					<input type="checkbox" style="height:auto;display:inline" id="playingf1" onchange="playing('f1')">
 					<label id="lblplayingf1" for="playingf1">Friday</label>
 				</div>
-				<div class="field fourth ">
+				<!-- <div class="field fourth ">
 					<input type="checkbox" style="height:auto;display:inline" id="playingug" onchange="playing('ug')">
 					<label id="lblplayingug" for="playingug">Sunday</label>
-				</div>
-				<div class="field fourth wrap">
+				</div> -->
+				<div class="field third wrap">
 					<button id="closePlayingModalBtn" style="height:auto;display:inline" type="button"
 						onclick="closeplayingModal()" class="button primary">Close</button>
 				</div>

@@ -22,14 +22,14 @@ function formatDateToYYYYMMDD(date) {
   return `${year}-${month}-${day}`;
 }
 
-function userExists(username) {
+function userExists(email) {
     try {
-        const stmt = db.prepare('SELECT id, username FROM player WHERE username = ?;');
-        const res = stmt.all(username);
+        const stmt = db.prepare('SELECT id, email FROM player WHERE email = ?;');
+        const res = stmt.all(email);
         const result = (res.length === 0) ? false : true;
         return result;
     } catch (err) {
-        console.error('Error fetching username:', err);
+        console.error('Error fetching email:', err);
         return false;
     }
 }
@@ -43,10 +43,10 @@ function addUser(username, password) {
 }
 
 // this function is async because bcrypt.compare is async
-async function login(username, password) {
-    const stmt = db.prepare('SELECT id, first, last, password FROM player WHERE username = ?');
+async function login(email, password) {
+    const stmt = db.prepare('SELECT id, first, last, password FROM player WHERE email = ?');
 
-    const row = stmt.get(username);
+    const row = stmt.get(email);
     if (!row) {
         console.log('User not found.');
         return { valid: false, message: 'User not found' };
@@ -65,10 +65,10 @@ async function login(username, password) {
     }
 }
 
-async function passwordMatches(username, password) {
-    const stmt = db.prepare('SELECT id, first, last, password FROM player WHERE username = ?');
+async function passwordMatches(email, password) {
+    const stmt = db.prepare('SELECT id, first, last, password FROM player WHERE email = ?');
 
-    const row = stmt.get(username);
+    const row = stmt.get(email);
     if (!row) {
         return { valid: false, message: 'User not found' };
     }
@@ -78,12 +78,12 @@ async function passwordMatches(username, password) {
     return result ? { valid: true, id: row.id, message: 'Old Password matches' } : { valid: false, message: 'Old Password does not match' };
 }
 
-async function changePassword(username, newPassword) {
+async function changePassword(email, newPassword) {
     try {
         const saltRounds = 10;
         const hashedNewPassword = bcrypt.hashSync(newPassword, saltRounds);
-        const updateStmt = db.prepare('UPDATE player SET password = ? WHERE username = ?');
-        updateStmt.run(hashedNewPassword, username);
+        const updateStmt = db.prepare('UPDATE player SET password = ? WHERE email = ?');
+        updateStmt.run(hashedNewPassword, email);
         return true;
     } catch (err) {
         console.error('Error changing password:', err);
@@ -155,18 +155,19 @@ function shuffle(array) {
     return array;
 }
 
-function isPlayer(fullname, phone) {
+function isPlayer(email, phone) {
     try {
-        const first = fullname.split(' ')[0];
-        const last = fullname.split(' ')[1];
-        const stmt = db.prepare('SELECT * FROM player where lower(first) = ? AND lower(last) = ? AND phone = ?;');
-        const result = stmt.all(first, last, phone.replaceAll('-', ''));
+        const stmt = db.prepare('SELECT * FROM player where lower(email) = ? AND phone = ?;');
+        const result = stmt.all(email.toLowerCase(), phone.replaceAll('-', ''));
         console.log('isPlayer query result:', result);
         let exists = result.length > 0 ? true : false;
         return {
-            exists, id: exists ? result[0].id : null, username: exists ? result[0].username : null,
+            // username is the same as email. We will not store a separate username in the DB
+            exists, id: exists ? result[0].id : null, 
+            username: exists ? result[0].email : null,
             phone: exists ? result[0].phone : null,
-            fullname: exists ? result[0].first + ' ' + result[0].last : null,
+            email: exists ? result[0].email : null,
+            fullname: exists ? `${result[0].first} ${result[0].last}` : null
         };
     } catch (err) {
         console.error('Error checking isPlayer:', err);

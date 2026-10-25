@@ -2867,9 +2867,9 @@ ul.actions.fit.stacked {
 }
 
 button.password-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	margin-top: 0;
 	box-shadow: none;
 }
@@ -3316,6 +3316,16 @@ a.arrow:before {
 		height: 14rem;
 	}
 
+	button#nameandphonecheckBtn,
+	button#changePasswordBtn,
+	button#loginBtn,
+	button#logoutBtn {
+		white-space: normal;
+		/* Instead of nowrap */
+		width: 100%;
+		max-width: 100%;
+		/* Ensure it doesn't exceed parent */
+	}
 }
 
 /* Feature Icons */
