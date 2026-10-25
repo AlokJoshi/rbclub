@@ -501,7 +501,7 @@ async function SubmitChanges() {
   if (document.getElementById('m1').checked) form.append('m1', 'on');
   if (document.getElementById('t1').checked) form.append('t1', 'on');
   if (document.getElementById('f1').checked) form.append('f1', 'on');
-  if (document.getElementById('ug').checked) form.append('ug', 'on');
+  // if (document.getElementById('ug').checked) form.append('ug', 'on');
   if (document.getElementById('isDirector').checked) form.append('isDirector', 'on');
   const officerPosition = document.getElementById('officerPosition').value;
   if (officerPosition) form.append('officerPosition', officerPosition);
