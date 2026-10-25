@@ -514,7 +514,7 @@ app.put('/playerdata/:id', avtarUpload.single('playerImage'), async (req, res) =
             (data.m1 === true || data.m1 === 'true' || data.m1 === 'on') ? 1 : 0,
             (data.t1 === true || data.t1 === 'true' || data.t1 === 'on') ? 1 : 0,
             (data.f1 === true || data.f1 === 'true' || data.f1 === 'on') ? 1 : 0,
-            (data.ug === true || data.ug === 'true' || data.ug === 'on') ? 1 : 0,
+            // (data.ug === true || data.ug === 'true' || data.ug === 'on') ? 1 : 0,
             imagePathToSave,
             (data.isDirector === true || data.isDirector === 'true' || data.isDirector === 'on') ? 1 : 0,
             (!data.officerPosition || data.officerPosition === 'None') ? null : data.officerPosition,

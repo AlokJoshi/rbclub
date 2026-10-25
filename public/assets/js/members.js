@@ -571,7 +571,7 @@ async function PopulateFormForEdit(playerId) {
     document.getElementById('m1').checked = result.m1 || false;
     document.getElementById('t1').checked = result.t1 || false;
     document.getElementById('f1').checked = result.f1 || false;
-    document.getElementById('ug').checked = result.ug || false;
+    // document.getElementById('ug').checked = result.ug || false;
     document.getElementById('isDirector').checked = result.director || false;
     document.getElementById('officerPosition').value = result.position || '';
 
