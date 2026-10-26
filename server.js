@@ -518,6 +518,8 @@ app.get('/officersdata', (req, res) => {
 app.get('/playerdata', (req, res) => {
 
     try {
+        const sortColumn = req.query.sortcolumn || 'first';
+        const sortOrder = req.query.sortorder || 'asc';
         const stmt = db.prepare(
             `SELECT id,image_path,first,last,email,phone,
             Concat(
@@ -535,7 +537,7 @@ app.get('/playerdata', (req, res) => {
             When dob_month=12 Then 'Dec.'
             Else '' End, ' ', Case when dob_date is null or dob_date = '0' then '' else dob_date end) AS dob,
             Case concat(ice_relation, ice_phone) when '' then '' else Concat(ice_relation,'(', ice_phone, ')') end AS ice
-            FROM player order by last;`
+            FROM player order by ${sortColumn} ${sortOrder};`
         );
         //order by last
         const result = stmt.all();

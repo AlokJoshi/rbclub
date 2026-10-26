@@ -127,13 +127,13 @@
 				<input type="checkbox" id="ICE" onclick="toggleColumn('#playertable', 7);"><label for="ICE">Emergency
 					Contact</label>
 				<!-- <span class="image fill" data-position="center"><img src="images/pic01.jpg" alt="" /></span> -->
-				<table id="playertable">
+				<table id="playertable" data-sortcolumn="first" data-sortorder="asc">
 					<thead>
 						<tr>
 							<th class="col-hidden">ID</th>
 							<th>Picture</th>
-							<th>First</th>
-							<th>Last</th>
+							<th style="cursor:pointer" onclick="document.getElementById('playertable').dataset.sortcolumn='first';document.getElementById('playertable').dataset.sortorder='asc';createPlayerTable()">First</th>
+							<th style="cursor:pointer" onclick="document.getElementById('playertable').dataset.sortcolumn='last';document.getElementById('playertable').dataset.sortorder='asc';createPlayerTable()">Last</th>
 							<th class="col-hidden">Email</th>
 							<th>Phone</th>
 							<th class="col-hidden">DOB</th>
@@ -307,7 +307,8 @@
 					your new vote will replace your old vote.</h3>
 				<br>
 				<h3 id="voteinfo"></h3>
-				<button type="button" id="btnVotePOTM" class="button primary secure-only-action" onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
+				<button type="button" id="btnVotePOTM" class="button primary secure-only-action"
+					onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
 			</header>
 			<div class="content" style="overflow-x:auto;">
 				<form action="">
@@ -343,7 +344,8 @@
 			<header>
 				<h2>Celebrations</h2>
 				<h3>Pictures of the members' birthdays and other celebrations.</h3>
-				<button type="button" id="btnCreateCelebration" class="button primary secure-only-action" onclick="showCreateCelebrationModal()">Create New
+				<button type="button" id="btnCreateCelebration" class="button primary secure-only-action"
+					onclick="showCreateCelebrationModal()">Create New
 					Celebration</button>
 			</header>
 			<div class="content" style="position:relative;">
@@ -396,7 +398,8 @@
 				<div>Alt-Shift-D: Diamonds</div>
 				<div>Alt-Shift-C: Clubs</div>
 
-				<button id="btnCreateOrEditBlog" class="button primary secure-only-action" onclick="createblog()">Create Blog/Edit Your blog</button>
+				<button id="btnCreateOrEditBlog" class="button primary secure-only-action" onclick="createblog()">Create
+					Blog/Edit Your blog</button>
 			</header>
 			<div class="content">
 				<form action="">
@@ -581,7 +584,7 @@
 
 					<div class="field full wrap">
 						<button class="button primary" type="button" style="margin-top: 30px;" onclick="changePassword()">
-							 Password - Create or Change
+							Password - Create or Change
 						</button>
 					</div>
 				</div>
@@ -613,8 +616,8 @@
 				</div>
 
 				<div class="field full wrap">
-					<button type="button" class="button primary" style="margin-top: 30px;"
-						onclick="DoEmailAndPhoneCheck()">Get Limited Access</button>
+					<button type="button" class="button primary" style="margin-top: 30px;" onclick="DoEmailAndPhoneCheck()">Get
+						Limited Access</button>
 				</div>
 			</div>
 		</div>

@@ -653,7 +653,7 @@ async function createPlayerTable() {
     const show_ice = document.getElementById('ICE').checked;
 
     var col_index = 0;
-    const res = await fetch('/playerdata');
+    const res = await fetch(`/playerdata?sortcolumn=${document.getElementById('playertable').dataset.sortcolumn}&sortorder=${document.getElementById('playertable').dataset.sortorder}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     const tbody = document.getElementById('mainTableBody');
