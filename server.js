@@ -438,7 +438,7 @@ app.post('/changepassword', async (req, res) => {
         const phoneMatches = storedPhone && providedPhone === storedPhone;
         if (!phoneMatches) {
             console.warn(`[changepassword] Phone fallback verification failed for email=${requestEmail}`);
-            return res.status(400).json({ success: false, message: 'Old password does not match or phone number is incorrect' });
+            return res.status(400).json({ success: false, message: 'The phone number is incorrect' });
         }
         const verification = req.session.emailVerifiedForPasswordSetup;
         const verificationExpired = !verification || verification.email !== requestEmail || verification.purpose !== 'first-password-setup' || (Date.now() - verification.verifiedAt) > (10 * 60 * 1000);
