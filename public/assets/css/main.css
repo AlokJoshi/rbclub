@@ -2066,6 +2066,14 @@ button:disabled,
 	opacity: 0.25;
 }
 
+button.secure-only-action:disabled,
+.button.secure-only-action:disabled {
+	pointer-events: auto;
+	cursor: not-allowed;
+	opacity: 0.4;
+	filter: grayscale(40%);
+}
+
 input[type="submit"].primary,
 input[type="reset"].primary,
 input[type="button"].primary,

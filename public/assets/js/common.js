@@ -94,10 +94,28 @@ async function getSessionDetails() {
   }
 }
 
+function updateSecureOnlyActionButtons() {
+  const secureOnlyButtonIds = ['btnVotePOTM', 'btnCreateCelebration', 'btnCreateOrEditBlog'];
+  const canUseSecureOnlyActions = Boolean(sessionId && securelogin && !insecurelogin && !casuallogin);
+
+  secureOnlyButtonIds.forEach((buttonId) => {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    button.disabled = !canUseSecureOnlyActions;
+    button.setAttribute('aria-disabled', String(!canUseSecureOnlyActions));
+    if (!canUseSecureOnlyActions) {
+      button.title = 'Secure login is required for this action.';
+    } else {
+      button.removeAttribute('title');
+    }
+  });
+}
+
 async function decide() {
   [sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname] = await getSessionDetails()
   // Base the decision on global variables set during login or checks
   console.log(sessionId, securelogin, insecurelogin, username, userid, isAdmin, casuallogin, fullname)
+  updateSecureOnlyActionButtons();
   // Check if the session exists
   // const [sessionid,securelogin]= await isUserLoggedIn()
 

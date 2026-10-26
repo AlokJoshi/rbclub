@@ -307,7 +307,7 @@
 					your new vote will replace your old vote.</h3>
 				<br>
 				<h3 id="voteinfo"></h3>
-				<button type="button" class="button primary" onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
+				<button type="button" id="btnVotePOTM" class="button primary secure-only-action" onclick="showPOTMVoteModal()">Vote for Player of the Month</button>
 			</header>
 			<div class="content" style="overflow-x:auto;">
 				<form action="">
@@ -343,7 +343,7 @@
 			<header>
 				<h2>Celebrations</h2>
 				<h3>Pictures of the members' birthdays and other celebrations.</h3>
-				<button type="button" class="button primary" onclick="showCreateCelebrationModal()">Create New
+				<button type="button" id="btnCreateCelebration" class="button primary secure-only-action" onclick="showCreateCelebrationModal()">Create New
 					Celebration</button>
 			</header>
 			<div class="content" style="position:relative;">
@@ -396,7 +396,7 @@
 				<div>Alt-Shift-D: Diamonds</div>
 				<div>Alt-Shift-C: Clubs</div>
 
-				<button class="button primary" onclick="createblog()">Create Blog/Edit Your blog</button>
+				<button id="btnCreateOrEditBlog" class="button primary secure-only-action" onclick="createblog()">Create Blog/Edit Your blog</button>
 			</header>
 			<div class="content">
 				<form action="">

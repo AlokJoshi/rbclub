@@ -153,7 +153,7 @@ async function login() {
 }
 
 async function changePassword() {
-  const email = document.getElementById('changepasswordemail').value;
+  const email = document.getElementById('changepasswordemail').value.trim().toLowerCase();
   const currentpassword = document.getElementById('currentpassword').value;
   const newpassword1 = document.getElementById('newpassword1').value;
   const newpassword2 = document.getElementById('newpassword2').value;
@@ -161,15 +161,29 @@ async function changePassword() {
     showCustomAlert('New passwords do not match', 5);
     return;
   }
+
   try {
-    const res = await fetch('/changepassword', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, oldPassword: currentpassword, newPassword: newpassword1 })
-    });
-    console.log('Change password response status:', res.status);
+    let res = await submitChangePasswordRequest(email, currentpassword, newpassword1);
+    if (!res.ok) {
+      const firstAttempt = await res.json().catch(() => ({}));
+      const needsFirstTimeVerification = res.status === 403 &&
+        (firstAttempt.code === 'EMAIL_VERIFICATION_REQUIRED_FIRST_TIME' ||
+          firstAttempt.message === 'Email verification is required before creating a strong password');
+
+      if (needsFirstTimeVerification) {
+        const verificationStarted = await startEmailVerificationFlow(email, currentpassword);
+        if (!verificationStarted) {
+          return;
+        }
+        const verified = await verifyEmailCodeFlow(email);
+        if (!verified) {
+          return;
+        }
+        res = await submitChangePasswordRequest(email, currentpassword, newpassword1);
+      } else {
+        throw new Error(firstAttempt.message || `HTTP ${res.status}`);
+      }
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
     console.log(result);
@@ -180,6 +194,16 @@ async function changePassword() {
   }
   const changePasswordModal = document.getElementById('changepasswordmodal')
   changePasswordModal.style.display = "none";
+}
+
+async function submitChangePasswordRequest(email, currentpassword, newpassword) {
+  return fetch('/changepassword', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, oldPassword: currentpassword, newPassword: newpassword })
+  });
 }
 
 async function showAttendance(day) {
@@ -989,6 +1013,64 @@ async function DoEmailAndPhoneCheck() {
     decide()
     // } else {
     //   window.location = '/'
+  }
+}
+
+async function startEmailVerificationFlow(email, phone) {
+  try {
+    const res = await fetch('/start-email-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, phone })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || `HTTP ${res.status}`);
+    showCustomAlert(result.message, 5);
+    return true;
+  } catch (err) {
+    console.error('Error starting email verification:', err);
+    showCustomAlert(`Unable to send verification code: ${err.message}`, 5);
+    return false;
+  }
+}
+
+async function verifyEmailCodeFlow(email) {
+  const code = await swal({
+    title: 'Email Verification',
+    text: 'Enter the 6-digit verification code sent to your email.',
+    content: {
+      element: 'input',
+      attributes: {
+        placeholder: 'Enter code',
+        maxlength: 6,
+        autocapitalize: 'off'
+      }
+    },
+    buttons: ['Cancel', 'Verify']
+  });
+
+  if (!code || typeof code !== 'string') {
+    showCustomAlert('Email verification was cancelled.', 3);
+    return false;
+  }
+
+  try {
+    const res = await fetch('/verify-email-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code })
+    });
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      showCustomAlert(result.message || 'Email verification failed', 5);
+      return false;
+    }
+    showCustomAlert('Email verified successfully.', 3);
+    return true;
+  } catch (err) {
+    console.error('Error verifying email code:', err);
+    showCustomAlert(`Email verification failed: ${err.message}`, 5);
+    return false;
   }
 }
 

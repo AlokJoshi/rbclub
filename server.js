@@ -255,6 +255,97 @@ app.put('/checkemailandphone', async (req, res) => {
     )
 })
 
+app.post('/start-email-verification', async (req, res) => {
+    const rawEmail = req.body?.email;
+    const rawPhone = req.body?.phone;
+    const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+    const phone = typeof rawPhone === 'string' ? rawPhone.replaceAll('-', '').trim() : '';
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    if (!phone) {
+        return res.status(400).json({ success: false, message: 'Phone number is required' });
+    }
+
+    try {
+        const userStmt = db.prepare('SELECT id, phone, password FROM player WHERE email = ?');
+        const userRow = userStmt.get(email);
+        if (!userRow) {
+            return res.status(400).json({ success: false, message: 'User does not exist' });
+        }
+        if (userRow.password) {
+            return res.status(400).json({ success: false, message: 'Email verification is only required for first-time password setup' });
+        }
+        const storedPhone = userRow.phone ? userRow.phone.replaceAll('-', '').trim() : '';
+        if (!storedPhone || storedPhone !== phone) {
+            return res.status(400).json({ success: false, message: 'Phone number does not match our records' });
+        }
+
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+        const expiresAt = Date.now() + (10 * 60 * 1000); // 10 minutes
+
+        req.session.pendingEmailVerification = {
+            email,
+            codeHash,
+            expiresAt,
+            attempts: 0,
+            purpose: 'first-password-setup'
+        };
+
+        sendEmail({
+            addresses: [email],
+            subject: 'Email verification code',
+            text: `Your verification code is ${code}. It expires in 10 minutes.`,
+            html: `<p>Your verification code is <strong>${code}</strong>.</p><p>This code expires in 10 minutes.</p>`
+        });
+
+        res.json({ success: true, message: 'Verification code sent. Please check your email.' });
+    } catch (err) {
+        console.error('Error starting email verification:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.post('/verify-email-verification', async (req, res) => {
+    const rawEmail = req.body?.email;
+    const rawCode = req.body?.code;
+    const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+    const code = typeof rawCode === 'string' ? rawCode.trim() : '';
+
+    if (!email || !code) {
+        return res.status(400).json({ success: false, message: 'Email and code are required' });
+    }
+
+    const pending = req.session.pendingEmailVerification;
+    if (!pending || pending.email !== email || pending.purpose !== 'first-password-setup') {
+        return res.status(400).json({ success: false, message: 'No verification request found for this email' });
+    }
+    if (pending.expiresAt < Date.now()) {
+        req.session.pendingEmailVerification = null;
+        return res.status(400).json({ success: false, message: 'Verification code has expired' });
+    }
+    if (pending.attempts >= 5) {
+        req.session.pendingEmailVerification = null;
+        return res.status(429).json({ success: false, message: 'Too many verification attempts. Request a new code.' });
+    }
+
+    const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+    if (codeHash !== pending.codeHash) {
+        pending.attempts += 1;
+        return res.status(400).json({ success: false, message: 'Invalid verification code' });
+    }
+
+    req.session.pendingEmailVerification = null;
+    req.session.emailVerifiedForPasswordSetup = {
+        email,
+        verifiedAt: Date.now(),
+        purpose: 'first-password-setup'
+    };
+
+    res.json({ success: true, message: 'Email verified successfully' });
+});
+
 app.post('/logout', async (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -342,10 +433,23 @@ app.post('/changepassword', async (req, res) => {
     let proceed = false;
     let userId = userRow.id;
     if (!userRow.password) {
-        proceed = oldPassword == userRow.phone;
-        if (!proceed) {
+        const providedPhone = typeof oldPassword === 'string' ? oldPassword.replaceAll('-', '').trim() : '';
+        const storedPhone = userRow.phone ? userRow.phone.replaceAll('-', '').trim() : '';
+        const phoneMatches = storedPhone && providedPhone === storedPhone;
+        if (!phoneMatches) {
             console.warn(`[changepassword] Phone fallback verification failed for email=${requestEmail}`);
+            return res.status(400).json({ success: false, message: 'Old password does not match or phone number is incorrect' });
         }
+        const verification = req.session.emailVerifiedForPasswordSetup;
+        const verificationExpired = !verification || verification.email !== requestEmail || verification.purpose !== 'first-password-setup' || (Date.now() - verification.verifiedAt) > (10 * 60 * 1000);
+        if (verificationExpired) {
+            return res.status(403).json({
+                success: false,
+                code: 'EMAIL_VERIFICATION_REQUIRED_FIRST_TIME',
+                message: 'Email verification is required before creating a strong password'
+            });
+        }
+        proceed = true;
     } else {
         const match = await passwordMatches(requestEmail, oldPassword);
         proceed = match.valid;
@@ -366,6 +470,7 @@ app.post('/changepassword', async (req, res) => {
         req.session.username = requestEmail;
         req.session.userid = userId;
         req.session.isAdmin = isAdmin(userId);
+        req.session.emailVerifiedForPasswordSetup = null;
         console.log(`[changepassword] Password updated successfully for email=${requestEmail}, userId=${userId}`);
         res.json({ success: true, message: 'Password created or changed successfully' });
     } else {
