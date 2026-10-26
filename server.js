@@ -516,10 +516,16 @@ app.get('/officersdata', (req, res) => {
 });
 
 app.get('/playerdata', (req, res) => {
-
+    const allowedSortBy = {
+    id: 'id',
+    first: 'first',
+    last: 'last',
+    email: 'email',
+    phone: 'phone'
+  };
     try {
-        const sortColumn = req.query.sortcolumn || 'first';
-        const sortOrder = req.query.sortorder || 'asc';
+        const sortColumn = allowedSortBy[req.query.sortcolumn] || 'first';
+        const sortOrder = String(req.query.sortorder).toLowerCase() === 'desc' ? 'desc' : 'asc';
         const stmt = db.prepare(
             `SELECT id,image_path,first,last,email,phone,
             Concat(

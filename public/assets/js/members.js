@@ -1359,7 +1359,7 @@ async function PopulateDirectorsTable() {
     }
 
     result.forEach((value,index) => {
-      console.log(index,value);
+      // console.log(index,value);
         const tr = document.createElement('tr');
         // append cells in the order the server returned them
         Object.entries(value).forEach(([key,val]) => {
@@ -1404,7 +1404,7 @@ async function PopulateOfficersTable() {
     }
 
     result.forEach((value,index) => {
-      console.log(index,value);
+      // console.log(index,value);
         const tr = document.createElement('tr');
         // append cells in the order the server returned them
         Object.entries(value).forEach(([key,val]) => {
