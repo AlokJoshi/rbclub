@@ -64,6 +64,30 @@ function quoteIdent(identifier) {
     return `"${String(identifier).replace(/"/g, '""')}"`;
 }
 
+function classifyRequestActor(req) {
+    const headers = req.headers || {};
+    const userAgent = String(headers['user-agent'] || '').toLowerCase();
+    const hasBrowserUa = /mozilla|chrome|safari|firefox|edg|opera/.test(userAgent);
+    const hasKnownBotUa = /bot|spider|crawler|scrapy|curl|wget|python-requests|go-http-client|java|libwww-perl/.test(userAgent);
+    const hasSecFetchHeaders = Boolean(headers['sec-fetch-site'] || headers['sec-fetch-mode'] || headers['sec-fetch-user']);
+    const hasAcceptLanguage = Boolean(headers['accept-language']);
+    const hasSessionUser = Boolean(req.session && (req.session.userid || req.session.username));
+
+    if (hasKnownBotUa) {
+        return 'likely_bot';
+    }
+
+    if (hasSessionUser && hasBrowserUa && (hasSecFetchHeaders || hasAcceptLanguage)) {
+        return 'likely_user';
+    }
+
+    if (!hasBrowserUa && !hasAcceptLanguage && !hasSecFetchHeaders) {
+        return 'likely_bot';
+    }
+
+    return 'unknown';
+}
+
 function normalizeSessionsSchema() {
     const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get('sessions');
 
@@ -116,6 +140,24 @@ app.use(session({
     }
 }));
 
+app.use((req, res, next) => {
+    req.requestMeta = {
+        actorType: classifyRequestActor(req),
+        userAgent: req.headers['user-agent'] || '',
+        ip: req.ip,
+        method: req.method,
+        url: req.originalUrl,
+        referer: req.headers.referer || '',
+        origin: req.headers.origin || '',
+        contentType: req.headers['content-type'] || '',
+        contentEncoding: req.headers['content-encoding'] || '',
+        secFetchSite: req.headers['sec-fetch-site'] || '',
+        secFetchMode: req.headers['sec-fetch-mode'] || '',
+        acceptLanguage: req.headers['accept-language'] || ''
+    };
+    next();
+});
+
 //added this error handling middleware to get more info on errors(suggested by GPT-5.1-Codex)
 app.use((err, req, res, next) => {
     const traceId = crypto.randomUUID();
@@ -127,6 +169,8 @@ app.use((err, req, res, next) => {
         params: req.params,
         query: req.query,
         body: req.body,
+        actorType: req.requestMeta ? req.requestMeta.actorType : 'unknown',
+        requestMeta: req.requestMeta || {},
         stack: err.stack,
     });
     res.status(500).json({ error: 'Internal Server Error', traceId });
@@ -139,6 +183,37 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // increase limits to allow larger multipart/form-data handling if necessary
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Handle malformed/compressed request-body errors from express body parsers.
+app.use((err, req, res, next) => {
+    const isBodyParseError = err && (
+        err.type === 'entity.parse.failed' ||
+        err.type === 'encoding.unsupported' ||
+        err.message === 'Decompression failed' ||
+        (typeof err.message === 'string' && err.message.includes('Decompression failed')) ||
+        (typeof err.message === 'string' && err.message.includes('Unexpected token'))
+    );
+
+    if (!isBodyParseError) {
+        return next(err);
+    }
+
+    const traceId = crypto.randomUUID();
+    console.error('Invalid request body', {
+        traceId,
+        route: `${req.method} ${req.originalUrl}`,
+        actorType: req.requestMeta ? req.requestMeta.actorType : 'unknown',
+        requestMeta: req.requestMeta || {},
+        errorType: err.type || '',
+        errorMessage: err.message || '',
+    });
+
+    return res.status(400).json({
+        success: false,
+        message: 'Invalid request body',
+        traceId
+    });
+});
 
 //when I added this, the post(/celebration/images) started working!!
 //otherwise I was getting 404 Not Found in the front-end!!
