@@ -41,8 +41,7 @@ const PORT = process.env.PORT || 3000;
 const { avtarUpload, emailReplyUpload,
     celebrationMultiUpload, blogMultiUpload } = require('./helper');
 
-const { userExists, login, changePassword,
-    registeredUsers, isAdmin, register, bulkregister,
+const { userExists, login, changePassword, isAdmin,  
     passwordMatches, getMailingListAddresses, getMailingLists,
     deleteMailingList, createMailingList, existsMailingList,
     updateMailingList, getMailingListRecipients, getMailingListEmails, isPlayer,
@@ -295,19 +294,19 @@ app.get('/guests', (req, res) => {
 // moved this here so that app.get('/') can initialize session variables first
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.put('/bulkregister', (req, res) => {
-    const users = req.body.users
-    const registrationresult = bulkregister(users)
-    res.json(registrationresult)
-})
+// app.put('/bulkregister', (req, res) => {
+//     const users = req.body.users
+//     const registrationresult = bulkregister(users)
+//     res.json(registrationresult)
+// })
 
-app.put('/register', (req, res) => {
-    const first = req.body.first
-    const last = req.body.last
-    const username = req.body.username
-    const registrationresult = register(first, last, username)
-    res.json(registrationresult)
-})
+// app.put('/register', (req, res) => {
+//     const first = req.body.first
+//     const last = req.body.last
+//     const username = req.body.username
+//     const registrationresult = register(first, last, username)
+//     res.json(registrationresult)
+// })
 
 app.put('/checkemailandphone', async (req, res) => {
     const player = await isPlayer(req.body.email, req.body.phone)
@@ -452,24 +451,30 @@ app.post('/login', async (req, res) => {
 
 app.post('/addnewplayer', async (req, res) => {
     const data = req.body;
-    const alreadyExists = await playerExists(data.first, data.last);
+    const alreadyExists = await playerExists(data.first.trim(), data.last.trim());
     if (alreadyExists) {
         return res.status(400).json({ success: false, message: 'Player with the same first and last name already exists' });
     }
+    const emailAlreadyExists = await emailExists(data.email);
+    if (emailAlreadyExists) {
+        return res.status(400).json({ success: false, message: 'Player with the same email already exists' });
+    }
     try {
-        const username = data.first.trim().toLowerCase() + data.last.trim().toLowerCase().charAt(0);
-        const stmt = db.prepare('INSERT INTO player (first,last) VALUES (?, ?);');
-        const result = stmt.run(data.first, data.last)
-        const id = result.lastInsertRowid
-        const defaultPassword = data.first.trim().toLowerCase() + id.toString()
+        // const username = data.first.trim().toLowerCase() + data.last.trim().toLowerCase().charAt(0);
+        const stmt = db.prepare('INSERT INTO player (first,last,email,phone) VALUES (?, ?, ?, ?);');
+        const result = stmt.run(data.first.trim(), data.last.trim(), data.email.trim(), data.phone.trim())
+        if (!result || result.changes === 0) {
+            return res.status(500).json({ success: false, message: 'Failed to add new player' });
+        }
+        // const id = result.lastInsertRowid
+        // const defaultPassword = data.first.trim().toLowerCase() + id.toString()
         // now create a password to store in the database
-        const saltRounds = 10;
-        const hashedPassword = bcrypt.hashSync(defaultPassword, saltRounds);
-        const updateStmt = db.prepare('UPDATE player SET username = ?, password = ? WHERE id = ?');
-        updateStmt.run(username, hashedPassword, id);
+        // const saltRounds = 10;
+        // const hashedPassword = bcrypt.hashSync(defaultPassword, saltRounds);
+        // const updateStmt = db.prepare('UPDATE player SET username = ?, password = ? WHERE id = ?');
+        // updateStmt.run(username, hashedPassword, id);
         res.json({
-            success: true, message: `User added successfully. Please inform the user
-            that their username is ${username} and their temporary password is ${defaultPassword}`
+            success: true, message: `User added successfully. Please inform the user that they should use riversidebridgeclub.com site. If necessary please provide them basic information about accessing the site.`
         });
     } catch (err) {
         console.error('Error adding new user:', err);
@@ -1068,7 +1073,16 @@ app.post('/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
 //         res.status(500).json({ success: false, message: 'Internal server error' });
 //     }
 // });
-
+async function emailExists(email) {
+    try {
+        const stmt = db.prepare('SELECT EXISTS(SELECT 1 FROM player WHERE email = ?)');
+        const result = stmt.get(email);
+        return result['EXISTS(SELECT 1 FROM player WHERE email = ?)'] === 1;
+    } catch (err) {
+        console.error('Error checking if email exists:', err);
+        return false;
+    }
+}
 
 async function playerExists(first, last) {
     try {

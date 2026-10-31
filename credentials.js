@@ -91,45 +91,45 @@ async function changePassword(email, newPassword) {
     }
 }
 
-const bulkregister = (users) => {
-    // users is an array of objects with first and last properties
-    const registered = [];
-    users.forEach(user => {
-        const result = register(user.first, user.last);
-        registered.push({ first: user.first, last: user.last, ...result });
-    });
-    return registered;
-}
+// const bulkregister = (users) => {
+//     // users is an array of objects with first and last properties
+//     const registered = [];
+//     users.forEach(user => {
+//         const result = register(user.first, user.last);
+//         registered.push({ first: user.first, last: user.last, ...result });
+//     });
+//     return registered;
+// }
 
-const register = (first, last, username) => {
-    // since only members can register and use this app,
-    // we add the first and last name and username
-    // to the player table. After adding the user we get their id and use that
-    // to construct their temporary password (first + id). This is returned back to the app
-    // which displays it to the admin user so they can inform the member of their temporary credentials.
-    try {
-        //check if username already exists
-        const existingUser = userExists(username);
-        if (existingUser) {
-            console.error('Username already exists:', username);
-            return { error: 'Username already exists' };
-        }
-        const stmt = db.prepare('INSERT INTO player (first, last, username) VALUES (?, ?, ?) returning id;');
-        const id = stmt.get(first.trim(), last.trim(), username).id;
-        const tempPassword = first.trim().toLowerCase() + id.toString();
-        const saltRounds = 10;
-        const hashedPassword = bcrypt.hashSync(tempPassword, saltRounds);
-        const updateStmt = db.prepare('UPDATE player SET password = ? WHERE id = ?;');
-        updateStmt.run(hashedPassword, id);
-        return { username: username, tempPassword: tempPassword }
-    } catch (err) {
-        console.error('Error registering user:', err);
-    }
-}
+// const register = (first, last, username) => {
+//     // since only members can register and use this app,
+//     // we add the first and last name and username
+//     // to the player table. After adding the user we get their id and use that
+//     // to construct their temporary password (first + id). This is returned back to the app
+//     // which displays it to the admin user so they can inform the member of their temporary credentials.
+//     try {
+//         //check if username already exists
+//         const existingUser = userExists(username);
+//         if (existingUser) {
+//             console.error('Username already exists:', username);
+//             return { error: 'Username already exists' };
+//         }
+//         const stmt = db.prepare('INSERT INTO player (first, last, username) VALUES (?, ?, ?) returning id;');
+//         const id = stmt.get(first.trim(), last.trim(), username).id;
+//         const tempPassword = first.trim().toLowerCase() + id.toString();
+//         const saltRounds = 10;
+//         const hashedPassword = bcrypt.hashSync(tempPassword, saltRounds);
+//         const updateStmt = db.prepare('UPDATE player SET password = ? WHERE id = ?;');
+//         updateStmt.run(hashedPassword, id);
+//         return { username: username, tempPassword: tempPassword }
+//     } catch (err) {
+//         console.error('Error registering user:', err);
+//     }
+// }
 
 const registeredUsers = () => {
     try {
-        const stmt = db.prepare('SELECT id, first, last, username FROM player WHERE username IS NOT NULL order by last, first;');
+        const stmt = db.prepare('SELECT id, first, last, username FROM player order by last, first;');
         return stmt.all();
     } catch (err) {
         console.error('Error fetching registered users:', err);
@@ -331,12 +331,12 @@ module.exports = {
     userExists,
     addUser,
     changePassword,
-    registeredUsers,
+    // registeredUsers,
     isAdmin,
     isPlayer,
     login,
-    register,
-    bulkregister,
+    // register,
+    // bulkregister,
     passwordMatches,
     saveGuestInquiry,
     getMailingListAddresses,

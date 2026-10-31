@@ -29,25 +29,20 @@
       <div class="content">
         <p><strong>Welcome Admins!</strong></p>
         <p>When a new member joins our club you can add her/him as a member
-          by entering their first and last name. The system will then return
-          to you their temporary login name and login password. You will need to
-          inform the member of their temporary login credentials. Also please inform
-          the member to change their temporary password as soon as possible.
-        </p>
-        <p>Sometimes a member may forget their temporary login password.
-          You can get the temporary login credentials and provide
-          them to the member.
+          by entering their first and last name, and their email address and phone number. 
+          Once the member is added, they can use their email and phone number to log insecurely or go on to
+          create a strong password and access their account securely and with full functionality.
         </p>
         <p>As an admin you can send emails individually or a group of members.
           To make it easy to send emails to a group of members without having
-          to everytime select each individual member to include in the group
+          to every time select each individual member to include in the group
           you can create mailing lists. For instance you may create a mailing
           list called 'All members'. In this mailing list you would include all
           the members. Similarly you may include one for 'New members' in which
           you may include only those members who are new to our club. etc.
         </p>
         <p>Once you have created these mailing lists then you just have to select
-          the mailing list.</p>
+          the mailing list and compose your email to the selected group.</p>
         <p>You can also monitor who all have received the emails that you
           or other admins have sent.
         </p>
@@ -231,6 +226,14 @@
             <div class="field half">
               <label for="newplayerlastname">Last Name</label>
               <input type="text" name="newplayerlastname" id="newplayerlastname" placeholder="Last Name" required />
+            </div>
+            <div class="field half">
+              <label for="newplayeremail">Email</label>
+              <input type="email" name="newplayeremail" id="newplayeremail" placeholder="Email" required />
+            </div>
+            <div class="field half">
+              <label for="newplayerphone">Phone Number</label>
+              <input type="text" name="newplayerphone" id="newplayerphone" placeholder="Phone Number" required />
             </div>
             <div class="field full wrap">
               <button id="submitNewPlayerButton" type="button" style="margin-top: 30px;" onclick="SubmitNewPlayer()"

@@ -58,7 +58,7 @@ async function GetDefaultLoginCredentials() {
 }
 async function SubmitNewPlayer() {
   try {
-    console.log('Adding new player first and last names only');
+    // console.log('Adding new player first and last names only');
     const res = await fetch(`/addnewplayer`, {
       method: 'POST',
       headers: {
@@ -66,13 +66,16 @@ async function SubmitNewPlayer() {
       },
       body: JSON.stringify({
         first: document.getElementById('newplayerfirstname').value,
-        last: document.getElementById('newplayerlastname').value
+        last: document.getElementById('newplayerlastname').value,
+        email: document.getElementById('newplayeremail').value,
+        phone: document.getElementById('newplayerphone').value
       })
     });
     if (!res.ok) {
-      const err = await res.text();
+      const err = await res.json();
       if (res.status === 400) {
-        showCustomAlert('Player with the same first and last name already exists', 5);
+        console.log('Error adding new player:', err);
+        showCustomAlert(`Adding new player failed: ${err.message}`, 5);
         return;
       }
       throw new Error(`Add player failed: ${res.status} ${err}`);
