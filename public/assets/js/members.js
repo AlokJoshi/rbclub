@@ -510,58 +510,67 @@ async function deleteCelebration() {
 }
 
 async function SubmitChanges() {
-  const playerId = document.getElementById('playerId').value;
-  // Build FormData for multipart upload (includes file if selected)
-  const form = new FormData();
-  form.append('first', document.getElementById('firstName').value);
-  form.append('last', document.getElementById('lastName').value);
-  form.append('email', document.getElementById('email').value);
-  form.append('phone', document.getElementById('phone').value);
-  form.append('dob_month', document.getElementById('dobMonth').value);
-  form.append('dob_date', document.getElementById('dobDate').value);
-  form.append('acblNumber', document.getElementById('acblnumber').value);
-  form.append('ice_phone', document.getElementById('ice_phone').value);
-  form.append('ice_relation', document.getElementById('ice_relation').value);
-  if (document.getElementById('m1').checked) form.append('m1', 'on');
-  if (document.getElementById('t1').checked) form.append('t1', 'on');
-  if (document.getElementById('f1').checked) form.append('f1', 'on');
-  // if (document.getElementById('ug').checked) form.append('ug', 'on');
-  if (document.getElementById('isDirector').checked) form.append('isDirector', 'on');
-  const officerPosition = document.getElementById('officerPosition').value;
-  if (officerPosition) form.append('officerPosition', officerPosition);
-  const fileInput = document.getElementById('playerImageInput');
-  const playerImageData = document.getElementById('playerImageData').value;
-  if (fileInput && fileInput.files && fileInput.files[0]) {
-    form.append('playerImage', fileInput.files[0]);
-  } else if (playerImageData) {
-    const blob = await (await fetch(playerImageData)).blob();
-    form.append('playerImage', blob, 'avatar.png'); // give it a filename
-  }
-  console.log('Submitting changes (multipart)...');
-  const res = await fetch(`/playerdata/${playerId}`, {
-    method: 'PUT',
-    body: form
-  });
+  try {
+    const playerId = document.getElementById('playerId').value;
+    // Build FormData for multipart upload (includes file if selected)
+    const form = new FormData();
+    form.append('first', document.getElementById('firstName').value);
+    form.append('last', document.getElementById('lastName').value);
+    form.append('email', document.getElementById('email').value);
+    form.append('phone', document.getElementById('phone').value);
+    form.append('dob_month', document.getElementById('dobMonth').value);
+    form.append('dob_date', document.getElementById('dobDate').value);
+    form.append('acblNumber', document.getElementById('acblnumber').value);
+    form.append('ice_phone', document.getElementById('ice_phone').value);
+    form.append('ice_relation', document.getElementById('ice_relation').value);
+    if (document.getElementById('m1').checked) form.append('m1', 'on');
+    if (document.getElementById('t1').checked) form.append('t1', 'on');
+    if (document.getElementById('f1').checked) form.append('f1', 'on');
+    // if (document.getElementById('ug').checked) form.append('ug', 'on');
+    if (document.getElementById('isDirector').checked) form.append('isDirector', 'on');
+    const officerPosition = document.getElementById('officerPosition').value;
+    if (officerPosition) form.append('officerPosition', officerPosition);
+    const fileInput = document.getElementById('playerImageInput');
+    const playerImageData = document.getElementById('playerImageData').value;
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      form.append('playerImage', fileInput.files[0]);
+    } else if (playerImageData) {
+      const blob = await (await fetch(playerImageData)).blob();
+      form.append('playerImage', blob, 'avatar.png'); // give it a filename
+    }
+    console.log('Submitting changes (multipart)...');
+    const res = await fetch(`/playerdata/${playerId}`, {
+      method: 'PUT',
+      body: form
+    });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Update failed: ${res.status} ${err}`);
-  } else {
+    if (!res.ok) {
+      if (res.status === 413) {
+        showCustomAlert('Unable to save player data because the request is too large. Please use a smaller image and try again.', 8);
+        return;
+      }
+
+      const err = await res.text();
+      throw new Error(`Update failed: ${res.status} ${err}`);
+    }
+
     showCustomAlert('Player updated successfully', 5);
     document.getElementById("addoreditplayer").style.display = "none";
+    createPlayerTable(); // refresh the table display
+
+    const el = document.getElementById('listofplayers');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.setAttribute('tabindex', '-1');
+    el.focus();
+
+    ClearForm();
+    DisableSubmitButton(false);
+
+    return res.json(); // updated resource (if returned)
+  } catch (err) {
+    console.error('Error updating player:', err);
+    showCustomAlert(`Error updating player: ${err.message}`, 8);
   }
-
-  createPlayerTable(); // refresh the table display
-
-  const el = document.getElementById('listofplayers');
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  el.setAttribute('tabindex', '-1');
-  el.focus();
-
-  ClearForm();
-  DisableSubmitButton(false);
-
-  return res.json(); // updated resource (if returned)  
 }
 
 function CancelChanges() {

@@ -671,48 +671,65 @@ app.put('/getdefaultlogincredentials', async (req, res) => {
 });
 
 // Accept multipart/form-data with optional file field 'playerImage' for updates
-app.put('/playerdata/:id', avtarUpload.single('playerImage'), async (req, res) => {
-    const playerId = req.params.id;
-    const data = req.body;
-    console.log('Updating player:', playerId, { body: data, file: req.file?.key });
-    try {
-        const currentPlayer = db.prepare('SELECT image_path FROM player WHERE id = ?').get(playerId);
-        if (!currentPlayer) {
-            return res.status(404).json({ error: 'Player not found' });
+app.put('/playerdata/:id', (req, res) => {
+    avtarUpload.single('playerImage')(req, res, async (uploadErr) => {
+        if (uploadErr) {
+            if (uploadErr instanceof multer.MulterError && uploadErr.code === 'LIMIT_FILE_SIZE') {
+                return res.status(413).json({
+                    success: false,
+                    message: 'Uploaded image is too large. Please upload an image smaller than 10 MB.'
+                });
+            }
+
+            console.error('Error uploading player image:', uploadErr);
+            return res.status(400).json({
+                success: false,
+                message: uploadErr.message || 'Invalid player image upload request.'
+            });
         }
 
-        const uploadedImagePath = req.file && typeof req.file.key === 'string'
-            ? req.file.key
-            : null;
-        const imagePathToSave = uploadedImagePath || currentPlayer.image_path || null;
+        const playerId = req.params.id;
+        const data = req.body;
+        console.log('Updating player:', playerId, { body: data, file: req.file?.key });
+        try {
+            const currentPlayer = db.prepare('SELECT image_path FROM player WHERE id = ?').get(playerId);
+            if (!currentPlayer) {
+                return res.status(404).json({ error: 'Player not found' });
+            }
 
-        const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, dob_date=?, 
+            const uploadedImagePath = req.file && typeof req.file.key === 'string'
+                ? req.file.key
+                : null;
+            const imagePathToSave = uploadedImagePath || currentPlayer.image_path || null;
+
+            const stmt = db.prepare(`UPDATE player SET first=?, last=?, email=?, phone=?, dob_month=?, dob_date=?, 
                                  acblNumber=?, ice_phone=?, ice_relation=?, m1=?, t1=?, f1=?,   
                                  image_path=?, director=?, position=? WHERE id = ?;`);
 
-        const result = stmt.run(data.first,
-            data.last,
-            data.email,
-            data.phone,
-            data.dob_month == '' || data.dob_month === null ? 0 : data.dob_month,
-            data.dob_date == '' || data.dob_date === null ? 0 : data.dob_date,
-            data.acblNumber,
-            data.ice_phone,
-            data.ice_relation,
-            (data.m1 === true || data.m1 === 'true' || data.m1 === 'on') ? 1 : 0,
-            (data.t1 === true || data.t1 === 'true' || data.t1 === 'on') ? 1 : 0,
-            (data.f1 === true || data.f1 === 'true' || data.f1 === 'on') ? 1 : 0,
-            // (data.ug === true || data.ug === 'true' || data.ug === 'on') ? 1 : 0,
-            imagePathToSave,
-            (data.isDirector === true || data.isDirector === 'true' || data.isDirector === 'on') ? 1 : 0,
-            (!data.officerPosition || data.officerPosition === 'None') ? null : data.officerPosition,
-            playerId);
+            const result = stmt.run(data.first,
+                data.last,
+                data.email,
+                data.phone,
+                data.dob_month == '' || data.dob_month === null ? 0 : data.dob_month,
+                data.dob_date == '' || data.dob_date === null ? 0 : data.dob_date,
+                data.acblNumber,
+                data.ice_phone,
+                data.ice_relation,
+                (data.m1 === true || data.m1 === 'true' || data.m1 === 'on') ? 1 : 0,
+                (data.t1 === true || data.t1 === 'true' || data.t1 === 'on') ? 1 : 0,
+                (data.f1 === true || data.f1 === 'true' || data.f1 === 'on') ? 1 : 0,
+                // (data.ug === true || data.ug === 'true' || data.ug === 'on') ? 1 : 0,
+                imagePathToSave,
+                (data.isDirector === true || data.isDirector === 'true' || data.isDirector === 'on') ? 1 : 0,
+                (!data.officerPosition || data.officerPosition === 'None') ? null : data.officerPosition,
+                playerId);
 
-        res.json(result);
-    } catch (err) {
-        console.error('Error updating player:', err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+            return res.json(result);
+        } catch (err) {
+            console.error('Error updating player:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    });
 });
 
 app.delete('/playerdata/:id', async (req, res) => {

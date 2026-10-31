@@ -97,7 +97,10 @@ const blogMultiUpload = multer({
   limits: { files: 10, fileSize: 10 * 1024 * 1024 }
 });
 
-const avatarUpload = multer({ storage: avatarStorage })
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { files: 1, fileSize: 10 * 1024 * 1024 }
+})
 const celebrationUpload = multer({ storage: celebrationStorage })
 
 module.exports = {
