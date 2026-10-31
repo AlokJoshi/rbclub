@@ -1168,7 +1168,7 @@ app.post('/setplayingintentions', (req, res) => {
 
 app.post('/updatepotm', (req, res) => {
     const { potmmonth, potmyear, playerid, potmplayerid, selectedPhrases } = req.body;
-    const comment = selectedPhrases && selectedPhrases.length > 0 ? selectedPhrases.join(',') : '';
+    const comment = selectedPhrases && selectedPhrases.length > 0 ? selectedPhrases.join(', ') : '';
     const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid, comment) values(
     ?,?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid = ?,
     comment = ? where potmmonth = ? and potmyear =? and playerid = ?;`
@@ -1196,7 +1196,7 @@ app.get('/getpotm/:potmmonth/:potmyear', (req, res) => {
         // group by player.id, player.first, player.last, player.image_path order by votes desc LIMIT 3;`);
         const stmt = db.prepare(`SELECT player.id, player.first, player.last, player.image_path, 
             count(player.id) as votes, 
-            group_concat(potm.comment, ' | ') AS comments_concat
+            group_concat(replace(replace(potm.comment, ', ', ','), ',', ', '), '  | ') AS comments_concat
             FROM player inner join potm on 
             player.id = potm.potmplayerid WHERE potmmonth = ? AND potmyear = ? 
             group by player.id, player.first, player.last, player.image_path order by votes desc LIMIT 3;`);
@@ -1224,7 +1224,7 @@ app.post('/savephrase', (req, res) => {
         const stmt1 = db.prepare('SELECT comment FROM potm WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
         const existing = stmt1.get(playerid, potmplayerid, potmmonth, potmyear);
         if (existing) {
-            const updatedPhrase = (existing.comment === '' || existing.comment == null) ? potmphrase : `${existing.comment},${potmphrase}`;
+            const updatedPhrase = (existing.comment === '' || existing.comment == null) ? potmphrase : `${existing.comment}, ${potmphrase}`;
             const stmt = db.prepare('UPDATE potm SET comment = ? WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
             stmt.run(updatedPhrase, playerid, potmplayerid, potmmonth, potmyear);
         } else {
