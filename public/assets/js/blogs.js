@@ -426,7 +426,19 @@ async function decideAboutBloggers() {
 
 function pasteCardImage(what) {
   try {
-    const imgSource = 'images/gallery/Suits/' + what + '.png';
+    const suitFileMap = {
+      spade: 'Spade.PNG',
+      heart: 'heart.PNG',
+      diamond: 'Diamond.PNG',
+      club: 'Club.PNG'
+    };
+    const normalizedSuit = String(what || '').trim().toLowerCase();
+    const suitFile = suitFileMap[normalizedSuit];
+    if (!suitFile) {
+      showCustomAlert(`Unknown suit: ${what}`);
+      return;
+    }
+    const imgSource = `images/gallery/Suits/${suitFile}`;
     console.log('Inserting image with source:', imgSource);
     const img = document.createElement('img');
     img.src = imgSource;
