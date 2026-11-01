@@ -427,10 +427,10 @@ async function decideAboutBloggers() {
 function pasteCardImage(what) {
   try {
     const suitFileMap = {
-      spade: 'Spade.PNG',
+      spade: 'spade.PNG',
       heart: 'heart.PNG',
-      diamond: 'Diamond.PNG',
-      club: 'Club.PNG'
+      diamond: 'diamond.PNG',
+      club: 'club.PNG'
     };
     const normalizedSuit = String(what || '').trim().toLowerCase();
     const suitFile = suitFileMap[normalizedSuit];
