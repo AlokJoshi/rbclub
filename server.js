@@ -460,9 +460,9 @@ app.post('/addnewplayer', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Player with the same email already exists' });
     }
     try {
-        // const username = data.first.trim().toLowerCase() + data.last.trim().toLowerCase().charAt(0);
-        const stmt = db.prepare('INSERT INTO player (first,last,email,phone) VALUES (?, ?, ?, ?);');
-        const result = stmt.run(data.first.trim(), data.last.trim(), data.email.trim(), data.phone.trim())
+        const username = data.first.trim().toLowerCase() + data.last.trim().toLowerCase().charAt(0);
+        const stmt = db.prepare('INSERT INTO player (first,last,email,phone,username) VALUES (?, ?, ?, ?, ?);');
+        const result = stmt.run(data.first.trim(), data.last.trim(), data.email.trim(), data.phone.trim(), username)
         if (!result || result.changes === 0) {
             return res.status(500).json({ success: false, message: 'Failed to add new player' });
         }
