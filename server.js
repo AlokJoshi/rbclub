@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 3000;
 const { avtarUpload, emailReplyUpload,
     celebrationMultiUpload, blogMultiUpload } = require('./helper');
 
-const { userExists, login, changePassword, isAdmin,  
+const { userExists, login, changePassword, isAdmin, registeredUsers,
     passwordMatches, getMailingListAddresses, getMailingLists,
     deleteMailingList, createMailingList, existsMailingList,
     updateMailingList, getMailingListRecipients, getMailingListEmails, isPlayer,
