@@ -13,6 +13,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.0/sweetalert.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@zumer/snapdom/dist/snapdom.min.js"></script>
 
+  <!-- Include inline CSS for the page here -->
+  <style>
+    .card-row td:not(:first-child) { cursor: pointer; }
+  </style>
+
 </head>
 
 <body class="is-preload">
@@ -27,6 +32,7 @@
 				<div>Alt-Shift-H: Hearts</div>
 				<div>Alt-Shift-D: Diamonds</div>
 				<div>Alt-Shift-C: Clubs</div>
+        <div><em>Tip: Double-click a hand image on desktop, or tap it on mobile, to reopen and edit that hand.</em></div>
       </header>
       <div class="content">
         <form method="">
@@ -66,11 +72,11 @@
 
     </section>
     
-    <div id="handmodal" class="modal modal-content">
+    <div id="handmodal" class="modal modal-content" style="max-width: 70vw">
       <span id="closehandmodal" class="close" onclick="closehandmodal()">&times;</span>
       <h2>Create Hand</h2>
       <table onclick="selectcard(event)">
-        <tr id="spade" data-remaining="13">
+        <tr id="spade" class="card-row" data-remaining="13">
           <td><img src="images/gallery/suits/spade.png" style="width:15px" /></td>
           <td>A</td>
           <td>K</td>
@@ -86,7 +92,7 @@
           <td>3</td>
           <td>2</td>
         </tr>
-        <tr id="heart" data-remaining="13">
+        <tr id="heart" class="card-row" data-remaining="13">
           <td><img src="images/gallery/suits/heart.png" style="width:15px" /></td>
           <td>A</td>
           <td>K</td>
@@ -102,7 +108,7 @@
           <td>3</td>
           <td>2</td>
         </tr>
-        <tr id="diamond" data-remaining="13">
+        <tr id="diamond" class="card-row" data-remaining="13">
           <td><img src="images/gallery/suits/diamond.png" style="width:15px" /></td>
           <td>A</td>
           <td>K</td>
@@ -118,7 +124,7 @@
           <td>3</td>
           <td>2</td>
         </tr>
-        <tr id="club" data-remaining="13">
+        <tr id="club" class="card-row" data-remaining="13">
           <td><img src="images/gallery/suits/club.png" style="width:15px" /></td>
           <td>A</td>
           <td>K</td>
@@ -308,6 +314,7 @@
     tinymce.init({
       selector: '#mytextarea',
       license_key: 'gpl', // gpl for open source, T8LK:... for commercial
+      extended_valid_elements: 'span[class|data-hand-state],img[class|src|style|alt]',
       setup: function (editor) {
         editor.addShortcut('Alt+Shift+S', 'Description', function () {
           // Custom action here
@@ -325,6 +332,21 @@
           // Custom action here
           pasteCardImage('Club');
         });
+        const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+        editor.on('DblClick', function (evt) {
+          const target = evt.target;
+          if (target && target.classList && target.classList.contains('bridge-hand-image')) {
+            openBridgeHandEditorFromImage(target);
+          }
+        });
+        if (isTouchDevice) {
+          editor.on('click', function (evt) {
+            const target = evt.target;
+            if (target && target.classList && target.classList.contains('bridge-hand-image')) {
+              openBridgeHandEditorFromImage(target);
+            }
+          });
+        }
       }
     });
   </script>

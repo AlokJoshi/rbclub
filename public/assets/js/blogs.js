@@ -289,7 +289,136 @@ function cancelblog() {
   window.open('/members')
 }
 
+const handDirections = ['n', 'e', 's', 'w'];
+const handSuits = [
+  { key: 's', rowId: 'spade' },
+  { key: 'h', rowId: 'heart' },
+  { key: 'd', rowId: 'diamond' },
+  { key: 'c', rowId: 'club' }
+];
+let bridgeHandBeingEdited = null;
+
+function resetHandDisplay() {
+  handDirections.forEach(direction => {
+    const table = document.getElementById(direction);
+    if (table) {
+      table.dataset.count = '0';
+    }
+    handSuits.forEach(({ key }) => {
+      const cardsSpan = document.getElementById(`${direction}${key}cards`);
+      if (cardsSpan) {
+        cardsSpan.textContent = '';
+      }
+    });
+  });
+
+  handSuits.forEach(({ rowId }) => {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    row.dataset.remaining = '13';
+    const cells = row.querySelectorAll('td');
+    cells.forEach((cell, index) => {
+      cell.style.visibility = index === 0 ? 'visible' : 'visible';
+    });
+  });
+}
+
+function captureHandState() {
+  const state = {};
+  handDirections.forEach(direction => {
+    state[direction] = {};
+    handSuits.forEach(({ key }) => {
+      const cardsSpan = document.getElementById(`${direction}${key}cards`);
+      const cards = cardsSpan ? cardsSpan.textContent.replace(/\s+/g, '').trim() : '';
+      state[direction][key] = cards;
+    });
+  });
+  return state;
+}
+
+function restoreHandState(state) {
+  resetHandDisplay();
+  if (!state || typeof state !== 'object') return;
+
+  handSuits.forEach(({ key, rowId }) => {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    let selectedForSuit = 0;
+
+    handDirections.forEach(direction => {
+      const cards = state[direction] && typeof state[direction][key] === 'string'
+        ? state[direction][key]
+        : '';
+      const normalized = cards.replace(/\s+/g, '').trim();
+      const cardsSpan = document.getElementById(`${direction}${key}cards`);
+      const table = document.getElementById(direction);
+      if (!cardsSpan || !table) return;
+
+      cardsSpan.textContent = normalized;
+      const countForDirection = normalized.length;
+      table.dataset.count = (parseInt(table.dataset.count || '0') + countForDirection).toString();
+      selectedForSuit += countForDirection;
+    });
+
+    const cells = Array.from(row.querySelectorAll('td')).slice(1);
+    cells.forEach(cell => {
+      cell.style.visibility = 'visible';
+    });
+
+    handDirections.forEach(direction => {
+      const cards = state[direction] && typeof state[direction][key] === 'string'
+        ? state[direction][key].replace(/\s+/g, '').trim()
+        : '';
+      cards.split('').forEach(card => {
+        const matchingCell = cells.find(cell => cell.style.visibility !== 'hidden' && cell.textContent.trim() === card);
+        if (matchingCell) {
+          matchingCell.style.visibility = 'hidden';
+        }
+      });
+    });
+
+    row.dataset.remaining = String(Math.max(0, 13 - selectedForSuit));
+  });
+}
+
+function encodeHandState(state) {
+  try {
+    return encodeURIComponent(JSON.stringify(state));
+  } catch (err) {
+    console.error('Error encoding hand state:', err);
+    return '';
+  }
+}
+
+function decodeHandState(encodedState) {
+  if (!encodedState) return null;
+  try {
+    return JSON.parse(decodeURIComponent(encodedState));
+  } catch (err) {
+    console.error('Error decoding hand state:', err);
+    return null;
+  }
+}
+
+function openBridgeHandEditorFromImage(imageElement) {
+  if (!imageElement || !imageElement.closest) return;
+  const wrapper = imageElement.closest('.bridge-hand');
+  if (!wrapper) return;
+  const handState = decodeHandState(wrapper.getAttribute('data-hand-state'));
+  if (!handState) {
+    showCustomAlert('Cannot edit this hand because its saved state is missing.', 5);
+    return;
+  }
+  restoreHandState(handState);
+  bridgeHandBeingEdited = wrapper;
+  const handmodal = document.getElementById('handmodal');
+  if (handmodal) {
+    handmodal.style.display = 'block';
+  }
+}
+
 function createhand() {
+  bridgeHandBeingEdited = null;
   const handmodal = document.getElementById('handmodal')
   if (handmodal) {
     handmodal.style.display = 'block';
@@ -307,6 +436,7 @@ function exitHand() {
 }
 
 function closehandmodal() {
+  bridgeHandBeingEdited = null;
   const handmodal = document.getElementById('handmodal')  
   if (handmodal) {
     handmodal.style.display = 'none'
@@ -469,36 +599,42 @@ function fixdirection(direction) {
 function removecards(event) {
   const target = event.target;
   const id = target.id;
+  const direction = id[0].toLowerCase();
+  const numberOfCards = document.getElementById(id)?.textContent.trim().length || 0;
   if (id && id.endsWith('cards')) {
     //first put the cards back into the card selection area
     const cards = target.textContent.trim().split('').filter(c => c);
     suit = id[1] == 'h' ? 'heart' : id[1] === 'd' ? 'diamond' : id[1] === 'c' ? 'club' : id[1] === 's' ? 'spade' : null;
     suitrow = document.getElementById(`${suit}`) //suitid should be spade,heart,diamond,club
     const cardElements = suitrow.querySelectorAll('td');
+    let remaining = 0
     cards.forEach(card => {
       cardElements.forEach(td => {
         if (td.textContent.trim() === card) {
           td.style.visibility = 'visible';
+          remaining++;
         }
       });
     });
+    suitrow.dataset.remaining = parseInt(suitrow.dataset.remaining || '0') + remaining;
     target.textContent = ''; //remove cards from the hand
-    target.parentElement.dataset.count = '0'; //reset count of cards in the hand
+    document.getElementById(direction).dataset.count = parseInt(document.getElementById(direction).dataset.count)-numberOfCards
+    // target.parentElement.dataset.count = '0'; //reset count of cards in the hand
   }
 }
-function otherDirectionsCanAccommodateCard(direction) {
+function otherDirectionsCanAccommodateThisSuit(direction, suit) {
   const directions = ['n', 'e', 's', 'w'];
   const otherDirections = directions.filter(d => d !== direction);
   // Implement logic to check if other directions can accommodate the suit
   // This is a placeholder implementation; adjust according to your requirements
-  return otherDirections.some(d => {
-    const table = document.getElementById(d);
-    if (table) {
-      const count = parseInt(table.dataset.count || '0');
-      return count < 13;
+  let count = 0;
+  otherDirections.some(d => {
+    const spanEl = document.getElementById(`${d}${suit}cards`);
+    if (spanEl) {
+      count += parseInt(spanEl.innerText.trim().length || '0');
     }
-    return false;
   });
+  return count < 13;
 }
 
 
@@ -510,7 +646,7 @@ async function selectcard(event) {
     const suit = suitElementId ? suitElementId[0].toLowerCase() : '';
     const suitElement = document.getElementById(suitElementId);
     const direction = document.querySelector('.directiondiv.active')?.textContent.trim().toLowerCase()[0];
-    const otherDirectionsCannotAccommodateThisSuit = !otherDirectionsCanAccommodateCard(direction);
+    const otherDirectionsCannotAccommodateThisSuit = !otherDirectionsCanAccommodateThisSuit(direction, suit);
     const activeTable = document.querySelector(`#${direction}`);
     const cardsSpan = activeTable.querySelector(`#${direction}${suit}cards`);
     
@@ -608,14 +744,29 @@ function pasteImage() {
   }
 
   const element = document.getElementById('handdisplay');
+  const handState = captureHandState();
+  const encodedState = encodeHandState(handState);
+  if (!encodedState) {
+    showCustomAlert('Unable to save hand state. Please try again.', 5);
+    return;
+  }
+  const editor = tinyMCE.activeEditor;
+  if (!editor) {
+    showCustomAlert('TinyMCE editor not found. Cannot paste hand image.', 5);
+    return;
+  }
   // const previewElement = document.getElementById('preview');
   snapdom.toImg(element, {
     format: 'png',
     scale: 0.7
   }).then(function (img) {
-    // previewElement.src = img.src;
-    // previewElement.style.display = 'block';
-    tinyMCE.activeEditor.execCommand('mceInsertContent', false, `<img src="${img.src}" style="max-width:100%;height:auto;" />`);
+    const handMarkup = `<span class="bridge-hand" data-hand-state="${encodedState}"><img class="bridge-hand-image" src="${img.src}" style="max-width:100%;height:auto;" /></span>`;
+    if (bridgeHandBeingEdited) {
+      editor.dom.setOuterHTML(bridgeHandBeingEdited, handMarkup);
+      bridgeHandBeingEdited = null;
+    } else {
+      editor.execCommand('mceInsertContent', false, handMarkup);
+    }
   }).catch(function (err) {
     showCustomAlert('Failed to capture the hand display. Please try again.', 5);
     console.error('Paste image failed:', err);
