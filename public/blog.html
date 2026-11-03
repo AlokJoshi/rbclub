@@ -334,17 +334,11 @@
         });
         const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
         editor.on('DblClick', function (evt) {
-          const target = evt.target;
-          if (target && target.classList && target.classList.contains('bridge-hand-image')) {
-            openBridgeHandEditorFromImage(target);
-          }
+          openBridgeHandEditorFromImage(evt.target);
         });
         if (isTouchDevice) {
           editor.on('click', function (evt) {
-            const target = evt.target;
-            if (target && target.classList && target.classList.contains('bridge-hand-image')) {
-              openBridgeHandEditorFromImage(target);
-            }
+            openBridgeHandEditorFromImage(evt.target);
           });
         }
       }

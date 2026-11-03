@@ -400,9 +400,14 @@ function decodeHandState(encodedState) {
   }
 }
 
-function openBridgeHandEditorFromImage(imageElement) {
-  if (!imageElement || !imageElement.closest) return;
-  const wrapper = imageElement.closest('.bridge-hand');
+function resolveBridgeHandWrapper(target) {
+  if (!target || !target.closest) return null;
+  return target.closest('[data-hand-state]');
+}
+
+function openBridgeHandEditorFromImage(targetElement) {
+  if (!targetElement) return;
+  const wrapper = resolveBridgeHandWrapper(targetElement);
   if (!wrapper) return;
   const handState = decodeHandState(wrapper.getAttribute('data-hand-state'));
   if (!handState) {
