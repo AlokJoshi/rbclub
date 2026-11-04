@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 3000;
 const { avtarUpload, emailReplyUpload,
     celebrationMultiUpload, blogMultiUpload } = require('./helper');
 
-const { userExists, login, changePassword, isAdmin, registeredUsers,
+const { userExists, login, changePassword, isAdmin, users,
     passwordMatches, getMailingListAddresses, getMailingLists,
     deleteMailingList, createMailingList, existsMailingList,
     updateMailingList, getMailingListRecipients, getMailingListEmails, isPlayer,
@@ -561,7 +561,7 @@ app.post('/changepassword', async (req, res) => {
 
 
 
-app.get('/registeredusers', async (req, res) => {
+app.get('/users', async (req, res) => {
     const users = registeredUsers();
     res.json({ users });
 });

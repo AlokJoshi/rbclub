@@ -1724,7 +1724,7 @@ async function PopulatePOTMForm() {
     potmlabel.textContent = `My vote for Player of the Month for ${potmmonth} ${potmyear} goes to:`;
   }
   try {
-    const res = await fetch('/registeredusers', {
+    const res = await fetch('/users', {
       method: 'GET'
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
