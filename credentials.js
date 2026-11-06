@@ -237,8 +237,8 @@ function getMailingListEmails(listId) {
     try {
         const result = getMailingListRecipients(listId);
         if (result.success) {
-            const emails = result.recipients.map(r => r.email).filter(email => email !== null && email !== undefined && email.trim() !== '');
-            return {success: true, emails: emails, message: 'Recipient emails fetched successfully'};
+            const emails = result.recipients.map(r => r.email).filter(email => email != null && email.trim() !== '');
+            return {success: true, emails, message: 'Recipient emails fetched successfully'};
         } else {
             return {success: false, emails: [], message: 'Error fetching recipients'};
         }

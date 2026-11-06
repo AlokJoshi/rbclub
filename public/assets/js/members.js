@@ -726,6 +726,8 @@ async function createPlayerTable() {
             img.height = 40;
           }
           img.style.borderRadius = '20px';
+          td.style.display = 'flex';
+          td.style.justifyContent = 'center';
           td.appendChild(img);
         } else {
           td.textContent = val ?? '';
@@ -1348,6 +1350,54 @@ var loginModal = document.getElementById("loginmodal");
 // shouldAdmitToSite()
 
 // checkIfUserShouldBeAllowedTemporayLogin()
+
+async function PopulateBirthdaysTable(event) {
+  try {
+
+    const m = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    const getMonthName = (num) => m[num - 1];
+
+    const month = event.target.value;
+
+    const res = await fetch(`/birthdays/${month}`, {
+      method: 'GET'
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+
+    const tbody = document.getElementById('birthdaysTableBody');
+    if (!tbody) return console.warn('Table body #birthdaysTableBody not found');
+    tbody.innerHTML = '';
+
+    const birthdays = result.birthdays
+    
+    if (!Array.isArray(birthdays)) {
+      console.error('Expected /birthdays to return an array, got:', birthdays);
+      return;
+    }
+
+    birthdays.forEach((value) => {
+      const tr = document.createElement('tr');
+      const nameTd = document.createElement('td');
+      nameTd.textContent = value.name || '';
+      tr.appendChild(nameTd);
+
+      const monthTd = document.createElement('td');
+      monthTd.textContent = getMonthName(parseInt(value.dob_month)) || '';
+      tr.appendChild(monthTd);
+
+      const dateTd = document.createElement('td');
+      dateTd.textContent = value.dob_date || '';
+      tr.appendChild(dateTd);
+
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('API error:', err);
+  }
+} 
 
 async function PopulateDirectorsTable() {
   try {

@@ -2961,7 +2961,7 @@ table tbody tr:nth-child(2n + 1) {
 
 table td {
 	/* change from 0.25rem 0.25rem */
-	padding: 0.1rem 0.1rem;
+	padding: 0.1rem 0.3rem;
 }
 
 table th {
@@ -4241,7 +4241,7 @@ i.fas.fa-bullhorn.announcement-icon::before {
 }
 
 td {
-	vertical-align: top;
+	vertical-align: middle;
 }
 
 #commentonpotm {

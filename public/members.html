@@ -132,8 +132,12 @@
 						<tr>
 							<th class="col-hidden">ID</th>
 							<th>Picture</th>
-							<th style="cursor:pointer" onclick="document.getElementById('playertable').dataset.sortcolumn='first';document.getElementById('playertable').dataset.sortorder='asc';createPlayerTable()">First</th>
-							<th style="cursor:pointer" onclick="document.getElementById('playertable').dataset.sortcolumn='last';document.getElementById('playertable').dataset.sortorder='asc';createPlayerTable()">Last</th>
+							<th style="cursor:pointer"
+								onclick="document.getElementById('playertable').dataset.sortcolumn='first';document.getElementById('playertable').dataset.sortorder='asc';createPlayerTable()">
+								First</th>
+							<th style="cursor:pointer"
+								onclick="document.getElementById('playertable').dataset.sortcolumn='last';document.getElementById('playertable').dataset.sortorder='asc';createPlayerTable()">
+								Last</th>
 							<th class="col-hidden">Email</th>
 							<th>Phone</th>
 							<th class="col-hidden">DOB</th>
@@ -416,6 +420,82 @@
 					<!-- display blog comments here -->
 					<div style="margin-top:50px;padding:20px;width:100%;max-height:400px;overflow:auto;" id="blogComments"></div>
 				</form>
+			</div>
+		</section>
+
+		<!-- Birthdays Section -->
+		<section>
+			<header>
+				<h2>Birthdays</h2>
+			</header>
+			<div class="content" style="overflow-x:auto;">
+				<p><strong>Select Month to display birthdays:</strong></p>
+
+				<div style="display:grid;grid-template-columns:repeat(4, 1fr);align-items:center;justify-content:space-between">
+					<div>
+						<input type="radio"  id="bdm1" value="1" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm1">Jan</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm2" value="2" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm2">Feb</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm3" value="3" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm3">Mar</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm4" value="4" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm4">Apr</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm5" value="5" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm5">May</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm6" value="6" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm6">Jun</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm7" value="7" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm7">Jul</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm8" value="8" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm8">Aug</label>
+					</div>
+					<div>
+						<input type="radio"  id="bdm9" value="9" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm9">Sep</label>
+					</div>
+					<div>
+						<input type="radio" id="bdm10" value="10" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm10">Oct</label>
+					</div>
+					<div>
+						<input type="radio" id="bdm11" value="11" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm11">Nov</label>
+					</div>
+					<div>
+						<input type="radio" id="bdm12" value="12" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+						for="bdm12">Dec</label>
+					</div>
+					<!-- <input type="radio" id="ug_day" name="attendance" onclick="showAttendance('ug');"><label for="ug_day">Unit
+						Gm</label> -->
+				</div>
+				<table id="birthdaysTable">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Month</th>
+							<th>Date</th>
+						</tr>
+					</thead>
+					<tbody id="birthdaysTableBody">
+						<tr>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</section>
 

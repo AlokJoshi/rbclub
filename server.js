@@ -562,8 +562,8 @@ app.post('/changepassword', async (req, res) => {
 
 
 app.get('/users', async (req, res) => {
-    const users = registeredUsers();
-    res.json({ users });
+    const allusers = users();
+    res.json({ users: allusers });
 });
 
 app.post('/isadmin', async (req, res) => {
@@ -609,18 +609,18 @@ app.get('/playerdata', (req, res) => {
         const stmt = db.prepare(
             `SELECT id,image_path,first,last,email,phone,
             Concat(
-            CASE When dob_month=1 Then 'Jan.'
-            When dob_month=2 Then 'Feb.'
-            When dob_month=3 Then 'Mar.'
-            When dob_month=4 Then 'Apr.'
+            CASE When dob_month=1 Then 'Jan'
+            When dob_month=2 Then 'Feb'
+            When dob_month=3 Then 'Mar'
+            When dob_month=4 Then 'Apr'
             When dob_month=5 Then 'May'
-            When dob_month=6 Then 'Jun.'
-            When dob_month=7 Then 'Jul.'
-            When dob_month=8 Then 'Aug.'
-            When dob_month=9 Then 'Sep.'
-            When dob_month=10 Then 'Oct.'
-            When dob_month=11 Then 'Nov.'
-            When dob_month=12 Then 'Dec.'
+            When dob_month=6 Then 'Jun'
+            When dob_month=7 Then 'Jul'
+            When dob_month=8 Then 'Aug'
+            When dob_month=9 Then 'Sep'
+            When dob_month=10 Then 'Oct'
+            When dob_month=11 Then 'Nov'
+            When dob_month=12 Then 'Dec'
             Else '' End, ' ', Case when dob_date is null or dob_date = '0' then '' else dob_date end) AS dob,
             Case concat(ice_relation, ice_phone) when '' then '' else Concat(ice_relation,'(', ice_phone, ')') end AS ice
             FROM player order by ${sortColumn} ${sortOrder};`
@@ -1104,6 +1104,18 @@ app.get('/announcements', (req, res) => {
         res.json({ success: true, announcements });
     } catch (err) {
         console.error('Error fetching announcements:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.get('/birthdays/:birthmonths', (req, res) => {
+    const months = req.params.birthmonths.split(',');
+    try {
+        const stmt = db.prepare(`SELECT dob_month,dob_date, CONCAT(first, ' ', last) AS name FROM player WHERE dob_month IN (${months.map(() => '?').join(',')})`);
+        const birthdays = stmt.all(...months.map(m => m.toString().padStart(2, '0')));
+        res.json({ success: true, birthdays });
+    } catch (err) {
+        console.error('Error fetching birthdays:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
