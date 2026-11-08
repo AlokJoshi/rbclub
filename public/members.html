@@ -433,52 +433,52 @@
 
 				<div style="display:grid;grid-template-columns:repeat(4, 1fr);align-items:center;justify-content:space-between">
 					<div>
-						<input type="radio"  id="bdm1" value="1" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm1">Jan</label>
+						<input type="radio" id="bdm1" value="1" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm1">Jan</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm2" value="2" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm2">Feb</label>
+						<input type="radio" id="bdm2" value="2" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm2">Feb</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm3" value="3" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm3">Mar</label>
+						<input type="radio" id="bdm3" value="3" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm3">Mar</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm4" value="4" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm4">Apr</label>
+						<input type="radio" id="bdm4" value="4" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm4">Apr</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm5" value="5" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm5">May</label>
+						<input type="radio" id="bdm5" value="5" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm5">May</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm6" value="6" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm6">Jun</label>
+						<input type="radio" id="bdm6" value="6" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm6">Jun</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm7" value="7" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm7">Jul</label>
+						<input type="radio" id="bdm7" value="7" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm7">Jul</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm8" value="8" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm8">Aug</label>
+						<input type="radio" id="bdm8" value="8" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm8">Aug</label>
 					</div>
 					<div>
-						<input type="radio"  id="bdm9" value="9" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm9">Sep</label>
+						<input type="radio" id="bdm9" value="9" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
+							for="bdm9">Sep</label>
 					</div>
 					<div>
-						<input type="radio" id="bdm10" value="10" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm10">Oct</label>
+						<input type="radio" id="bdm10" value="10" name="birthdaymonth"
+							onclick="PopulateBirthdaysTable(event);"><label for="bdm10">Oct</label>
 					</div>
 					<div>
-						<input type="radio" id="bdm11" value="11" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm11">Nov</label>
+						<input type="radio" id="bdm11" value="11" name="birthdaymonth"
+							onclick="PopulateBirthdaysTable(event);"><label for="bdm11">Nov</label>
 					</div>
 					<div>
-						<input type="radio" id="bdm12" value="12" name="birthdaymonth" onclick="PopulateBirthdaysTable(event);"><label
-						for="bdm12">Dec</label>
+						<input type="radio" id="bdm12" value="12" name="birthdaymonth"
+							onclick="PopulateBirthdaysTable(event);"><label for="bdm12">Dec</label>
 					</div>
 					<!-- <input type="radio" id="ug_day" name="attendance" onclick="showAttendance('ug');"><label for="ug_day">Unit
 						Gm</label> -->
@@ -548,6 +548,225 @@
 			</div>
 		</section>
 
+		<!-- Convention Card Section -->
+		<section>
+			<header>
+				<h2>Convention Card</h2>
+			</header>
+			<div class="content" class="convention_card">
+				<div style="display:flex;gap:10px; align-items:center;">
+					<label for="partnershipnameinput">NAMES</label>
+					<input type="text" class="card" id="partnershipnameinput" name="partnershipnameinput"
+						placeholder="ABC and XYZ" autocomplete="off">
+				</div>
+				<div class="cardgroup">
+
+					<div style="display:flex;gap:10px; align-items:center;">
+						<span>GENERAL APPROACH</span>
+						<input type="text" class="card" id="generalapproach" name="what" autocomplete="off"
+							placeholder="SAYC, ACOL, Other" />
+					</div>
+					<div id="twooverone" class="card_1_line">
+						<span>Two Over One</span>
+						<div> <!--holds rest of the items -->
+							<div>
+								<span>Game Forcing</span>
+								<input type="checkbox" class="card" id="gameforcing" name="gameforcing" />
+							</div>
+							<div>
+								<span>Not Game Forcing if Suit Rebid</span>
+								<input type="checkbox" class="card" id="gameforcingexcept" name="gameforcingexcept" />
+							</div>
+						</div>
+					</div>
+					<div id="verylight" class="card_1_line">
+						<span>Very Light:</span>
+						<div> <!--holds rest of the items -->
+							<div>
+								<span>Opening</span>
+								<input type="checkbox" class="card" id="vlopening" name="vlopening" />
+							</div>
+							<div>
+								<span>3rd Hand</span>
+								<input type="checkbox" class="card" id="thirdhand" name="thirdhand" />
+							</div>
+							<div>
+								<span>Overcalls</span>
+								<input type="checkbox" class="card" id="overcalls" name="overcalls" />
+							</div>
+							<div>
+								<span>Preempts</span>
+								<input type="checkbox" class="card" id="preempts" name="preempts" />
+							</div>
+						</div>
+					</div>
+					<div id="forcingopening" class="card_1_line">
+						<span>FORCING OPENING:</span>
+						<div> <!--holds rest of the items -->
+							<div>
+								<span class="alertable">1<img src="images/gallery/suits/club.png" style="width:10px" alt=""></span>
+								<input type="checkbox" class="card alertable" id="oneclub" name="oneclub" />
+							</div>
+							<div>
+								<span>2<img src="images/gallery/suits/club.png" style="width:10px" alt=""></span>
+								<input type="checkbox" class="card" id="twoclub" name="twoclub" />
+							</div>
+							<div>
+								<span class="alertable">Natural 2 Bids</span>
+								<input type="checkbox" class="card alertable" id="natural2bids" name="natural2bids" />
+							</div>
+							<div>
+								<span class="alertable">Other</span>
+								<input type="checkbox" class="card alertable" id="otherforcingopening" name="otherforcingopening" />
+							</div>
+						</div>
+					</div>
+				</div> <!-- end of cardgroup -->
+				<div class="cardgroup">
+					<div id="notrumpopeningbids" class="card_3_columns">
+						<div style="display: flex; flex-direction: column;"><!-- column 1 -->
+							<div style="display:grid;grid-template-columns: 1fr 1fr auto 1fr;justify-content: center">
+								<span style="text-align:center;font-weight:bold">1NT</span>
+								<select type="text" class="card" id="onent_start" name="onent_start">
+									<option value="minus_11">-11</option>
+									<option value="11">11</option>
+									<option value="plus_11">+11</option>
+									<option value="minus_12">-12</option>
+									<option value="12">12</option>
+									<option value="plus_12">+12</option>
+									<option value="minus_12">-12</option>
+									<option value="12">12</option>
+									<option value="minus_13">-13</option>
+									<option value="13">13</option>
+									<option value="plus_13">+13</option>
+									<option value="minus_14">-14</option>
+									<option value="14">14</option>
+									<option value="plus_14">+14</option>
+									<option value="minus_15">-15</option>
+									<option value="15" default selected>15</option>
+									<option value="minus_16">-16</option>
+									<option value="16">16</option>
+									<option value="plus_16">+16</option>
+								</select>
+								<span style="text-align:center">to</span>
+								<select class="card" id="onent_end" name="onent_end">
+									<option value="minus_13">-13</option>
+									<option value="13">13</option>
+									<option value="plus_13">+13</option>
+									<option value="minus_14">-14</option>
+									<option value="14">14</option>
+									<option value="plus_14">+14</option>
+									<option value="minus_15">-15</option>
+									<option value="15">15</option>
+									<option value="plus_15">+15</option>
+									<option value="minus_16">-16</option>
+									<option value="16">16</option>
+									<option value="plus_16">+16</option>
+									<option value="minus_17">-17</option>
+									<option value="17" default selected>17</option>
+									<option value="plus_17">+17</option>
+									<option value="minus_18">-18</option>
+									<option value="18">18</option>
+									<option value="plus_18">+18</option>
+								</select>
+							</div>
+							<div style="display:flex;justify-content: center">
+								<span>5 card major commmon</span>
+								<input type="checkbox" class="card" id="fivecardmajorcommon" name="fivecardmajorcommon" />
+							</div>
+							<div style="display:flex;justify-content: center">
+								<span>Sys. on over</span>
+								<select class="card" id="systemonover" name="systemonover">
+									<option value="x">x</option>
+									<option value="nat">Nat</option>
+									<option value="all">All</option>
+									<option value="off">Off</option>
+								</select>
+							</div>
+							<div style="display:flex;justify-content: center">
+								<span>2C Stayman</span>
+								<input type="checkbox" class="card" id="twocstayman" name="twocstayman" />
+								<span>Puppet</span>
+								<input type="checkbox" class="card" id="puppet" name="puppet" />
+							</div>
+							<div style="display:flex;justify-content: center">
+								<span>2D Transfer to H</span>
+								<input type="checkbox" class="card" id="twodtransfertoh" name="twodtransfertoh" />
+							</div>
+							<div style="display:flex;justify-content: center">
+								<span class="alertable">Forcing Stayman</span>
+								<input type="checkbox" class="card alertable" id="forcingstayman" name="forcingstayman" />
+							</div>
+						</div> <!-- end of column 1 -->
+						<div style="display: flex; flex-direction: column;"><!-- column 2 -->
+							<div style="display:grid;grid-template-columns: 20px auto;justify-content: center">
+								<span>3C</span>
+								<input type="text" class="card" id="onent_threec" name="onent_threec" />
+							</div>
+							<div style="display:grid;grid-template-columns: 20px auto;justify-content: center">
+								<span>3D</span>
+								<input type="text" class="card" id="onent_threed" name="onent_threed" />
+							</div>
+							<div style="display:grid;grid-template-columns: 20px auto;justify-content: center">
+								<span>3H</span>
+								<input type="text" class="card" id="onent_threeh" name="onent_threeh" />
+							</div>
+							<div style="display:grid;grid-template-columns: 20px auto;justify-content: center">
+								<span>3S</span>
+								<input type="text" class="card" id="onent_threes" name="onent_threes" />
+							</div>
+							<div style="display:grid;grid-template-columns: 100px auto;justify-content: center">
+								<span>4D, 4H transfer</span>
+								<input type="checkbox" class="card" id="onent_fourdh" name="onent_fourdh" />
+							</div>
+							<div class="alertable" style="display:grid;grid-template-columns: 1fr 1fr;justify-content: left">
+								<span>Smolen</span>
+								<input type="checkbox" class="card" id="onent_smolen" name="onent_smolen" />
+							</div>
+							<div class="alertable" style="display:grid;grid-template-columns: 1fr 1fr;justify-content: left">
+								<div style="display:grid;grid-template-columns: auto 1fr;">
+									<span>Lebensohl</span>
+									<input type="checkbox" class="card" id="onent_lebensohl" name="onent_lebensohl" />
+								</div>
+								<div style="display:grid;grid-template-columns: auto 1fr;">
+									<select class="card" id="onent_lebensohl_denies" name="onent_lebensohl_denies">
+										<option value="none">None</option>
+										<option value="Fast">Fast</option>
+										<option value="Slow">Slow</option>
+									</select>
+									<span>denies</span>
+								</div>
+							</div>
+
+						</div>
+						<div style="display: flex; flex-direction: column;"><!-- column 3 -->
+							<div style="display:flex; align-items: center;">
+								<span style="font-weight: bold; display:inline-block; width: 100px;">2NT</span>
+								<select type="text" class="card" id="twont_start" name="twont_start">
+									<option value="minus_19">-19</option>
+									<option value="19" default selected>19</option>
+									<option value="plus_19">+19</option>
+									<option value="minus_20">-20</option>
+									<option value="20">20</option>
+									<option value="plus_20">+20</option>
+								</select>
+								<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
+								<select type="text" class="card" id="twont_end" name="twont_end">
+									<option value="minus_21">-21</option>
+									<option value="21" default selected>21</option>
+									<option value="plus_21">+21</option>
+									<option value="minus_22">-22</option>
+								</select>
+							</div>
+							<div style="display:flex; align-items: center;">
+								<span>Puppet Stayman</span>
+							  <input type="checkbox" class="card" id="onent_puppet_stayman" name="onent_puppet_stayman" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 		<!-- Copyright -->
 		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
 		</div>

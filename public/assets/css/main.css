@@ -162,6 +162,80 @@ textarea {
 
 /* Basic */
 
+.convention_card {
+	width: 360px;
+}
+/* convention card */
+.card_1_line {
+	display: grid;
+	grid-template-columns: 1fr 3fr;
+	gap: 5px;
+	justify-content: space-between;
+	font-size: x-small;
+}
+
+.card_1_line>:first-child {
+	font-weight: bold;
+}
+
+.card_1_line>:nth-child(2) {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	justify-content: space-between;
+	max-width: 100%;
+}
+
+input[type="text"].card {
+  min-width: 60px;
+	height: 20px;
+	padding:0px;
+}
+
+input[type="checkbox"].card {
+	appearance: checkbox;
+	opacity: 1;
+	z-index: 0;
+	margin-right: 0;
+	cursor: pointer;
+	display: inline-block;
+  float: none;
+}
+
+select.card {
+	appearance: none;
+	opacity: 1;
+	z-index: 0;
+	margin-right: 0;
+	cursor: pointer;
+	display: inline-block;
+  float: none;
+	height: 20px;
+	line-height: 20px;
+	width: 30px;
+	padding: 0;
+}
+
+input[type="checkbox"].card.alertable {
+	accent-color: red;
+}
+.alertable{
+	color: red;
+}
+input[type="text"].card {
+	/* add later */
+	max-width: 1000px;
+}
+.cardgroup{
+	border: 2px solid #ccc;
+	font-size: x-small;
+}
+.card_3_columns {
+	display: grid;
+	grid-template-columns: repeat(3, 110px);
+	padding:0;
+}
+
 @-ms-viewport {
 	width: device-width;
 }

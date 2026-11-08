@@ -1111,7 +1111,7 @@ app.get('/announcements', (req, res) => {
 app.get('/birthdays/:birthmonths', (req, res) => {
     const months = req.params.birthmonths.split(',');
     try {
-        const stmt = db.prepare(`SELECT dob_month,dob_date, CONCAT(first, ' ', last) AS name FROM player WHERE dob_month IN (${months.map(() => '?').join(',')})`);
+        const stmt = db.prepare(`SELECT dob_month,dob_date, CONCAT(first, ' ', last) AS name FROM player WHERE dob_month IN (${months.map(() => '?').join(',')}) order by dob_date ASC`);
         const birthdays = stmt.all(...months.map(m => m.toString().padStart(2, '0')));
         res.json({ success: true, birthdays });
     } catch (err) {
