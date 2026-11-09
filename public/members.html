@@ -555,14 +555,14 @@
 			</header>
 			<div class="content" class="convention_card">
 				<div style="display:flex;gap:10px; align-items:center;">
-					<label for="partnershipnameinput">NAMES</label>
+					<span>NAMES</span>
 					<input type="text" class="card" id="partnershipnameinput" name="partnershipnameinput"
 						placeholder="ABC and XYZ" autocomplete="off">
 				</div>
 				<div class="cardgroup">
 
-					<div style="display:flex;gap:10px; align-items:center;">
-						<span>GENERAL APPROACH</span>
+					<div style="display:grid;grid-template-columns:auto 1fr;gap:10px; align-items:center;">
+						<span style="font-weight:bold;">GENLERAL APPROACH</span>
 						<input type="text" class="card" id="generalapproach" name="what" autocomplete="off"
 							placeholder="SAYC, ACOL, Other" />
 					</div>
@@ -623,8 +623,8 @@
 					</div>
 				</div> <!-- end of cardgroup -->
 				<div class="cardgroup">
-					<div id="notrumpopeningbids" class="card_3_columns">
-						<div style="display: flex; flex-direction: column;"><!-- column 1 -->
+					<div id="notrumpopeningbids" class="card_2_columns">
+						<div style="display: flex; flex-direction: column;border: 1px solid #333;"><!-- column 1 -->
 							<div style="display:grid;grid-template-columns: 1fr 1fr auto 1fr;justify-content: center">
 								<span style="text-align:center;font-weight:bold">1NT</span>
 								<select type="text" class="card" id="onent_start" name="onent_start">
@@ -670,11 +670,11 @@
 									<option value="plus_18">+18</option>
 								</select>
 							</div>
-							<div style="display:flex;justify-content: center">
+							<div style="display:flex;justify-content: left">
 								<span>5 card major commmon</span>
 								<input type="checkbox" class="card" id="fivecardmajorcommon" name="fivecardmajorcommon" />
 							</div>
-							<div style="display:flex;justify-content: center">
+							<div style="display:flex;justify-content: left">
 								<span>Sys. on over</span>
 								<select class="card" id="systemonover" name="systemonover">
 									<option value="x">x</option>
@@ -683,22 +683,22 @@
 									<option value="off">Off</option>
 								</select>
 							</div>
-							<div style="display:flex;justify-content: center">
+							<div style="display:flex;justify-content: left">
 								<span>2C Stayman</span>
 								<input type="checkbox" class="card" id="twocstayman" name="twocstayman" />
 								<span>Puppet</span>
 								<input type="checkbox" class="card" id="puppet" name="puppet" />
 							</div>
-							<div style="display:flex;justify-content: center">
+							<div style="display:flex;justify-content: left">
 								<span>2D Transfer to H</span>
 								<input type="checkbox" class="card" id="twodtransfertoh" name="twodtransfertoh" />
 							</div>
-							<div style="display:flex;justify-content: center">
+							<div style="display:flex;justify-content: left">
 								<span class="alertable">Forcing Stayman</span>
 								<input type="checkbox" class="card alertable" id="forcingstayman" name="forcingstayman" />
 							</div>
-						</div> <!-- end of column 1 -->
-						<div style="display: flex; flex-direction: column;"><!-- column 2 -->
+						</div> <!-- end of column 1 1NT -->
+						<div style="display: flex; flex-direction: column;border: 1px solid #333;"><!-- column 2 -->
 							<div style="display:grid;grid-template-columns: 20px auto;justify-content: center">
 								<span>3C</span>
 								<input type="text" class="card" id="onent_threec" name="onent_threec" />
@@ -737,70 +737,71 @@
 									<span>denies</span>
 								</div>
 							</div>
+						</div> <!-- end of column 2 1NT-->
+					</div><!--end of 1NT-->
 
-						</div>
-						<div style="display: flex; flex-direction: column;"><!-- column 3 -->
-							<div style="border:1px solid #666">
-								<div style="display:flex; align-items: center;">
-									<span style="font-weight: bold; display:inline-block; width: 100px;">2NT</span>
-									<select type="text" class="card" id="twont_start" name="twont_start">
-										<option value="minus_19">-19</option>
-										<option value="19" default selected>19</option>
-										<option value="plus_19">+19</option>
-										<option value="minus_20">-20</option>
-										<option value="20">20</option>
-										<option value="plus_20">+20</option>
-									</select>
-									<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
-									<select type="text" class="card" id="twont_end" name="twont_end">
-										<option value="minus_21">-21</option>
-										<option value="21" default selected>21</option>
-										<option value="plus_21">+21</option>
-										<option value="minus_22">-22</option>
-									</select>
-								</div>
-								<div style="display:flex; align-items: center;">
-									<span>Puppet Stayman</span>
-									<input type="checkbox" class="card" id="twont_puppet_stayman" name="twont_puppet_stayman" />
-								</div>
-								<div>
-									<span style="font-weight: bold;">Transfer Responses</span>
-								</div>
-								<div style="display:flex; align-items: center;">
-									<span>3S</span>
-									<input type="text" class="card" id="twont_3s" name="twont_3s" />
-								</div>
+					<div style="display: flex; flex-direction: column;"><!-- column 3 (2NT and 3NT) -->
+						<div style="border:1px solid #333">
+							<div style="display:flex; align-items: center;">
+								<span style="font-weight: bold; display:inline-block; width: 100px;">2NT</span>
+								<select type="text" class="card" id="twont_start" name="twont_start">
+									<option value="minus_19">-19</option>
+									<option value="19" default selected>19</option>
+									<option value="plus_19">+19</option>
+									<option value="minus_20">-20</option>
+									<option value="20">20</option>
+									<option value="plus_20">+20</option>
+								</select>
+								<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
+								<select type="text" class="card" id="twont_end" name="twont_end">
+									<option value="minus_21">-21</option>
+									<option value="21" default selected>21</option>
+									<option value="plus_21">+21</option>
+									<option value="minus_22">-22</option>
+								</select>
 							</div>
-							<div style="border:1px solid #666">
-								<div style="display:flex; align-items: center;">
-									<span style="font-weight: bold; display:inline-block; width: 100px;">3NT</span>
-									<select type="text" class="card" id="threent_start" name="threent_start">
-										<option value="minus_24">-24</option>
-										<option value="25" default selected>25</option>
-										<option value="plus_25">+25</option>
-									</select>
-									<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
-									<select type="text" class="card" id="threent_end" name="threent_end">
-										<option value="blank" default selected></option>
-										<option value="27">27</option>
-										<option value="28">28</option>
-									</select>
-								</div>
-								<div class="alertable">
-									<input type="text" class="card" id="threent_special" name="threent_special" />
-								</div>
-							</div>
-							<div class="alertable">
-								<span>Conventl. NT Openings</span> 
+							<div style="display:flex; align-items: center;">
+								<span>Puppet Stayman</span>
+								<input type="checkbox" class="card" id="twont_puppet_stayman" name="twont_puppet_stayman" />
 							</div>
 							<div>
-								<input type="text" class="card" id="threent_conventional" name="threent_conventional" />
+								<span style="font-weight: bold;">Transfer Responses</span>
 							</div>
-						</div><!-- end column 3 -->
-					</div>
+							<div style="display:flex; align-items: center;">
+								<span>3S</span>
+								<input type="text" class="card" id="twont_3s" name="twont_3s" />
+							</div>
+						</div>
+						<div style="border:1px solid #333">
+							<div style="display:flex; align-items: center;">
+								<span style="font-weight: bold; display:inline-block; width: 100px;">3NT</span>
+								<select type="text" class="card" id="threent_start" name="threent_start">
+									<option value="minus_24">-24</option>
+									<option value="25" default selected>25</option>
+									<option value="plus_25">+25</option>
+								</select>
+								<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
+								<select type="text" class="card" id="threent_end" name="threent_end">
+									<option value="blank" default selected></option>
+									<option value="27">27</option>
+									<option value="28">28</option>
+								</select>
+							</div>
+							<div class="alertable">
+								<input type="text" class="card" id="threent_special" name="threent_special" />
+							</div>
+						</div>
+						<div class="alertable">
+							<span>Conventl. NT Openings</span>
+						</div>
+						<div>
+							<input type="text" class="card" id="threent_conventional" name="threent_conventional" />
+						</div>
+					</div><!-- end column 3 -->
 					<div id="majoropenings" style="display:flex;flex-direction: column;border:3px solid #333">
 						<div>
-							<span style="font-weight: bold;align-items: center;justify-content: center;display: flex;">Major Opening</span>
+							<span style="font-weight: bold;align-items: center;justify-content: center;display: flex;">Major
+								Opening</span>
 						</div>
 						<div style="display:grid;grid-template-columns: auto 100px 100px;">
 							<span>Expected Min Length</span>
@@ -814,45 +815,57 @@
 							<input type="checkbox" class="card" id="major_34_5" name="major_34_5" />
 						</div>
 						<div>
-							<span style="font-weight: bold;align-items: center;justify-content: center;display: flex;">RESPONSES</span>
+							<span
+								style="font-weight: bold;align-items: center;justify-content: center;display: flex;">RESPONSES</span>
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>Double Raise</span>
 							<span>Force</span>
-							<input type="checkbox" class="card" id="major_double_raise_response_force" name="major_double_raise_response_force" />
+							<input type="checkbox" class="card" id="major_double_raise_response_force"
+								name="major_double_raise_response_force" />
 							<span>Inv.</span>
-							<input type="checkbox" class="card" id="major_double_raise_response_inv" name="major_double_raise_response_inv" />
+							<input type="checkbox" class="card" id="major_double_raise_response_inv"
+								name="major_double_raise_response_inv" />
 							<span class="alertable">Weak</span>
-							<input type="checkbox" class="card" id="major_double_raise_response_weak" name="major_double_raise_response_weak" />
+							<input type="checkbox" class="card" id="major_double_raise_response_weak"
+								name="major_double_raise_response_weak" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>After Overcall</span>
 							<span>Force</span>
-							<input type="checkbox" class="card" id="major_after_overcall_response_force" name="major_after_overcall_response_force" />
+							<input type="checkbox" class="card" id="major_after_overcall_response_force"
+								name="major_after_overcall_response_force" />
 							<span>Inv.</span>
-							<input type="checkbox" class="card" id="major_after_overcall_response_inv" name="major_after_overcall_response_inv" />
+							<input type="checkbox" class="card" id="major_after_overcall_response_inv"
+								name="major_after_overcall_response_inv" />
 							<span>Weak</span>
-							<input type="checkbox" class="card" id="major_after_overcall_response_weak" name="major_after_overcall_response_weak" />
+							<input type="checkbox" class="card" id="major_after_overcall_response_weak"
+								name="major_after_overcall_response_weak" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>Conv. Raise</span>
 							<span>2NT</span>
-							<input type="checkbox" class="card" id="major_conv_raise_response_2nt" name="major_conv_raise_response_2nt" />
+							<input type="checkbox" class="card" id="major_conv_raise_response_2nt"
+								name="major_conv_raise_response_2nt" />
 							<span>3NT</span>
-							<input type="checkbox" class="card" id="major_conv_raise_response_3nt" name="major_conv_raise_response_3nt" />
+							<input type="checkbox" class="card" id="major_conv_raise_response_3nt"
+								name="major_conv_raise_response_3nt" />
 							<span>Splinter</span>
-							<input type="checkbox" class="card" id="major_conv_raise_response_splinter" name="major_conv_raise_response_splinter" />
+							<input type="checkbox" class="card" id="major_conv_raise_response_splinter"
+								name="major_conv_raise_response_splinter" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span class="alertable">Other</span>
-							<input type="text" class="card" id="major_conv_raise_response_other" name="major_conv_raise_response_other" />
+							<input type="text" class="card" id="major_conv_raise_response_other"
+								name="major_conv_raise_response_other" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>1NT:</span>
 							<span>Forcing</span>
 							<input type="checkbox" class="card" id="major_1nt_response_forcing" name="major_1nt_response_forcing" />
 							<span>Semi-Forcing</span>
-							<input type="checkbox" class="card" id="major_1nt_response_semiforcing" name="major_1nt_response_semiforcing" />
+							<input type="checkbox" class="card" id="major_1nt_response_semiforcing"
+								name="major_1nt_response_semiforcing" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>2NT:</span>
@@ -860,12 +873,12 @@
 							<input type="checkbox" class="card" id="major_2nt_response_forcing" name="major_2nt_response_forcing" />
 							<span>Inv.</span>
 							<input type="checkbox" class="card" id="major_2nt_response_inv" name="major_2nt_response_inv" />
-							<select class="card"name="major_2nt_response_start" id="major_2nt_response_start">
+							<select class="card" name="major_2nt_response_start" id="major_2nt_response_start">
 								<option value="10">10</option>
 								<option value="11">11</option>
 								<option value="12">12</option>
 							</select>
-							<select class="card"name="major_2nt_response_end" id="major_2nt_response_end">
+							<select class="card" name="major_2nt_response_end" id="major_2nt_response_end">
 								<option value="13">13</option>
 								<option value="14">14</option>
 								<option value="15">15</option>
@@ -873,13 +886,13 @@
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>3NT:</span>
-							<select class="card"name="major_3nt_response_start" id="major_3nt_response_start">
+							<select class="card" name="major_3nt_response_start" id="major_3nt_response_start">
 								<option value="12" selected>12</option>
 								<option value="13">13</option>
 								<option value="14">14</option>
 							</select>
 							<span> to </span>
-							<select class="card"name="major_3nt_response_end" id="major_3nt_response_end">
+							<select class="card" name="major_3nt_response_end" id="major_3nt_response_end">
 								<option value="15" selected>15</option>
 								<option value="16">16</option>
 								<option value="17">17</option>
@@ -887,23 +900,26 @@
 						</div>
 						<div style="display:grid;grid-template-columns: repeat(8,40px);justify-content: space-between;">
 							<span class="alertable">Drury</span>
-							<input type="checkbox" class="card" id="major_drury" name="major_drury" />	
+							<input type="checkbox" class="card" id="major_drury" name="major_drury" />
 							<span class="alertable">Reverse</span>
-							<input type="checkbox" class="card" id="major_reverse" name="major_reverse" />	
+							<input type="checkbox" class="card" id="major_reverse" name="major_reverse" />
 							<span class="alertable">2-Way</span>
-							<input type="checkbox" class="card" id="major_2way" name="major_2way" />	
+							<input type="checkbox" class="card" id="major_2way" name="major_2way" />
 							<span class="alertable">Fit</span>
-							<input type="checkbox" class="card" id="major_fit" name="major_fit" />	
+							<input type="checkbox" class="card" id="major_fit" name="major_fit" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span class="alertable">Other</span>
-							<input type="text" class="card" id="major_response_alertable_other" name="major_response_alertable_other" />
+							<input type="text" class="card" id="major_response_alertable_other"
+								name="major_response_alertable_other" />
 						</div>
 					</div> <!-- end of major openings -->
 
-					<div id="minoropenings" style="display:flex;flex-direction: column;border:3px solid 333">
+					<!-- minor openings -->
+					<div id="minoropenings" style="display:flex;flex-direction: column;border:3px solid #333">
 						<div>
-							<span style="font-weight: bold;align-items: center;justify-content: center;display: flex;">Minor Opening</span>
+							<span style="font-weight: bold;align-items: center;justify-content: center;display: flex;">Minor
+								Opening</span>
 						</div>
 						<div style="display:grid;grid-template-columns: auto 50px 50px 50px 50px;">
 							<span>Expected Min Length</span>
@@ -925,16 +941,342 @@
 							<input type="checkbox" class="card" id="minor_1dconv" name="minor_1dconv" />
 						</div>
 						<div>
-							<span style="font-weight: bold;align-items: center;justify-content: center;display: flex;">RESPONSES</span>
+							<span
+								style="font-weight: bold;align-items: center;justify-content: center;display: flex;">RESPONSES</span>
 						</div>
-						<!-- <div style="display:grid;grid-template-columns: auto 50px 50px 50px 50px;">
-							<span>1D</span>
-							<input type="checkbox" class="card" id="minor_1d4" name="minor_1d4" />
-							<input type="checkbox" class="card" id="minor_1d3" name="minor_1d3" />
-							<input type="checkbox" class="card" id="minor_1d02" name="minor_1d02" />
-							<input type="checkbox" class="card" id="minor_1dconv" name="minor_1dconv" />
-						</div> -->
+						<div style="display:flex;justify-content: space-between;">
+							<span>Double Raise:</span>
+							<span>Force</span>
+							<input type="checkbox" class="card" id="minor_double_raise_response_force"
+								name="minor_double_raise_response_force" />
+							<span>Inv.</span>
+							<input type="checkbox" class="card" id="minor_double_raise_response_inv"
+								name="minor_double_raise_response_inv" />
+							<span class="alertable">Weak</span>
+							<input type="checkbox" class="card" id="minor_double_raise_response_weak"
+								name="minor_double_raise_response_weak" />
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span>After Overcall:</span>
+							<span>Force</span>
+							<input type="checkbox" class="card" id="minor_after_overcall_response_force"
+								name="minor_after_overcall_response_force" />
+							<span>Inv.</span>
+							<input type="checkbox" class="card" id="minor_after_overcall_response_inv"
+								name="minor_after_overcall_response_inv" />
+							<span>Weak</span>
+							<input type="checkbox" class="card" id="minor_after_overcall_response_weak"
+								name="minor_after_overcall_response_weak" />
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span>Forcing Raise:</span>
+							<span class="alertable">J/S in other minor</span>
+							<input type="checkbox" class="card" id="minor_forcing_raise_js_other_minor"
+								name="minor_forcing_raise_js_other_minor" />
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span class="alertable">Single Raise:</span>
+							<input type="checkbox" class="card" id="minor_single_raise" name="minor_single_raise" />
+							<input type="text" class="card" id="minor_alertable_other" name="minor_alertable_other" />
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span>Frequently bypass 4+D:</span>
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span>1NT/1C:</span>
+							<select class="card" name="onentoveroneclub_start" id="onentoveroneclub_start">
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+							</select>
+							<span> to </span>
+							<select class="card" name="onentoveroneclub_end" id="onentoveroneclub_end">
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+							</select>
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span>2NT:</span>
+							<span>Forcing</span>
+							<input type="checkbox" class="card" id="minor_2nt_response_forcing" name="minor_2nt_response_forcing" />
+							<span>Inv.</span>
+							<input type="checkbox" class="card" id="minor_2nt_response_inv" name="minor_2nt_response_inv" />
+							<select class="card" name="minor_2nt_response_inv_start" id="minor_2nt_response_inv_start">
+								<option value="9">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+							</select>
+							<span> to </span>
+							<select class="card" name="minor_2nt_response_inv_end" id="minor_2nt_response_inv_end">
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+								<option value="13">13</option>
+								<option value="14">14</option>
+							</select>
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span>3NT:</span>
+							<select class="card" name="minor_3nt_start" id="minor_3nt_start">
+								<option value="10">10</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+							</select>
+							<span> to </span>
+							<select class="card" name="minor_3nt_end" id="minor_3nt_end">
+								<option value="11">11</option>
+								<option value="12">12</option>
+								<option value="13">13</option>
+								<option value="14">14</option>
+								<option value="15">15</option>
+								<option value="16">16</option>
+							</select>
+						</div>
+						<div style="display:flex;justify-content: space-between;">
+							<span class="alertable">Other</span>
+							<input type="text" class="card alertable" id="minoropening_alertable_other_response"
+								name="minoropening_alertable_other_response" />
+						</div>
+					</div><!-- end of minor openings -->
 
+					<!-- two level openings -->
+					<div style="display: grid; grid-template-columns: 3fr 2fr; flex-direction: column;border: 1px solid #333;">
+						<!-- two level openings -->
+						<div style="border-right:1px solid #333;"><!--first column-->
+							<span style="font-weight: bold;">DESCRIBE</span>
+							<div style="display:flex;justify-content: space-between;">
+								<div style="display:flex;justify-content: space-between;">
+									<span>2C:</span>
+									<select id="2c_start" class="card" name="2c_start">
+										<option value="21">21</option>
+										<option value="22" selected>22</option>
+										<option value="23">23</option>
+									</select>
+									<span> to </span>
+									<select id="2c_end" class="card" name="2c_end">
+										<option value="23">23</option>
+										<option value="24" selected>24</option>
+										<option value="24_plus">24+</option>
+									</select>
+									<span>HCP</span>
+								</div>
+							</div>
+							<div style="display:flex;justify-content: space-between;">
+								<span>Strong</span>
+								<input type="checkbox" id="2c_strong_checkbox" name="2c_strong_checkbox" />
+								<span class="alertable">Other</span>
+								<input type="checkbox" id="2c_alertable_other_checkbox" name="2c_alertable_other_checkbox" />
+							</div>
+							<div style="display:flex;justify-content: space-between;border-bottom:1px solid #333;">
+								<span>2D</span>
+								<span>Resp: Neg</span>
+								<input type="checkbox" id="2d_response_neg_checkbox" name="2d_response_neg_checkbox" />
+								<span>Waiting</span>
+								<input type="checkbox" id="2d_response_waiting_checkbox" name="2d_response_waiting_checkbox" />
+							</div>
+							<!-- 2D section -->
+							<div>
+								<span>2D</span>
+								<select id="2d_select" class="card" name="2d_select">
+									<option value="5">5</option>
+									<option value="6">6</option>
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+								</select>
+								<span> to </span>
+								<select id="2d_select_end" class="card" name="2d_select_end">
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+									<option value="10">10</option>
+									<option value="11">11</option>
+									<option value="12">12</option>
+									<option value="13">13</option>
+								</select>
+								<span>HCP</span>
+							</div>
+							<div style="border-bottom: 1px solid #333;">
+								<span>Natural:</span>
+								<span>Weak</span>
+								<input type="checkbox" class="card" id="2d_weak_checkbox" name="2d_weak_checkbox" />
+								<span class="alertable">Intermediate</span>
+								<input type="checkbox" class="card" id="2d_intermediate_checkbox" name="2d_intermediate_checkbox" />
+								<span class="alertable">Strong</span>
+								<input type="checkbox" class="card" id="2d_strong_checkbox" name="2d_strong_checkbox" />
+								<span class="alertable">Conv.</span>
+								<input type="checkbox" class="card" id="2d_conventional_checkbox" name="2d_conventional_checkbox" />
+							</div>
+							<!-- end of 2D section -->
+
+							<!-- 2H section -->
+							<div>
+								<span>2H</span>
+								<select id="2h_select" class="card" name="2h_select">
+									<option value="5">5</option>
+									<option value="6">6</option>
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+								</select>
+								<span> to </span>
+								<select id="2h_select_end" class="card" name="2h_select_end">
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+									<option value="10">10</option>
+									<option value="11">11</option>
+									<option value="12">12</option>
+									<option value="13">13</option>
+								</select>
+								<span>HCP</span>
+							</div>
+							<div style="border-bottom: 1px solid #333;">
+								<span>Natural:</span>
+								<span>Weak</span>
+								<input type="checkbox" class="card" id="2h_weak_checkbox" name="2h_weak_checkbox" />
+								<span class="alertable">Intermediate</span>
+								<input type="checkbox" class="card" id="2h_intermediate_checkbox" name="2h_intermediate_checkbox" />
+								<span class="alertable">Strong</span>
+								<input type="checkbox" class="card" id="2h_strong_checkbox" name="2h_strong_checkbox" />
+								<span class="alertable">Conv.</span>
+								<input type="checkbox" class="card" id="2h_conventional_checkbox" name="2h_conventional_checkbox" />
+							</div>
+							<!-- end of 2H section -->
+
+							<!-- 2S section -->
+							<div>
+								<span>2S</span>
+								<select id="2s_select" class="card" name="2s_select">
+									<option value="5">5</option>
+									<option value="6">6</option>
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+								</select>
+								<span> to </span>
+								<select id="2s_select_end" class="card" name="2s_select_end">
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9">9</option>
+									<option value="10">10</option>
+									<option value="11">11</option>
+									<option value="12">12</option>
+									<option value="13">13</option>
+								</select>
+								<span>HCP</span>
+							</div>
+							<div style="border-bottom: 1px solid #333;">
+								<span>Natural:</span>
+								<span>Weak</span>
+								<input type="checkbox" class="card" id="2s_weak_checkbox" name="2s_weak_checkbox" />
+								<span class="alertable">Intermediate</span>
+								<input type="checkbox" class="card" id="2s_intermediate_checkbox" name="2s_intermediate_checkbox" />
+								<span class="alertable">Strong</span>
+								<input type="checkbox" class="card" id="2s_strong_checkbox" name="2s_strong_checkbox" />
+								<span class="alertable">Conv.</span>
+								<input type="checkbox" class="card" id="2s_conventional_checkbox" name="2s_conventional_checkbox" />
+							</div>
+							<!-- end of 2S section -->
+						</div>
+
+						<div><!--second column-->
+							<span style="font-weight: bold;">RESPONSES/REBIDS</span>
+							<div>
+								<span>.</span><!-- to add a space to align with the first column -->
+							</div>
+							<div>
+								<input type="text" class="card" id="2c_responses_rebids" name="2c_responses_rebids" />
+							</div>
+							<div style="border-bottom:1px solid #333;">
+								<input type="text" class="card" id="2d_responses_rebids" name="2d_responses_rebids" />
+							</div>
+							<div>
+								<span style="font-size:11px">.</span><!-- to add a space to align with the first column -->
+							</div>
+							<div style="border-bottom: 1px solid #333;">
+								<span>2NT</span>
+								<span>Force</span>
+								<input type="checkbox" class="card" id="2d_2nt_force_checkbox" name="2d_2nt_force_checkbox" />
+								<span class="alertable">New Suit NF</span>
+								<input type="checkbox" class="card" id="2d_new_suit_nf_checkbox" name="2d_new_suit_nf_checkbox" />
+							</div>
+							<div>
+								<span style="font-size:11px">.</span><!-- to add a space to align with the first column -->
+							</div>
+							<div style="border-bottom: 1px solid #333;">
+								<span>2NT</span>
+								<span>Force</span>
+								<input type="checkbox" class="card" id="2h_2nt_force_checkbox" name="2h_2nt_force_checkbox" />
+								<span class="alertable">New Suit NF</span>
+								<input type="checkbox" class="card" id="2h_new_suit_nf_checkbox" name="2h_new_suit_nf_checkbox" />
+							</div>
+							<div>
+								<span style="font-size:11px">.</span><!-- to add a space to align with the first column -->
+							</div>
+							<div style="border-bottom: 1px solid #333;">
+								<span>2NT</span>
+								<span>Force</span>
+								<input type="checkbox" class="card" id="2s_2nt_force_checkbox" name="2s_2nt_force_checkbox" />
+								<span class="alertable">New Suit NF</span>
+								<input type="checkbox" class="card" id="2s_new_suit_nf_checkbox" name="2s_new_suit_nf_checkbox" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Other Conv. Calls-->
+					<div>
+						<span style="font-weight: bold;">OTHER CONVENTIONAL CALLS</span>
+						<div style="display:flex;gap:20px">
+
+							<div>
+								<span class="alertable">New Minor Forcing</span>
+								<input type="checkbox" class="card" id="new_minor_forcing_checkbox" name="new_minor_forcing_checkbox" />
+							</div>
+							<div>
+								<span class="alertable">2-Way NMF</span>
+								<input type="checkbox" class="card" id="two_way_nmf_checkbox" name="two_way_nmf_checkbox" />
+							</div>
+							<div>
+								<span class="alertable">Checkback Stayman</span>
+								<input type="checkbox" class="card" id="checkback_stayman_checkbox" name="checkback_stayman_checkbox" />
+							</div>
+							<div>
+								<span>Weak Jump Shifts:</span>
+								<span>In Comp.</span>
+								<input type="checkbox" class="card" id="weak_jump_shifts_in_comp_checkbox"
+									name="weak_jump_shifts_in_comp_checkbox" />
+								<span class="alertable">Not in Comp.</span>
+								<input type="checkbox" class="card" id="weak_jump_shifts_not_in_comp_checkbox"
+									name="weak_jump_shifts_not_in_comp_checkbox" />
+							</div>
+							<div>
+								<span class="alertable">4th Suit Forcing:</span>
+								<span class="alertable">1 Round</span>
+								<input type="checkbox" class="card" id="fourth_suit_forcing_1_round_checkbox"
+									name="fourth_suit_forcing_1_round_checkbox" />
+								<span class="alertable">Game</span>
+								<input type="checkbox" class="card" id="fourth_suit_forcing_game_checkbox"
+									name="fourth_suit_forcing_game_checkbox" />
+							</div>
+							<!-- <div> -->
+								<input type="text" class="card" id="other_conv_1" name="other_conv_1" title="Other Convention 1"/>
+							<!-- </div> -->
+							<!-- <div> -->
+								<input type="text" class="card" id="other_conv_2" name="other_conv_2" title="Other Convention 2"/>
+							<!-- </div> -->
+							<div>
+								<input type="text" class="card" id="other_conv_3" name="other_conv_3" title="Other Convention 3"/>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

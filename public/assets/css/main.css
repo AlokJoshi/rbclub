@@ -211,9 +211,10 @@ select.card {
 	display: inline-block;
   float: none;
 	height: 20px;
-	line-height: 20px;
+	line-height: 15px;
 	width: 30px;
 	padding: 0;
+	background-position-x: 12px;
 }
 
 input[type="checkbox"].card.alertable {
@@ -230,9 +231,14 @@ input[type="text"].card {
 	border: 2px solid #ccc;
 	font-size: x-small;
 }
-.card_3_columns {
+
+.cardgroup>*>* {
+    padding: 10px;
+}
+
+.card_2_columns {
 	display: grid;
-	grid-template-columns: repeat(3, 110px);
+	grid-template-columns: 1fr 1fr;
 	padding:0;
 }
 
