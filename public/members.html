@@ -1177,42 +1177,77 @@
 									name="special_doubles_other_convention_text" />
 							</div>
 
-						</div>
-						<!-- Simple Overcall section -->
-						<div style="display:flex;flex-direction:column;border: 3px solid #333;">
-							<span style="font-weight: bold;text-align: center;">SIMPLE OVERCALL</span>
-							<div>
-								<span>1 Level</span>
-								<input type="number" class="card" name="simple_overcall_1_level_input_start" id="simple_overcall_1_level_input_start" />
-								<span> to </span>
-								<input type="number" class="card" name="simple_overcall_1_level_input_end" id="simple_overcall_1_level_input_end" />
-								<span>HCP (Usually)</span>
+							<!-- Simple Overcall section -->
+							<div style="display:flex;flex-direction:column;border: 3px solid #333;">
+								<span style="font-weight: bold;text-align: center;">SIMPLE OVERCALL</span>
+								<div>
+									<span>1 Level</span>
+									<input type="number" class="card" name="simple_overcall_1_level_input_start" id="simple_overcall_1_level_input_start" />
+									<span> to </span>
+									<input type="number" class="card" name="simple_overcall_1_level_input_end" id="simple_overcall_1_level_input_end" />
+									<span>HCP (Usually)</span>
+								</div>
+								<div>
+									<span>Often 4 cards</span>
+									<input type="checkbox" class="card" name="simple_overcall_often_4_cards_checkbox" id="simple_overcall_1_level_input_start" />
+									<span>Very light style</span>
+									<input type="checkbox" class="card" name="simple_overcall_very_light_style_checkbox" id="simple_overcall_very_light_style_checkbox" />
+								</div>
+								<span style="font-weight: bold;text-align: center;">RESPONSES</span>
+								<div>
+									<span>New Suit:</span>
+									<span>Forcing</span>
+									<input type="checkbox" class="card" name="simple_overcall_new_suit_forcing_checkbox" id="simple_overcall_new_suit_forcing_checkbox" />
+									<span>NFConst</span>
+									<input type="checkbox" class="card" name="simple_overcall_new_suit_nfconst_checkbox" id="simple_overcall_new_suit_nfconst_checkbox" />
+									<span>NF</span>
+									<input type="checkbox" class="card" name="simple_overcall_new_suit_nf_checkbox" id="simple_overcall_new_suit_nf_checkbox" />
+								</div>
+								<div>
+									<span>Jump Raise:</span>
+									<span>Forcing</span>
+									<input type="checkbox" class="card" name="simple_overcall_jump_raise_forcing_checkbox" id="simple_overcall_new_suit_forcing_checkbox" />
+									<span>Inv.</span>
+									<input type="checkbox" class="card" name="simple_overcall_jump_raise_inv_checkbox" id="simple_overcall_new_suit_nfconst_checkbox" />
+									<span>Weak</span>
+									<input type="checkbox" class="card" name="simple_overcall_jump_raise_weak_checkbox" id="simple_overcall_new_suit_nf_checkbox" />
+								</div>
 							</div>
-							<div>
-								<span>Often 4 cards</span>
-								<input type="checkbox" class="card" name="simple_overcall_often_4_cards_checkbox" id="simple_overcall_1_level_input_start" />
-								<span>Very light style</span>
-								<input type="checkbox" class="card" name="simple_overcall_very_light_style_checkbox" id="simple_overcall_very_light_style_checkbox" />
-							</div>
-							<span style="font-weight: bold;text-align: center;">RESPONSES</span>
-							<div>
-								<span>New Suit:</span>
-								<span>Forcing</span>
-								<input type="checkbox" class="card" name="simple_overcall_new_suit_forcing_checkbox" id="simple_overcall_new_suit_forcing_checkbox" />
-								<span>NFConst</span>
-								<input type="checkbox" class="card" name="simple_overcall_new_suit_nfconst_checkbox" id="simple_overcall_new_suit_nfconst_checkbox" />
-								<span>NF</span>
-								<input type="checkbox" class="card" name="simple_overcall_new_suit_nf_checkbox" id="simple_overcall_new_suit_nf_checkbox" />
-							</div>
-							<div>
-								<span>Jump Raise:</span>
-								<span>Forcing</span>
-								<input type="checkbox" class="card" name="simple_overcall_jump_raise_forcing_checkbox" id="simple_overcall_new_suit_forcing_checkbox" />
-								<span>Inv.</span>
-								<input type="checkbox" class="card" name="simple_overcall_jump_raise_inv_checkbox" id="simple_overcall_new_suit_nfconst_checkbox" />
+
+							<!-- Jump Overcall -->
+							<div style="display:flex;border:3px solid #333;">
+								<span class="alertable">Strong</span>
+								<input type="checkbox" class="card alertable" name="jump_overcall_strong_checkbox" id="jump_overcall_strong_checkbox" />
+								<span class="alertable">Intermediate</span>
+								<input type="checkbox" class="card alertable" name="jump_overcall_intermediate_checkbox" id="jump_overcall_intermediate_checkbox" />
 								<span>Weak</span>
-								<input type="checkbox" class="card" name="simple_overcall_jump_raise_weak_checkbox" id="simple_overcall_new_suit_nf_checkbox" />
+								<input type="checkbox" class="card" name="jump_overcall_weak_checkbox" id="jump_overcall_weak_checkbox" />
 							</div>
+
+							<!-- Opening Preempts -->
+							<div style="display:flex;border:3px solid #333;">
+								<div style="display:flex;">
+									<span>3/4-bids</span>
+									<div>
+										<span>Sound</span>
+										<input type="checkbox" class="card" name="opening_preempts_sound_checkbox" id="opening_preempts_sound_checkbox" />
+									</div>
+									<div>
+										<span>Light</span>
+										<input type="checkbox" class="card" name="opening_preempts_light_checkbox" id="opening_preempts_light_checkbox" />
+									</div>
+									<div>
+										<span>Very Light</span>
+										<input type="checkbox" class="card" name="opening_preempts_very_light_checkbox" id="opening_preempts_very_light_checkbox" />
+									</div>
+								</div>
+								<div style="display:flex;align-items:center;">
+									<span class="alertable">Conv./Resp</span>
+									<input type="text" style="width: 60px" class="card alertable" id="opening_preempts_conv_res_text"
+										name="opening_preempts_conv_res_text" />
+								</div>
+							</div>
+
 						</div>
 
 						<!-- second column -->
