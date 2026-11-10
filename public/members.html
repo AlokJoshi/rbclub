@@ -625,50 +625,11 @@
 				<div class="cardgroup">
 					<div id="notrumpopeningbids" class="card_2_columns">
 						<div style="display: flex; flex-direction: column;border: 1px solid #333;"><!-- column 1 -->
-							<div style="display:grid;grid-template-columns: 1fr 1fr auto 1fr;justify-content: center">
+							<div style="display:grid;grid-template-columns: repeat(4, 1fr);justify-content: center">
 								<span style="text-align:center;font-weight:bold">1NT</span>
-								<select type="text" class="card" id="onent_start" name="onent_start">
-									<option value="minus_11">-11</option>
-									<option value="11">11</option>
-									<option value="plus_11">+11</option>
-									<option value="minus_12">-12</option>
-									<option value="12">12</option>
-									<option value="plus_12">+12</option>
-									<option value="minus_12">-12</option>
-									<option value="12">12</option>
-									<option value="minus_13">-13</option>
-									<option value="13">13</option>
-									<option value="plus_13">+13</option>
-									<option value="minus_14">-14</option>
-									<option value="14">14</option>
-									<option value="plus_14">+14</option>
-									<option value="minus_15">-15</option>
-									<option value="15" default selected>15</option>
-									<option value="minus_16">-16</option>
-									<option value="16">16</option>
-									<option value="plus_16">+16</option>
-								</select>
+								<input type="number" id="onent_start" class="card" />
 								<span style="text-align:center">to</span>
-								<select class="card" id="onent_end" name="onent_end">
-									<option value="minus_13">-13</option>
-									<option value="13">13</option>
-									<option value="plus_13">+13</option>
-									<option value="minus_14">-14</option>
-									<option value="14">14</option>
-									<option value="plus_14">+14</option>
-									<option value="minus_15">-15</option>
-									<option value="15">15</option>
-									<option value="plus_15">+15</option>
-									<option value="minus_16">-16</option>
-									<option value="16">16</option>
-									<option value="plus_16">+16</option>
-									<option value="minus_17">-17</option>
-									<option value="17" default selected>17</option>
-									<option value="plus_17">+17</option>
-									<option value="minus_18">-18</option>
-									<option value="18">18</option>
-									<option value="plus_18">+18</option>
-								</select>
+								<input type="number" id="onent_end" class="card" />
 							</div>
 							<div style="display:flex;justify-content: left">
 								<span>5 card major commmon</span>
@@ -744,21 +705,9 @@
 						<div style="border:1px solid #333">
 							<div style="display:flex; align-items: center;">
 								<span style="font-weight: bold; display:inline-block; width: 100px;">2NT</span>
-								<select type="text" class="card" id="twont_start" name="twont_start">
-									<option value="minus_19">-19</option>
-									<option value="19" default selected>19</option>
-									<option value="plus_19">+19</option>
-									<option value="minus_20">-20</option>
-									<option value="20">20</option>
-									<option value="plus_20">+20</option>
-								</select>
+								<input type="number" class="card" id="twont_start_input" name="twont_start_input" />
 								<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
-								<select type="text" class="card" id="twont_end" name="twont_end">
-									<option value="minus_21">-21</option>
-									<option value="21" default selected>21</option>
-									<option value="plus_21">+21</option>
-									<option value="minus_22">-22</option>
-								</select>
+								<input type="number" class="card" id="twont_end_input" name="twont_end_input" />
 							</div>
 							<div style="display:flex; align-items: center;">
 								<span>Puppet Stayman</span>
@@ -775,17 +724,9 @@
 						<div style="border:1px solid #333">
 							<div style="display:flex; align-items: center;">
 								<span style="font-weight: bold; display:inline-block; width: 100px;">3NT</span>
-								<select type="text" class="card" id="threent_start" name="threent_start">
-									<option value="minus_24">-24</option>
-									<option value="25" default selected>25</option>
-									<option value="plus_25">+25</option>
-								</select>
-								<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
-								<select type="text" class="card" id="threent_end" name="threent_end">
-									<option value="blank" default selected></option>
-									<option value="27">27</option>
-									<option value="28">28</option>
-								</select>
+									<input type="number" id="threent_start" class="card" min="0" max="37"/>
+									<span style="font-weight: bold; display:inline-block; width: 100px;">-</span>
+									<input type="number" id="threent_end" class="card" min="0" max="37"/>
 							</div>
 							<div class="alertable">
 								<input type="text" class="card" id="threent_special" name="threent_special" />
@@ -873,30 +814,14 @@
 							<input type="checkbox" class="card" id="major_2nt_response_forcing" name="major_2nt_response_forcing" />
 							<span>Inv.</span>
 							<input type="checkbox" class="card" id="major_2nt_response_inv" name="major_2nt_response_inv" />
-							<select class="card" name="major_2nt_response_start" id="major_2nt_response_start">
-								<option value="10">10</option>
-								<option value="11">11</option>
-								<option value="12">12</option>
-							</select>
-							<select class="card" name="major_2nt_response_end" id="major_2nt_response_end">
-								<option value="13">13</option>
-								<option value="14">14</option>
-								<option value="15">15</option>
-							</select>
+							<input type="number" class="card" name="major_2nt_response_start" id="major_2nt_response_start" min="10" max="12" />
+							<input type="number" class="card" name="major_2nt_response_end" id="major_2nt_response_end" min="13" max="15" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>3NT:</span>
-							<select class="card" name="major_3nt_response_start" id="major_3nt_response_start">
-								<option value="12" selected>12</option>
-								<option value="13">13</option>
-								<option value="14">14</option>
-							</select>
+							<input type="number" class="card" name="major_3nt_response_start" id="major_3nt_response_start" min="12" max="14" />
 							<span> to </span>
-							<select class="card" name="major_3nt_response_end" id="major_3nt_response_end">
-								<option value="15" selected>15</option>
-								<option value="16">16</option>
-								<option value="17">17</option>
-							</select>
+							<input type="number" class="card" name="major_3nt_response_end" id="major_3nt_response_end" min="15" max="17" />
 						</div>
 						<div style="display:grid;grid-template-columns: repeat(8,40px);justify-content: space-between;">
 							<span class="alertable">Drury</span>
@@ -984,23 +909,9 @@
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>1NT/1C:</span>
-							<select class="card" name="onentoveroneclub_start" id="onentoveroneclub_start">
-								<option value="5">5</option>
-								<option value="6">6</option>
-								<option value="7">7</option>
-								<option value="8">8</option>
-								<option value="9">9</option>
-								<option value="10">10</option>
-							</select>
+							<input type="number" class="card" id="onentoveroneclub_start_input" name="onentoveroneclub_start_input" />
 							<span> to </span>
-							<select class="card" name="onentoveroneclub_end" id="onentoveroneclub_end">
-								<option value="7">7</option>
-								<option value="8">8</option>
-								<option value="9">9</option>
-								<option value="10">10</option>
-								<option value="11">11</option>
-								<option value="12">12</option>
-							</select>
+							<input type="number" class="card" id="onentoveroneclub_end_input" name="onentoveroneclub_end_input" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>2NT:</span>
@@ -1008,37 +919,15 @@
 							<input type="checkbox" class="card" id="minor_2nt_response_forcing" name="minor_2nt_response_forcing" />
 							<span>Inv.</span>
 							<input type="checkbox" class="card" id="minor_2nt_response_inv" name="minor_2nt_response_inv" />
-							<select class="card" name="minor_2nt_response_inv_start" id="minor_2nt_response_inv_start">
-								<option value="9">9</option>
-								<option value="10">10</option>
-								<option value="11">11</option>
-							</select>
+							<input type="number" class="card" id="minor_2nt_response_inv_start_input" name="minor_2nt_response_inv_start_input" />
 							<span> to </span>
-							<select class="card" name="minor_2nt_response_inv_end" id="minor_2nt_response_inv_end">
-								<option value="10">10</option>
-								<option value="11">11</option>
-								<option value="12">12</option>
-								<option value="13">13</option>
-								<option value="14">14</option>
-							</select>
+							<input type="number" class="card" id="minor_2nt_response_inv_end_input" name="minor_2nt_response_inv_end_input" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span>3NT:</span>
-							<select class="card" name="minor_3nt_start" id="minor_3nt_start">
-								<option value="10">10</option>
-								<option value="10">10</option>
-								<option value="11">11</option>
-								<option value="12">12</option>
-							</select>
+							<input type="number" class="card" id="minor_3nt_start_input" name="minor_3nt_start_input" />
 							<span> to </span>
-							<select class="card" name="minor_3nt_end" id="minor_3nt_end">
-								<option value="11">11</option>
-								<option value="12">12</option>
-								<option value="13">13</option>
-								<option value="14">14</option>
-								<option value="15">15</option>
-								<option value="16">16</option>
-							</select>
+							<input type="number" class="card" id="minor_3nt_end_input" name="minor_3nt_end_input" />
 						</div>
 						<div style="display:flex;justify-content: space-between;">
 							<span class="alertable">Other</span>
@@ -1055,17 +944,9 @@
 							<div style="display:flex;justify-content: space-between;">
 								<div style="display:flex;justify-content: space-between;">
 									<span>2C:</span>
-									<select id="2c_start" class="card" name="2c_start">
-										<option value="21">21</option>
-										<option value="22" selected>22</option>
-										<option value="23">23</option>
-									</select>
+									<input type="number" class="card" name="2c_input_start" id="2c_input_start" />
 									<span> to </span>
-									<select id="2c_end" class="card" name="2c_end">
-										<option value="23">23</option>
-										<option value="24" selected>24</option>
-										<option value="24_plus">24+</option>
-									</select>
+									<input type="number" class="card" name="2c_input_end" id="2c_input_end" />
 									<span>HCP</span>
 								</div>
 							</div>
@@ -1085,23 +966,9 @@
 							<!-- 2D section -->
 							<div>
 								<span>2D</span>
-								<select id="2d_select" class="card" name="2d_select">
-									<option value="5">5</option>
-									<option value="6">6</option>
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-								</select>
+								<input type="number" class="card" name="2d_input_start" id="2d_input_start" min="5" max="9" />
 								<span> to </span>
-								<select id="2d_select_end" class="card" name="2d_select_end">
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-									<option value="10">10</option>
-									<option value="11">11</option>
-									<option value="12">12</option>
-									<option value="13">13</option>
-								</select>
+								<input type="number" class="card" name="2d_input_end" id="2d_input_end" min="7" max="13" />
 								<span>HCP</span>
 							</div>
 							<div style="border-bottom: 1px solid #333;">
@@ -1120,23 +987,9 @@
 							<!-- 2H section -->
 							<div>
 								<span>2H</span>
-								<select id="2h_select" class="card" name="2h_select">
-									<option value="5">5</option>
-									<option value="6">6</option>
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-								</select>
+								<input type="number" class="card" name="2h_input_start" id="2h_input_start" min="5" max="9" />
 								<span> to </span>
-								<select id="2h_select_end" class="card" name="2h_select_end">
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-									<option value="10">10</option>
-									<option value="11">11</option>
-									<option value="12">12</option>
-									<option value="13">13</option>
-								</select>
+								<input type="number" class="card" name="2h_input_end" id="2h_input_end" min="7" max="13" />
 								<span>HCP</span>
 							</div>
 							<div style="border-bottom: 1px solid #333;">
@@ -1155,23 +1008,9 @@
 							<!-- 2S section -->
 							<div>
 								<span>2S</span>
-								<select id="2s_select" class="card" name="2s_select">
-									<option value="5">5</option>
-									<option value="6">6</option>
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-								</select>
+								<input type="number" class="card" name="2s_input_start" id="2s_input_start" min="5" max="9" />
 								<span> to </span>
-								<select id="2s_select_end" class="card" name="2s_select_end">
-									<option value="7">7</option>
-									<option value="8">8</option>
-									<option value="9">9</option>
-									<option value="10">10</option>
-									<option value="11">11</option>
-									<option value="12">12</option>
-									<option value="13">13</option>
-								</select>
+								<input type="number" class="card" name="2s_input_end" id="2s_input_end" min="5" max="9" />
 								<span>HCP</span>
 							</div>
 							<div style="border-bottom: 1px solid #333;">
@@ -1235,8 +1074,7 @@
 					<!-- Other Conv. Calls-->
 					<div>
 						<span style="font-weight: bold;">OTHER CONVENTIONAL CALLS</span>
-						<div style="display:flex;gap:20px">
-
+						<div style="display:flex;gap:20px;flex-wrap: wrap;row-gap:0px">
 							<div>
 								<span class="alertable">New Minor Forcing</span>
 								<input type="checkbox" class="card" id="new_minor_forcing_checkbox" name="new_minor_forcing_checkbox" />
@@ -1267,23 +1105,168 @@
 								<input type="checkbox" class="card" id="fourth_suit_forcing_game_checkbox"
 									name="fourth_suit_forcing_game_checkbox" />
 							</div>
-							<!-- <div> -->
-								<input type="text" class="card" id="other_conv_1" name="other_conv_1" title="Other Convention 1"/>
-							<!-- </div> -->
-							<!-- <div> -->
-								<input type="text" class="card" id="other_conv_2" name="other_conv_2" title="Other Convention 2"/>
-							<!-- </div> -->
 							<div>
-								<input type="text" class="card" id="other_conv_3" name="other_conv_3" title="Other Convention 3"/>
+								<input type="text" class="card alertable" id="other_conv_1" name="other_conv_1" title="Other Convention 1" />
+							</div>
+							<div>
+								<input type="text" class="card alertable" id="other_conv_2" name="other_conv_2" title="Other Convention 2" />
+							</div>
+							<div>
+								<input type="text" class="card alertable" id="other_conv_3" name="other_conv_3" title="Other Convention 3" />
+							</div>
+						</div>
+					</div><!--end Other Conv. Calls-->
+
+					<!--Spl Double,  NT overcalls etc-->
+					<div style="display:grid;grid-template-columns: repeat(2, 1fr);">
+						<!-- first column -->
+						<div style="display:flex;flex-direction:column;border: 3px solid #333;">
+							<span style="font-weight: bold;text-align: center;">SPECIAL DOUBLES</span>
+							<div style="display:flex">
+								<span>After Overcall:</span> <span class="alertable">Penalty</span>>
+								<input type="checkbox" class="card" id="special_doubles_after_overcall_penalty_checkbox"
+									name="special_doubles_after_overcall_penalty_checkbox" />
+								<input type="text" style="width: 60px" class="card" id="special_doubles_after_overcall_penalty_text"
+									name="special_doubles_after_overcall_penalty_text" />
+							</div>
+							<div style="display:flex">
+								<span>Negative:</span>
+								<input type="checkbox" class="card" id="special_doubles_negative_checkbox"
+									name="special_doubles_negative_checkbox" />
+								<span>thru</span>
+								<input type="text" style="width: 60px" class="card" id="special_doubles_negative_thru_text"
+									name="special_doubles_negative_thru_text" />
+							</div>
+							<div style="display:flex">
+								<span>Responsive:</span>
+								<input type="checkbox" class="card" id="special_doubles_responsive_checkbox"
+									name="special_doubles_responsive_checkbox" />
+								<span>thru</span>
+								<input type="text" style="width: 60px" class="card" id="special_doubles_responsive_thru_text"
+									name="special_doubles_responsive_thru_text" />
+								<span>Maximal</span>
+								<input type="checkbox" class="card" id="special_doubles_responsive_maximal_checkbox"
+									name="special_doubles_responsive_maximal_checkbox" />
+							</div>
+							<div style="display:flex">
+								<span class="alertable">Support:</span>
+								<span class="alertable">Double</span>
+								<input type="checkbox" class="card" id="special_doubles_support_double_checkbox"
+									name="special_doubles_support_double_checkbox" />
+								<span class="alertable">thru</span>
+								<select class="card"name="special_doubles_support_through_text" id="special_doubles_support_through_text">
+									<option value="3C">3C</option>
+									<option value="3D">3D</option>
+									<option value="3H">3H</option>
+									<option value="3S">3S</option>
+								</select>
+								<span class="alertable">Redbl</span>
+								<input type="checkbox" class="card" id="special_doubles_support_redbl_checkbox"
+									name="special_doubles_support_redbl_checkbox" />
+							</div>
+							<div style="display:flex">
+								<span>Card-showing</span>
+								<input type="checkbox" class="card" id="special_doubles_card_showing_checkbox"
+									name="special_doubles_card_showing_checkbox" />
+								<span>Min. Offshape T/O</span>
+								<input type="checkbox" class="card" id="special_doubles_min_offshape_to_checkbox"
+									name="special_doubles_min_offshape_to_checkbox" />
+							</div>
+							<div style="display:flex">
+								<input type="text" class="card alertable" id="special_doubles_other_convention_text"
+									name="special_doubles_other_convention_text" />
+							</div>
+
+						</div>
+						<!-- Simple Overcall section -->
+						<div style="display:flex;flex-direction:column;border: 3px solid #333;">
+							<span style="font-weight: bold;text-align: center;">SIMPLE OVERCALL</span>
+							<div>
+								<span>1 Level</span>
+								<input type="number" class="card" name="simple_overcall_1_level_input_start" id="simple_overcall_1_level_input_start" />
+								<span> to </span>
+								<input type="number" class="card" name="simple_overcall_1_level_input_end" id="simple_overcall_1_level_input_end" />
+								<span>HCP (Usually)</span>
+							</div>
+							<div>
+								<span>Often 4 cards</span>
+								<input type="checkbox" class="card" name="simple_overcall_often_4_cards_checkbox" id="simple_overcall_1_level_input_start" />
+								<span>Very light style</span>
+								<input type="checkbox" class="card" name="simple_overcall_very_light_style_checkbox" id="simple_overcall_very_light_style_checkbox" />
+							</div>
+							<span style="font-weight: bold;text-align: center;">RESPONSES</span>
+							<div>
+								<span>New Suit:</span>
+								<span>Forcing</span>
+								<input type="checkbox" class="card" name="simple_overcall_new_suit_forcing_checkbox" id="simple_overcall_new_suit_forcing_checkbox" />
+								<span>NFConst</span>
+								<input type="checkbox" class="card" name="simple_overcall_new_suit_nfconst_checkbox" id="simple_overcall_new_suit_nfconst_checkbox" />
+								<span>NF</span>
+								<input type="checkbox" class="card" name="simple_overcall_new_suit_nf_checkbox" id="simple_overcall_new_suit_nf_checkbox" />
+							</div>
+							<div>
+								<span>Jump Raise:</span>
+								<span>Forcing</span>
+								<input type="checkbox" class="card" name="simple_overcall_jump_raise_forcing_checkbox" id="simple_overcall_new_suit_forcing_checkbox" />
+								<span>Inv.</span>
+								<input type="checkbox" class="card" name="simple_overcall_jump_raise_inv_checkbox" id="simple_overcall_new_suit_nfconst_checkbox" />
+								<span>Weak</span>
+								<input type="checkbox" class="card" name="simple_overcall_jump_raise_weak_checkbox" id="simple_overcall_new_suit_nf_checkbox" />
+							</div>
+						</div>
+
+						<!-- second column -->
+						<div style="display:flex;flex-direction:column;border: 3px solid #333;">
+							<span style="font-weight: bold;text-align: center;">NOTRUMP OVERCALLS</span>
+							<div>
+								<span style="font-weight:bold">Direct:</span>
+								<input type="number" class="card" name="direct_nt_overcall_input_start" id="direct_nt_overcall_input_start" />
+								<span> to </span>
+								<input type="number" class="card" name="direct_nt_overcall_input_end" id="direct_nt_overcall_input_end" />
+								<span>Systems on</span>
+								<input type="checkbox" class="card" id="nt_overcall_systems_on_checkbox"
+									name="nt_overcall_systems_on_checkbox" />
+							</div>
+							<div>
+								<div style="display:flex;align-items:center;">
+									<span class="alertable">Conv.</span>
+									<input type="checkbox" class="card" id="nt_direct_overcall_convention_checkbox"
+										name="nt_direct_overcall_convention_checkbox" />
+									<input type="text" style="width: 60px" class="card" id="nt_direct_overcall_convention_text"
+										name="nt_direct_overcall_convention_text" />
+								</div>
+								<div>
+									<span style="font-weight:bold">Balancing:</span>
+									<input type="number" class="card" name="nt_overcall_balancing_input_start" id="nt_overcall_balancing_input_start" />	
+									<span> to </span>
+									<input type="number" class="card" name="nt_overcall_balancing_input_end" id="nt_overcall_balancing_input_end" />	
+								</div>
+								<div>
+									<span>Jump to 2NT:</span>
+									<span>Minors:</span>
+									<input type="checkbox" class="card" id="nt_overcall_jumpto2nt_minors_checkbox"
+										name="nt_overcall_jumpto2nt_minors_checkbox" />
+									<span>2Lowest:</span>
+									<input type="checkbox" class="card" id="nt_overcall_jumpto2nt_2lowest_checkbox"
+										name="nt_overcall_jumpto2nt_2lowest_checkbox" />
+								</div>
+								<div style="display:flex;align-items:center;">
+									<span class="alertable">Conv.</span>
+									<input type="checkbox" class="card" id="nt_balancing_overcall_convention_checkbox"
+										name="nt_balancing_overcall_convention_checkbox" />
+									<input type="text" style="width: 60px" class="card" id="nt_balancing_overcall_convention_text"
+										name="nt_balancing_overcall_convention_text" />
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
+				</div><!-- end Spl Double,  NT overcalls etc-->
 			</div>
-		</section>
-		<!-- Copyright -->
-		<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
-		</div>
+	</div>
+	</section>
+	<!-- Copyright -->
+	<div class="copyright">&copy; Untitled. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.
+	</div>
 
 	</div>
 
