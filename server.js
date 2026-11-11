@@ -63,6 +63,22 @@ function quoteIdent(identifier) {
     return `"${String(identifier).replace(/"/g, '""')}"`;
 }
 
+function normalizeEmail(email) {
+    if (typeof email !== 'string') {
+        return '';
+    }
+    return email.trim().toLowerCase();
+}
+
+function normalizeEmailList(emails) {
+    if (!Array.isArray(emails)) {
+        return [];
+    }
+    return emails
+        .map((email) => normalizeEmail(email))
+        .filter((email) => email.length > 0);
+}
+
 function classifyRequestActor(req) {
     const headers = req.headers || {};
     const userAgent = String(headers['user-agent'] || '').toLowerCase();
@@ -300,27 +316,14 @@ app.get('/guests', (req, res) => {
 // moved this here so that app.get('/') can initialize session variables first
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.put('/bulkregister', (req, res) => {
-//     const users = req.body.users
-//     const registrationresult = bulkregister(users)
-//     res.json(registrationresult)
-// })
-
-// app.put('/register', (req, res) => {
-//     const first = req.body.first
-//     const last = req.body.last
-//     const username = req.body.username
-//     const registrationresult = register(first, last, username)
-//     res.json(registrationresult)
-// })
-
 app.put('/checkemailandphone', async (req, res) => {
     const { email: requestEmail, phone: requestPhone } = req.body || {};
-    if (typeof requestEmail !== 'string' || typeof requestPhone !== 'string') {
+    const normalizedEmail = normalizeEmail(requestEmail);
+    if (!normalizedEmail || typeof requestPhone !== 'string') {
         return res.status(400).json({ valid: false, message: 'Email and phone are required' });
     }
 
-    const player = await isPlayer(requestEmail, requestPhone)
+    const player = await isPlayer(normalizedEmail, requestPhone)
     const valid = player.exists
     const id = player.id
     const email = player.email
@@ -341,9 +344,9 @@ app.put('/checkemailandphone', async (req, res) => {
 })
 
 app.post('/start-email-verification', async (req, res) => {
-    const rawEmail = req.body?.email;
+    const requestEmail = req.body?.email;
     const rawPhone = req.body?.phone;
-    const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+    const email = normalizeEmail(requestEmail);
     const phone = typeof rawPhone === 'string' ? rawPhone.replaceAll('-', '').trim() : '';
     if (!email) {
         return res.status(400).json({ success: false, message: 'Email is required' });
@@ -393,9 +396,9 @@ app.post('/start-email-verification', async (req, res) => {
 });
 
 app.post('/verify-email-verification', async (req, res) => {
-    const rawEmail = req.body?.email;
+    const requestEmail = req.body?.email;
     const rawCode = req.body?.code;
-    const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+    const email = normalizeEmail(requestEmail);
     const code = typeof rawCode === 'string' ? rawCode.trim() : '';
 
     if (!email || !code) {
@@ -443,11 +446,12 @@ app.post('/logout', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body || {};
-    if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) {
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail || typeof password !== 'string' || !password) {
         return res.status(400).json({ valid: false, message: 'Email and password are required' });
     }
 
-    const result = await login(email, password);
+    const result = await login(normalizedEmail, password);
     if (!result.valid) {
         return res.json({ valid: false, message: result.message });
     }
@@ -456,7 +460,7 @@ app.post('/login', async (req, res) => {
     req.session.securelogin = result.securelogin
     req.session.insecurelogin = !result.securelogin
     req.session.casuallogin = false
-    req.session.username = email
+    req.session.username = normalizedEmail
     req.session.userid = userId
     req.session.isAdmin = admin
     req.session.fullname = result.fullname
@@ -468,18 +472,22 @@ app.post('/addnewplayer', async (req, res) => {
     if (typeof data.first !== 'string' || typeof data.last !== 'string' || typeof data.email !== 'string' || typeof data.phone !== 'string') {
         return res.status(400).json({ success: false, message: 'First name, last name, email, and phone are required' });
     }
+    const normalizedEmail = normalizeEmail(data.email);
+    if (!normalizedEmail) {
+        return res.status(400).json({ success: false, message: 'Email is required' });
+    }
     const alreadyExists = await playerExists(data.first.trim(), data.last.trim());
     if (alreadyExists) {
         return res.status(400).json({ success: false, message: 'Player with the same first and last name already exists' });
     }
-    const emailAlreadyExists = await emailExists(data.email);
+    const emailAlreadyExists = await emailExists(normalizedEmail);
     if (emailAlreadyExists) {
         return res.status(400).json({ success: false, message: 'Player with the same email already exists' });
     }
     try {
         const username = data.first.trim().toLowerCase() + data.last.trim().toLowerCase().charAt(0);
         const stmt = db.prepare('INSERT INTO player (first,last,email,phone,username) VALUES (?, ?, ?, ?, ?);');
-        const result = stmt.run(data.first.trim(), data.last.trim(), data.email.trim(), data.phone.trim(), username)
+        const result = stmt.run(data.first.trim(), data.last.trim(), normalizedEmail, data.phone.trim(), username)
         if (!result || result.changes === 0) {
             return res.status(500).json({ success: false, message: 'Failed to add new player' });
         }
@@ -718,6 +726,7 @@ app.put('/playerdata/:id', (req, res) => {
 
         const playerId = req.params.id;
         const data = req.body || {};
+        const normalizedEmail = typeof data.email === 'string' ? normalizeEmail(data.email) : data.email;
         console.log('Updating player:', playerId, { body: data, file: req.file?.key });
         try {
             const currentPlayer = db.prepare('SELECT image_path FROM player WHERE id = ?').get(playerId);
@@ -736,7 +745,7 @@ app.put('/playerdata/:id', (req, res) => {
 
             const result = stmt.run(data.first,
                 data.last,
-                data.email,
+            normalizedEmail,
                 data.phone,
                 data.dob_month == '' || data.dob_month === null ? 0 : data.dob_month,
                 data.dob_date == '' || data.dob_date === null ? 0 : data.dob_date,
@@ -815,14 +824,15 @@ app.get('/get-session-id', (req, res) => {
 // Request password reset
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body || {};
-    if (typeof email !== 'string' || !email.trim()) {
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
         return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
     try {
         // Find user by email
         const stmt = db.prepare('SELECT id, first, last, username FROM player WHERE email = ?');
-        const user = stmt.get(email);
+        const user = stmt.get(normalizedEmail);
 
         if (!user) {
             // Don't reveal if email exists
@@ -858,7 +868,7 @@ app.post('/forgot-password', async (req, res) => {
 
         sendEmail(
             {
-                addresses: [email],
+                addresses: [normalizedEmail],
                 subject: 'Password Reset Request',
                 text: '',
                 html: `<h2>Password Reset Request</h2>
@@ -928,10 +938,11 @@ app.post('/reset-password', async (req, res) => {
 
 app.post('/guest-inquiry', async (req, res) => {
     const { firstName, lastName, email, phone, acbl, visitDate, message } = req.body || {};
+    const normalizedEmail = normalizeEmail(email);
     if (
         typeof firstName !== 'string' || !firstName.trim() ||
         typeof lastName !== 'string' || !lastName.trim() ||
-        typeof email !== 'string' || !email.trim() ||
+        !normalizedEmail ||
         typeof phone !== 'string' || !phone.trim() ||
         typeof visitDate !== 'string' || !visitDate.trim()
     ) {
@@ -939,7 +950,7 @@ app.post('/guest-inquiry', async (req, res) => {
     }
     try {
         //save the guest inquiry to the database and send an email to the board members with the details of the inquiry
-        saveGuestInquiry(firstName, lastName, email, phone, acbl, visitDate, message);
+        saveGuestInquiry(firstName, lastName, normalizedEmail, phone, acbl, visitDate, message);
         const mailingList = getMailingListAddresses('boardmembers');
         if (mailingList.length === 0) {
             console.warn('No email addresses found for boardmembers mailing list. Guest inquiry email will not be sent.');
@@ -966,7 +977,7 @@ app.post('/guest-inquiry', async (req, res) => {
                     subject: 'New Guest Inquiry',
                     text: `Our web site has received a new guest inquiry from
                     \nFirst Name:${firstName} Last Name: ${lastName} 
-                    \nPhone:${phone} Email:(${email}) 
+                    \nPhone:${phone} Email:(${normalizedEmail}) 
                     \nExpressing interest in visiting club on:${visitDate}.
                     \n\nMessage: ${message}
                     \n\nPresident will reach out to the guest or assign someone to reach out to the guest.
@@ -984,7 +995,7 @@ app.post('/guest-inquiry', async (req, res) => {
                     subject: 'New Guest Inquiry',
                     text: `Our web site has received a new guest inquiry from
                     \nFirst Name:${firstName} Last Name: ${lastName}
-                    \nPhone:${phone} Email:(${email})
+                    \nPhone:${phone} Email:(${normalizedEmail})
                     \nExpressing interest in visiting club on:${visitDate}.
                     \n\nMessage: ${message} 
                     \n\nPresident will reach out to the guest or assign someone to reach out to the guest.
@@ -1122,8 +1133,12 @@ app.post('/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
 // });
 async function emailExists(email) {
     try {
+        const normalizedEmail = normalizeEmail(email);
+        if (!normalizedEmail) {
+            return false;
+        }
         const stmt = db.prepare('SELECT EXISTS(SELECT 1 FROM player WHERE email = ?)');
-        const result = stmt.get(email);
+        const result = stmt.get(normalizedEmail);
         return result['EXISTS(SELECT 1 FROM player WHERE email = ?)'] === 1;
     } catch (err) {
         console.error('Error checking if email exists:', err);
@@ -1677,11 +1692,12 @@ app.get('/celebration/:celebrationid/images', async (req, res) => {
 app.post('/sendemail', async (req, res) => {
     //playerid is the id of the sender
     const { mailinglistId, individualEmails, playerid, subject, text } = req.body || {};
-    const recipientEmails = mailinglistId ? getMailingListEmails(mailinglistId).emails : individualEmails;
+    const normalizedIndividualEmails = normalizeEmailList(individualEmails);
+    const recipientEmails = mailinglistId ? getMailingListEmails(mailinglistId).emails : normalizedIndividualEmails;
     if (!Array.isArray(recipientEmails)) {
         return res.status(400).json({ success: false, message: 'No valid recipient list was provided' });
     }
-    const filteredRecipientEmails = recipientEmails.filter(email => email !== null && email !== undefined && email.trim() !== ''); // Filter out null or undefined emails
+    const filteredRecipientEmails = normalizeEmailList(recipientEmails);
     if (filteredRecipientEmails.length === 0) {
         return res.status(400).json({ success: false, message: 'No valid email addresses found for the selected mailing list' });
     }
