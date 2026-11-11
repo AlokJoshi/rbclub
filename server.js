@@ -182,6 +182,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // increase limits to allow larger multipart/form-data handling if necessary
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use((req, res, next) => {
+    if (typeof req.body === 'undefined') {
+        req.body = {};
+    }
+    next();
+});
 
 // Handle malformed/compressed request-body errors from express body parsers.
 app.use((err, req, res, next) => {
@@ -309,7 +315,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // })
 
 app.put('/checkemailandphone', async (req, res) => {
-    const player = await isPlayer(req.body.email, req.body.phone)
+    const { email: requestEmail, phone: requestPhone } = req.body || {};
+    if (typeof requestEmail !== 'string' || typeof requestPhone !== 'string') {
+        return res.status(400).json({ valid: false, message: 'Email and phone are required' });
+    }
+
+    const player = await isPlayer(requestEmail, requestPhone)
     const valid = player.exists
     const id = player.id
     const email = player.email
@@ -431,7 +442,10 @@ app.post('/logout', async (req, res) => {
 })
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
+    if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) {
+        return res.status(400).json({ valid: false, message: 'Email and password are required' });
+    }
 
     const result = await login(email, password);
     if (!result.valid) {
@@ -450,7 +464,10 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/addnewplayer', async (req, res) => {
-    const data = req.body;
+    const data = req.body || {};
+    if (typeof data.first !== 'string' || typeof data.last !== 'string' || typeof data.email !== 'string' || typeof data.phone !== 'string') {
+        return res.status(400).json({ success: false, message: 'First name, last name, email, and phone are required' });
+    }
     const alreadyExists = await playerExists(data.first.trim(), data.last.trim());
     if (alreadyExists) {
         return res.status(400).json({ success: false, message: 'Player with the same first and last name already exists' });
@@ -483,7 +500,7 @@ app.post('/addnewplayer', async (req, res) => {
 });
 
 app.post('/changepassword', async (req, res) => {
-    const { email, oldPassword, newPassword } = req.body;
+    const { email, oldPassword, newPassword } = req.body || {};
     const requestEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const requesterIp = req.ip || req.socket?.remoteAddress || 'unknown';
     console.log(`[changepassword] Request received for email=${requestEmail || '<missing>'} from ip=${requesterIp}`);
@@ -567,7 +584,10 @@ app.get('/users', async (req, res) => {
 });
 
 app.post('/isadmin', async (req, res) => {
-    const { userId } = req.body;
+    const { userId } = req.body || {};
+    if (typeof userId === 'undefined' || userId === null) {
+        return res.status(400).json({ isAdmin: false, message: 'userId is required' });
+    }
     const isAdminFlag = isAdmin(userId);
     res.json({ isAdmin: isAdminFlag });
 });
@@ -657,7 +677,10 @@ app.get('/attendance/:day', async (req, res) => {
     }
 });
 app.put('/getdefaultlogincredentials', async (req, res) => {
-    const { first, last } = req.body;
+    const { first, last } = req.body || {};
+    if (typeof first !== 'string' || typeof last !== 'string' || !first.trim() || !last.trim()) {
+        return res.status(400).json({ error: 'First and last name are required' });
+    }
     try {
         const stmt = db.prepare('SELECT id FROM player WHERE first = ? AND last = ?;');
         const result = stmt.get(first, last);
@@ -694,7 +717,7 @@ app.put('/playerdata/:id', (req, res) => {
         }
 
         const playerId = req.params.id;
-        const data = req.body;
+        const data = req.body || {};
         console.log('Updating player:', playerId, { body: data, file: req.file?.key });
         try {
             const currentPlayer = db.prepare('SELECT image_path FROM player WHERE id = ?').get(playerId);
@@ -791,7 +814,10 @@ app.get('/get-session-id', (req, res) => {
 
 // Request password reset
 app.post('/forgot-password', async (req, res) => {
-    const { email } = req.body;
+    const { email } = req.body || {};
+    if (typeof email !== 'string' || !email.trim()) {
+        return res.status(400).json({ success: false, message: 'Email is required' });
+    }
 
     try {
         // Find user by email
@@ -871,7 +897,10 @@ app.get('/verify-reset-token/:token', async (req, res) => {
 
 // Reset password with token
 app.post('/reset-password', async (req, res) => {
-    const { token, newPassword } = req.body;
+    const { token, newPassword } = req.body || {};
+    if (typeof token !== 'string' || !token.trim() || typeof newPassword !== 'string' || !newPassword) {
+        return res.status(400).json({ success: false, message: 'Token and new password are required' });
+    }
 
     try {
         const stmt = db.prepare('SELECT id, username, reset_token_expires FROM player WHERE reset_token = ?');
@@ -898,7 +927,16 @@ app.post('/reset-password', async (req, res) => {
 });
 
 app.post('/guest-inquiry', async (req, res) => {
-    const { firstName, lastName, email, phone, acbl, visitDate, message } = req.body;
+    const { firstName, lastName, email, phone, acbl, visitDate, message } = req.body || {};
+    if (
+        typeof firstName !== 'string' || !firstName.trim() ||
+        typeof lastName !== 'string' || !lastName.trim() ||
+        typeof email !== 'string' || !email.trim() ||
+        typeof phone !== 'string' || !phone.trim() ||
+        typeof visitDate !== 'string' || !visitDate.trim()
+    ) {
+        return res.status(400).json({ success: false, message: 'First name, last name, email, phone, and visit date are required' });
+    }
     try {
         //save the guest inquiry to the database and send an email to the board members with the details of the inquiry
         saveGuestInquiry(firstName, lastName, email, phone, acbl, visitDate, message);
@@ -993,7 +1031,10 @@ app.delete('/mailinglist/:listid', async (req, res) => {
 });
 
 app.post('/mailinglists', async (req, res) => {
-    const { name, description } = req.body;
+    const { name, description } = req.body || {};
+    if (typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ success: false, message: 'Mailing list name is required' });
+    }
     try {
         if (existsMailingList(name)) {
             res.status(400).json({ success: false, message: 'Mailing list already exists' });
@@ -1008,7 +1049,10 @@ app.post('/mailinglists', async (req, res) => {
 });
 
 app.put('/mailinglists', async (req, res) => {
-    const { id, name, description } = req.body;
+    const { id, name, description } = req.body || {};
+    if (typeof id === 'undefined' || id === null || typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ success: false, message: 'Mailing list id and name are required' });
+    }
     try {
         if (existsMailingList(name)) {
             res.status(400).json({ success: false, message: 'Mailing list already exists' });
@@ -1046,7 +1090,10 @@ app.get(`/nonemailrecipients/:mailinglistid`, async (req, res) => {
 
 app.post('/mailinglist/:mailinglistid/addrecipient', async (req, res) => {
     const mailingListId = req.params.mailinglistid;
-    const { memberid } = req.body;
+    const { memberid } = req.body || {};
+    if (typeof memberid === 'undefined' || memberid === null) {
+        return res.status(400).json({ success: false, message: 'memberid is required' });
+    }
     try {
         addRecipientToMailingList(mailingListId, memberid);
         res.json({ success: true, message: 'Recipients added successfully' });
@@ -1121,7 +1168,10 @@ app.get('/birthdays/:birthmonths', (req, res) => {
 });
 app.put('/announcement/:id', (req, res) => {
     const announcementId = req.params.id;
-    const { title, announcement, playerid, displaytill, priority } = req.body;
+    const { title, announcement, playerid, displaytill, priority } = req.body || {};
+    if (typeof title !== 'string' || typeof announcement !== 'string' || typeof playerid === 'undefined' || typeof displaytill !== 'string') {
+        return res.status(400).json({ success: false, message: 'Invalid announcement payload' });
+    }
     try {
         const stmt = db.prepare('UPDATE announcement SET title = ?, announcement = ?, playerid = ?, displaytill = ?, priority = ? WHERE id = ?;');
         const result = stmt.run(title, announcement, playerid, displaytill, priority, announcementId);
@@ -1136,7 +1186,10 @@ app.put('/announcement/:id', (req, res) => {
 });
 
 app.post('/announcement', (req, res) => {
-    const { title, announcement, playerid, displaytill, priority } = req.body;
+    const { title, announcement, playerid, displaytill, priority } = req.body || {};
+    if (typeof title !== 'string' || typeof announcement !== 'string' || typeof playerid === 'undefined' || typeof displaytill !== 'string') {
+        return res.status(400).json({ success: false, message: 'Invalid announcement payload' });
+    }
     try {
         const stmt = db.prepare('INSERT INTO announcement (title, announcement, playerid, displaytill, priority, del) VALUES (?, ?, ?, ?, ?, ?);');
         stmt.run(title, announcement, playerid, displaytill, priority, 0);
@@ -1176,7 +1229,11 @@ app.get('/getplayingintentions/:playerid', (req, res) => {
 });
 
 app.post('/setplayingintentions', (req, res) => {
-    const { playerId, day, intention } = req.body;
+    const { playerId, day, intention } = req.body || {};
+    const allowedDays = ['m1', 't1', 'f1', 'ug'];
+    if (typeof playerId === 'undefined' || !allowedDays.includes(day)) {
+        return res.status(400).json({ success: false, message: 'Invalid playerId or day' });
+    }
     try {
         const sql = `UPDATE player SET ${day} = ? WHERE id = ?;`;
         const stmt = db.prepare(sql);
@@ -1193,7 +1250,15 @@ app.post('/setplayingintentions', (req, res) => {
 });
 
 app.post('/updatepotm', (req, res) => {
-    const { potmmonth, potmyear, playerid, potmplayerid, selectedPhrases } = req.body;
+    const { potmmonth, potmyear, playerid, potmplayerid, selectedPhrases } = req.body || {};
+    if (
+        typeof potmmonth === 'undefined' ||
+        typeof potmyear === 'undefined' ||
+        typeof playerid === 'undefined' ||
+        typeof potmplayerid === 'undefined'
+    ) {
+        return res.status(400).json({ success: false, message: 'potmmonth, potmyear, playerid, and potmplayerid are required' });
+    }
     const comment = selectedPhrases && selectedPhrases.length > 0 ? selectedPhrases.join(', ') : '';
     const sql = `Insert into potm (potmmonth ,potmyear,playerid,potmplayerid, comment) values(
     ?,?,?,?,?) on conflict(potmmonth,potmyear,playerid) do update set potmplayerid = ?,
@@ -1245,7 +1310,17 @@ app.get('/getpotmwords', (req, res) => {
 });
 
 app.post('/savephrase', (req, res) => {
-    const { playerid, potmplayerid, potmmonth, potmyear, potmphrase } = req.body;
+    const { playerid, potmplayerid, potmmonth, potmyear, potmphrase } = req.body || {};
+    if (
+        typeof playerid === 'undefined' ||
+        typeof potmplayerid === 'undefined' ||
+        typeof potmmonth === 'undefined' ||
+        typeof potmyear === 'undefined' ||
+        typeof potmphrase !== 'string' ||
+        !potmphrase.trim()
+    ) {
+        return res.status(400).json({ success: false, message: 'playerid, potmplayerid, potmmonth, potmyear, and potmphrase are required' });
+    }
     try {
         const stmt1 = db.prepare('SELECT comment FROM potm WHERE playerid = ? AND potmplayerid = ? AND potmmonth = ? AND potmyear = ?');
         const existing = stmt1.get(playerid, potmplayerid, potmmonth, potmyear);
@@ -1320,7 +1395,14 @@ app.post('/celebration2', (req, res, next) => {
     });
 }, (req, res) => {
     // const data = req.body;
-    const { createdByPlayerId, celebrationName, celebrationDate, celebrationDescription } = req.body;
+    const { createdByPlayerId, celebrationName, celebrationDate, celebrationDescription } = req.body || {};
+    if (
+        typeof createdByPlayerId === 'undefined' ||
+        typeof celebrationName !== 'string' || !celebrationName.trim() ||
+        typeof celebrationDate !== 'string' || !celebrationDate.trim()
+    ) {
+        return res.status(400).json({ success: false, message: 'createdByPlayerId, celebrationName, and celebrationDate are required' });
+    }
     let celebrationId;
     try {
         const stmt = db.prepare('INSERT INTO celebration (createdbyplayerid, celebrationname, celebrationdate, celebrationdescription) VALUES (?, ?, ?, ?)');
@@ -1439,7 +1521,7 @@ app.post('/celebration/images', (req, res, next) => {
     });
 }, (req, res) => {
     try {
-        const { celebrationid } = req.body;
+        const { celebrationid } = req.body || {};
 
         if (!celebrationid) {
             return res.status(400).json({ success: false, message: 'celebrationid is required' });
@@ -1498,7 +1580,10 @@ app.delete('/blog/:blogid', (req, res) => {
 
 app.post('/blogtitle', async (req, res) => {
     try {
-        const { blogtitle, playerid } = req.body;
+        const { blogtitle, playerid } = req.body || {};
+        if (typeof blogtitle !== 'string' || !blogtitle.trim() || typeof playerid === 'undefined') {
+            return res.status(400).json({ valid: false, message: 'blogtitle and playerid are required' });
+        }
         //if blogtitle already exists, return the blogid
         //if blogtitle does not exist, create a new blog with the title and return the new blogid
         const existingBlog = db.prepare('SELECT id FROM blogs WHERE title = ? and playerid = ?').get(blogtitle, playerid);
@@ -1517,7 +1602,10 @@ app.post('/blogtitle', async (req, res) => {
 
 app.post('/blogcomment/:blogid', async (req, res) => {
     const { blogid } = req.params;
-    const { playerid, comment } = req.body;
+    const { playerid, comment } = req.body || {};
+    if (typeof playerid === 'undefined' || typeof comment !== 'string' || !comment.trim()) {
+        return res.status(400).json({ success: false, message: 'playerid and comment are required' });
+    }
     const createdDate = new Date().toDateString();
     try {
         const stmt = db.prepare('INSERT INTO blogcomments (blogid, playerid, createddate, comment) VALUES (?, ?, ?, ?);');
@@ -1544,7 +1632,7 @@ app.post('/blog/images', (req, res, next) => {
 }, (req, res) => {
     try {
         // const {blogid} = req.params;
-        const { blogid } = req.body;
+        const { blogid } = req.body || {};
 
         if (!blogid) {
             return res.status(400).json({ success: false, message: 'blogid is required' });
@@ -1588,8 +1676,11 @@ app.get('/celebration/:celebrationid/images', async (req, res) => {
 // send email
 app.post('/sendemail', async (req, res) => {
     //playerid is the id of the sender
-    const { mailinglistId, individualEmails, playerid, subject, text } = req.body;
+    const { mailinglistId, individualEmails, playerid, subject, text } = req.body || {};
     const recipientEmails = mailinglistId ? getMailingListEmails(mailinglistId).emails : individualEmails;
+    if (!Array.isArray(recipientEmails)) {
+        return res.status(400).json({ success: false, message: 'No valid recipient list was provided' });
+    }
     const filteredRecipientEmails = recipientEmails.filter(email => email !== null && email !== undefined && email.trim() !== ''); // Filter out null or undefined emails
     if (filteredRecipientEmails.length === 0) {
         return res.status(400).json({ success: false, message: 'No valid email addresses found for the selected mailing list' });
@@ -1639,10 +1730,14 @@ app.post('/sendemail', async (req, res) => {
 app.post('/emailaccepted', checkAuthenticity, (req, res) => {
 
     try {
-        const uservariable = req.body['event-data']['user-variables'];
+        const eventData = req.body?.['event-data'];
+        if (!eventData || typeof eventData !== 'object') {
+            return res.status(400).json({ message: 'Missing event-data payload' });
+        }
+        const uservariable = eventData['user-variables'];
         const emailid = uservariable ? uservariable.emailid : null;
-        const messageId = req.body['event-data'].message.headers['message-id'] || null;
-        const storageKey = req.body['event-data'].storage ? req.body['event-data'].storage.key : null;
+        const messageId = eventData.message?.headers?.['message-id'] || null;
+        const storageKey = eventData.storage ? eventData.storage.key : null;
         if (!emailid || !messageId) {
             return res.status(400).json({ message: 'Email ID or Message ID not found in user variables' });
         }
@@ -1658,7 +1753,10 @@ app.post('/emailaccepted', checkAuthenticity, (req, res) => {
 function checkAuthenticity(req, res, next) {
     let verified = false;
     try {
-        const signature = req.body.signature;
+        const signature = req.body?.signature;
+        if (!signature) {
+            return res.status(400).json({ message: 'Missing signature' });
+        }
         verified = verify({
             timestamp: signature.timestamp || req.body.timestamp,
             token: signature.token || req.body.token,
@@ -1677,16 +1775,20 @@ function checkAuthenticity(req, res, next) {
 }
 app.post('/emailunsubscribe', checkAuthenticity, (req, res) => {
     console.log('Email unsubscribe endpoint hit with data:');
-    console.log(req.body.signature);
-    console.log(req.body['event-data']);
+    console.log(req.body?.signature);
+    console.log(req.body?.['event-data']);
     res.json({ message: 'Welcome to the RBC API' });
 });
 
 app.post('/emaildelivered', checkAuthenticity, (req, res) => {
     try {
-        const uservariable = req.body['event-data']['user-variables'];
+        const eventData = req.body?.['event-data'];
+        if (!eventData || typeof eventData !== 'object') {
+            return res.status(400).json({ message: 'Missing event-data payload' });
+        }
+        const uservariable = eventData['user-variables'];
         const emailid = uservariable ? uservariable.emailid : null;
-        const storageKey = req.body['event-data'].storage ? req.body['event-data'].storage.key : null;
+        const storageKey = eventData.storage ? eventData.storage.key : null;
         if (!emailid) {
             return res.status(400).json({ message: 'Email ID not found in user variables' });
         }
@@ -1744,7 +1846,10 @@ app.get('/blogsdata', (req, res) => {
 });
 
 app.put('/blog', (req, res) => {
-    const { blogid, blog } = req.body;
+    const { blogid, blog } = req.body || {};
+    if (typeof blogid === 'undefined' || typeof blog !== 'string') {
+        return res.status(400).json({ success: false, message: 'blogid and blog are required' });
+    }
     try {
         const stmt = db.prepare('Update blogs set blog=? where id=?')
         const result = stmt.run(blog, blogid)
