@@ -839,7 +839,7 @@ app.post('/forgot-password', async (req, res) => {
 
         // Create reset URL
         // const resetUrl = `http://localhost:${PORT}/reset-password?token=${resetToken}`;
-        const resetUrl = `http://localhost:${PORT}/members?token=${resetToken}`;
+        const resetUrl = `http://riversidebridgeclub.com/members?token=${resetToken}`;
 
         // Send email
         // await transporter.sendMail({
