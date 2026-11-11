@@ -48,8 +48,8 @@ async function login(email, password) {
 
     const row = stmt.get(email);
     if (!row) {
-        console.log('User not found.');
-        return { valid: false, message: 'User not found' };
+        console.log(`User not found for email "${email}"`);
+        return { valid: false, message: `User not found for email "${email}"` };
     }
 
     const securelogin = (password === row.first.toLowerCase().trim() + row.id.toString()) ? false : true;
